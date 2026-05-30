@@ -975,7 +975,7 @@ export function modalCompradorDetail(client) {
 
     <!-- Tabs -->
     <div style="display:flex;border-bottom:1px solid var(--border);padding:0 24px;background:var(--bg-card)" id="comp-tab-bar">
-      ${[['cinfo','Información'],['cpropiedad','Propiedad'],['cdocs','Documentos']].map(([t, l], i) => `
+      ${[['cinfo','Información'],['cpropiedad','Propiedad'],['cdocs','Documentos'],['cactividad','Actividad']].map(([t, l], i) => `
         <div class="comp-tab" data-tab="${t}" onclick="switchCompTab('${t}')"
           style="padding:11px 14px;font-size:12px;font-weight:500;cursor:pointer;border-bottom:2px solid ${i === 0 ? 'var(--green-txt)' : 'transparent'};color:${i === 0 ? 'var(--green-txt)' : 'var(--sub)'};user-select:none;margin-right:2px">${l}</div>
       `).join('')}
@@ -1042,6 +1042,70 @@ export function modalCompradorDetail(client) {
         `).join('')}
       </div>
 
+      <!-- Actividad -->
+      <div id="ctab-cactividad" style="display:none">
+        ${(() => {
+          // Mock activity data seeded from client step/pct
+          const sessions  = 12 + client.step * 5 + Math.round(client.paidPct / 8);
+          const avgMin    = 3 + client.step;
+          const docsViews = client.step * 3 + 4;
+          const lastLogin = client.step >= 4 ? 'hace 2 horas' : client.step >= 2 ? 'ayer' : 'hace 3 días';
+
+          const recentProps = [
+            { name: `${client.project.replace(' Residences','')} ${client.unit}`, views: 18, last: 'hoy' },
+            { name: `${client.project.replace(' Residences','')} 2A`,             views: 11, last: 'ayer' },
+            { name: 'Naviva Suite 1B',                                             views: 7,  last: 'hace 3 días' },
+            { name: 'LIV Studio 12C',                                              views: 4,  last: 'hace 1 sem.' },
+          ];
+          const recentViews = [
+            { icon:'🏠', desc:`Visitó ${client.unit} · ${client.project}`,        time:'Hoy, 10:24' },
+            { icon:'📄', desc:'Descargó ficha técnica de Makai 2A',                time:'Ayer, 17:05' },
+            { icon:'💬', desc:'Abrió chat con su asesor',                          time:'Ayer, 16:48' },
+            { icon:'🏠', desc:'Visitó Naviva Suite 1B',                            time:'hace 3 días' },
+            { icon:'📋', desc:'Revisó su plan de pagos',                           time:'hace 4 días' },
+          ];
+          const maxPropViews = recentProps[0].views;
+
+          return `
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:16px">
+              <div>
+                <div style="font-size:10px;font-weight:600;color:var(--sub);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Resumen de actividad</div>
+                ${kvP('Sesiones este mes',    `<strong style="color:var(--cream)">${sessions}</strong>`)}
+                ${kvP('Última conexión',      lastLogin)}
+                ${kvP('Sesión promedio',      `${avgMin}m ${Math.round(Math.random()*59)}s`)}
+                ${kvP('Documentos visitados', docsViews)}
+                ${kvP('Propiedades vistas',   recentProps.length)}
+                ${kvP('Plataforma',           client.step >= 3 ? '<span style="color:var(--green-txt)">Alta actividad</span>' : '<span style="color:var(--orange)">Actividad media</span>')}
+              </div>
+              <div>
+                <div style="font-size:10px;font-weight:600;color:var(--sub);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Propiedades más vistas</div>
+                ${recentProps.map(p => `
+                  <div style="margin-bottom:9px">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+                      <span style="font-size:11px;color:var(--cream-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px">${p.name}</span>
+                      <span style="font-size:10px;font-weight:700;color:var(--cream);flex-shrink:0;margin-left:6px">${p.views} vis.</span>
+                    </div>
+                    <div style="background:var(--bg-surface);border-radius:3px;height:4px">
+                      <div style="height:4px;border-radius:3px;background:var(--green);width:${Math.round((p.views/maxPropViews)*100)}%"></div>
+                    </div>
+                    <div style="font-size:9px;color:var(--muted);margin-top:1px">Última visita: ${p.last}</div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+            <div>
+              <div style="font-size:10px;font-weight:600;color:var(--sub);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Últimas acciones en plataforma</div>
+              ${recentViews.map((v, i) => `
+                <div style="display:flex;align-items:flex-start;gap:10px;padding:7px 0;${i < recentViews.length-1 ? 'border-bottom:1px solid var(--border)' : ''}">
+                  <span style="font-size:14px;flex-shrink:0;margin-top:1px">${v.icon}</span>
+                  <div style="flex:1;font-size:11px;color:var(--cream-dim)">${v.desc}</div>
+                  <div style="font-size:10px;color:var(--muted);white-space:nowrap;flex-shrink:0">${v.time}</div>
+                </div>
+              `).join('')}
+            </div>`;
+        })()}
+      </div>
+
     </div>
 
     <div class="modal-footer">
@@ -1053,7 +1117,7 @@ export function modalCompradorDetail(client) {
   </div>`);
 
   window.switchCompTab = (tab) => {
-    ['cinfo','cpropiedad','cdocs'].forEach(t => {
+    ['cinfo','cpropiedad','cdocs','cactividad'].forEach(t => {
       const el = document.getElementById(`ctab-${t}`);
       if (el) el.style.display = t === tab ? '' : 'none';
     });
@@ -1513,12 +1577,13 @@ export function modalRegistrarPago(plan, onConfirm) {
   window._comprobante = null;
 
   openModal(`
-  <div class="modal">
+  <div class="modal" style="max-width:900px">
     <div class="modal-header">
       <span class="modal-title">💳 Registrar pago</span>
       <div class="modal-close" onclick="closeModal()">✕</div>
     </div>
-    <div class="modal-body" style="padding:20px 24px">
+    <div style="display:flex">
+    <div style="flex:1;min-width:0;padding:20px 24px">
 
       ${!plan ? `
       <div class="field-group" style="margin-bottom:16px">
@@ -1610,6 +1675,32 @@ export function modalRegistrarPago(plan, onConfirm) {
         <textarea class="field-textarea" id="reg-notas" placeholder="Referencia bancaria, número de comprobante…" rows="2"></textarea>
       </div>
     </div>
+
+    <div style="width:268px;flex-shrink:0;border-left:1px solid var(--border);padding:20px;background:rgba(255,255,255,.015)">
+      <div style="font-size:11px;font-weight:600;color:var(--cream-dim);margin-bottom:3px">Datos bancarios</div>
+      <div style="font-size:9.5px;color:var(--sub);margin-bottom:16px;letter-spacing:.02em">Wire transfer · USD</div>
+
+      <div style="font-size:8px;font-weight:600;color:var(--green-txt);letter-spacing:.18em;text-transform:uppercase;margin-bottom:8px">Banco Intermediario</div>
+      <div style="font-size:10.5px;font-weight:600;color:var(--cream-dim);margin-bottom:8px">Citibank N.A. — New York Branch</div>
+      <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:9.5px"><span style="color:var(--sub)">Cuenta</span><span style="color:var(--cream-dim);font-weight:600;font-family:monospace">36265334</span></div>
+      <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:9.5px"><span style="color:var(--sub)">Swift (BIC)</span><span style="color:var(--cream-dim);font-weight:600;font-family:monospace">CITIUS33XXX</span></div>
+      <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:9.5px"><span style="color:var(--sub)">ABA Routing</span><span style="color:var(--cream-dim);font-weight:600;font-family:monospace">021000089</span></div>
+      <div style="padding:5px 0;border-bottom:1px solid var(--border);font-size:9px;color:var(--sub)">111 Wall St, New York, USA 10043</div>
+
+      <div style="font-size:8px;font-weight:600;color:var(--green-txt);letter-spacing:.18em;text-transform:uppercase;margin-top:16px;margin-bottom:8px">Banco Beneficiario</div>
+      <div style="font-size:10px;font-weight:500;color:var(--cream-dim);margin-bottom:4px">Banco Múltiple López de Haro, S.A.</div>
+      <div style="font-size:9px;color:var(--sub);border-bottom:1px solid var(--border);padding-bottom:10px">Ave. Sarasota No. 20, Santo Domingo, Rep. Dom.</div>
+
+      <div style="font-size:8px;font-weight:600;color:var(--green-txt);letter-spacing:.18em;text-transform:uppercase;margin-top:16px;margin-bottom:8px">Cuenta a Acreditar</div>
+      <div style="font-size:9.5px;font-weight:500;color:var(--cream-dim);margin-bottom:5px;line-height:1.4">IGUANAS LAKE CONDO &amp; RESIDENCE SRL</div>
+      <div style="font-size:14px;font-weight:700;color:var(--cream);font-family:monospace;letter-spacing:.04em;padding:8px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border)">4010388162</div>
+
+      <div style="margin-top:16px;padding:10px 12px;background:rgba(201,124,64,.08);border:1px solid rgba(201,124,64,.2);border-radius:6px;font-size:9px;color:var(--orange);line-height:1.55">
+        <span style="font-weight:700">Referencia obligatoria:</span> Incluir nombre del cliente y número de unidad en el campo de referencia para evitar la devolución de fondos.
+      </div>
+    </div>
+
+    </div><!-- /flex wrapper -->
     <div class="modal-footer">
       <button class="btn btn-ghost btn-sm" onclick="closeModal()">Cancelar</button>
       <button class="btn btn-primary btn-sm" onclick="confirmarPago()">✓ Confirmar pago</button>

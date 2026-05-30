@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Makai · Pago de Reserva</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:         #0c0c0b;
+  --surface:    #161614;
+  --surface-2:  #1c1c1a;
+  --border:     rgba(255,255,255,.08);
+  --border-mid: rgba(255,255,255,.12);
+  --green:      #82b870;
+  --green-dim:  #4A5E3F;
+  --green-lite: rgba(130,184,112,.1);
+  --text:       #F1EDE3;
+  --muted:      #7a7670;
+  --sub:        #4a4846;
+  --red:        #e05a4e;
+}
+html, body {
+  min-height: 100vh;
+  background: var(--bg);
+}
+body {
+  font-family: 'Inter', sans-serif;
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Checkout grid: 50/50 full viewport ──── */
+.checkout-card {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  flex: 1;
+  min-height: 100vh;
+}
+
+/* ── LEFT: form ──────────────────────────── */
+.form-col {
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  padding: 32px 48px 64px 24px;
+}
+.form-col > * {
+  width: 100%;
+  max-width: 460px;
+}
+
+.back-btn {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; color: var(--muted);
+  cursor: pointer; background: none; border: none;
+  font-family: inherit; padding: 0; margin-bottom: 24px;
+  transition: color .15s;
+}
+.back-btn:hover { color: var(--text); }
+.back-btn svg { width: 14px; height: 14px; }
+
+/* Steps */
+.steps {
+  display: flex;
+  align-items: center;
+  margin-bottom: 36px;
+}
+.step { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+.step-circle {
+  width: 28px; height: 28px; border-radius: 50%;
+  border: 1.5px solid var(--sub);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 600; color: var(--muted);
+  background: var(--surface-2);
+}
+.step.done .step-circle  { border-color: var(--green-dim); background: var(--green-dim); color: var(--green); }
+.step.active .step-circle { border-color: var(--green); background: transparent; color: var(--green); }
+.step-done-icon { display: none; }
+.step.done .step-number { display: none; }
+.step.done .step-done-icon { display: block; }
+.step-label { font-size: 9.5px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+.step.active .step-label { color: var(--text); }
+.step.done  .step-label  { color: var(--green); }
+.step-line { flex: 1; height: 1px; background: var(--sub); margin: 0 8px 14px; }
+.step-line.done { background: var(--green-dim); }
+
+/* Heading */
+.form-heading { font-size: 19px; font-weight: 600; letter-spacing: -.02em; margin-bottom: 4px; }
+.form-sub { font-size: 12.5px; color: var(--muted); margin-bottom: 28px; }
+
+/* Prefilled */
+.prefilled-block {
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: 9px; padding: 13px 15px; margin-bottom: 26px;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+}
+.prefilled-label { font-size: 9.5px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 3px; }
+.prefilled-name { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+.prefilled-email { font-size: 11.5px; color: var(--muted); }
+.prefilled-edit {
+  font-size: 11px; color: var(--green); cursor: pointer;
+  background: none; border: none; font-family: inherit; font-weight: 500;
+  padding: 5px 8px; border-radius: 5px; transition: background .15s; flex-shrink: 0;
+}
+.prefilled-edit:hover { background: var(--green-lite); }
+
+/* Section head */
+.section-head {
+  font-size: 10px; font-weight: 600; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .1em; margin-bottom: 12px;
+  display: flex; align-items: center; gap: 8px;
+}
+.section-head::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+/* Fields */
+.form-block { margin-bottom: 22px; }
+.field { margin-bottom: 11px; }
+.field-row { display: grid; gap: 10px; }
+.field-row.cols-2 { grid-template-columns: 1fr 1fr; }
+.field-row.cols-3 { grid-template-columns: 2fr 1fr 1fr; }
+.field-label {
+  display: block; font-size: 10px; font-weight: 600;
+  color: var(--muted); text-transform: uppercase; letter-spacing: .09em; margin-bottom: 5px;
+}
+.field-input {
+  width: 100%; background: var(--surface-2); border: 1px solid var(--border);
+  color: var(--text); font-family: 'Inter', sans-serif; font-size: 13.5px;
+  padding: 10px 12px; border-radius: 7px; outline: none;
+  transition: border-color .15s, box-shadow .15s; -webkit-appearance: none;
+}
+.field-input::placeholder { color: var(--sub); font-size: 13px; }
+.field-input:focus { border-color: rgba(130,184,112,.45); box-shadow: 0 0 0 3px rgba(130,184,112,.07); }
+.field-card .field-input { padding-right: 48px; letter-spacing: .04em; }
+.card-brand-wrap {
+  position: relative;
+}
+.card-brand {
+  position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+  width: 30px; height: 20px; display: flex; align-items: center; justify-content: center;
+}
+.card-brand svg { width: 30px; height: 20px; }
+.field-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%237a7670' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 11px center; padding-right: 28px;
+}
+
+/* Billing toggle */
+.billing-toggle { display: flex; gap: 7px; margin-bottom: 11px; }
+.billing-opt {
+  flex: 1; padding: 8px 11px; border: 1px solid var(--border); border-radius: 7px;
+  cursor: pointer; font-size: 11.5px; font-weight: 500; color: var(--muted);
+  background: var(--surface-2); text-align: center; transition: all .15s;
+}
+.billing-opt.active { border-color: rgba(130,184,112,.4); background: rgba(130,184,112,.06); color: var(--green); }
+
+/* Submit */
+.submit-wrap { margin-top: 24px; }
+.btn-pay {
+  width: 100%; background: var(--green-dim); color: var(--green);
+  border: none; border-radius: 8px; padding: 13px 18px;
+  font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600;
+  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px;
+  transition: background .15s, transform .1s; letter-spacing: -.01em;
+}
+.btn-pay:hover { background: #3d5034; }
+.btn-pay:active { transform: scale(.99); }
+.btn-pay svg { width: 14px; height: 14px; }
+.pay-note {
+  display: flex; align-items: center; justify-content: center; gap: 5px;
+  margin-top: 10px; font-size: 10.5px; color: var(--sub);
+}
+.pay-note svg { width: 11px; height: 11px; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner {
+  width: 15px; height: 15px; border: 2px solid rgba(130,184,112,.25);
+  border-top-color: var(--green); border-radius: 50%;
+  animation: spin .6s linear infinite; display: none;
+}
+.btn-pay.loading .spinner { display: block; }
+.btn-pay.loading .btn-label { opacity: 0; }
+
+/* ── RIGHT: summary ──────────────────────── */
+.summary-col {
+  background: var(--bg);
+  border-left: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 32px 24px 64px 48px;
+}
+.summary-col > * {
+  width: 100%;
+  max-width: 360px;
+}
+
+.summary-section-label {
+  font-size: 9.5px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .12em; color: var(--muted); margin-bottom: 14px;
+}
+
+/* Rows */
+.summary-rows { margin-bottom: 24px; }
+.summary-row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  padding: 9px 0; border-bottom: 1px solid var(--border); font-size: 12.5px;
+}
+.summary-row:last-child { border-bottom: none; }
+.summary-row-label { color: var(--muted); }
+.summary-row-value { font-weight: 500; text-align: right; color: var(--text); max-width: 55%; }
+
+.summary-divider { height: 1px; background: var(--border-mid); margin: 4px 0 22px; }
+
+/* Price */
+.summary-price-label {
+  font-size: 9.5px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .12em; color: var(--muted); margin-bottom: 6px;
+}
+.summary-price {
+  font-size: 36px; font-weight: 700; letter-spacing: -.03em;
+  color: var(--text); line-height: 1; margin-bottom: 5px;
+}
+.summary-price-sub { font-size: 11.5px; color: var(--muted); margin-bottom: 28px; }
+
+/* Includes */
+.summary-includes { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+.summary-include-item {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12px; color: var(--muted);
+}
+.summary-include-item svg { width: 12px; height: 12px; color: var(--green); flex-shrink: 0; }
+
+/* Trust */
+.summary-trust {
+  margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--border);
+  display: flex; flex-direction: column; gap: 8px;
+}
+.trust-item { display: flex; align-items: center; gap: 7px; font-size: 11px; color: var(--sub); }
+.trust-item svg { width: 12px; height: 12px; flex-shrink: 0; }
+
+/* ── Success overlay ─────────────────────── */
+.success-overlay {
+  position: fixed; inset: 0; background: var(--bg); z-index: 100;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity .4s;
+}
+.success-overlay.show { opacity: 1; pointer-events: all; }
+.success-icon {
+  width: 56px; height: 56px; background: var(--green-lite); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; margin-bottom: 16px;
+  transform: scale(.8); transition: transform .4s .1s;
+}
+.success-overlay.show .success-icon { transform: scale(1); }
+.success-icon svg { width: 24px; height: 24px; color: var(--green); }
+.success-amount { font-size: 32px; font-weight: 700; letter-spacing: -.03em; color: var(--text); margin-bottom: 8px; }
+.success-title { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+.success-sub { font-size: 13px; color: var(--muted); margin-bottom: 8px; text-align: center; max-width: 320px; line-height: 1.6; }
+.success-id { font-size: 11px; color: var(--sub); font-family: monospace; }
+.btn-success {
+  margin-top: 24px; background: var(--green-dim); color: var(--green);
+  border: none; border-radius: 7px; padding: 10px 20px;
+  font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: background .15s;
+}
+.btn-success:hover { background: #3d5034; }
+</style>
+</head>
+<body>
+
+<div class="checkout-card">
+
+    <!-- ══ LEFT: form ══════════════════════════════════ -->
+    <div class="form-col">
+
+      <button class="back-btn" onclick="history.back()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 12H5M12 5l-7 7 7 7"/>
+        </svg>
+        Volver
+      </button>
+
+      <!-- Steps -->
+      <div class="steps">
+        <div class="step done">
+          <div class="step-circle">
+            <span class="step-number">1</span>
+            <svg class="step-done-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <span class="step-label">Datos</span>
+        </div>
+        <div class="step-line done"></div>
+        <div class="step active">
+          <div class="step-circle"><span class="step-number">2</span></div>
+          <span class="step-label">Pago</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step">
+          <div class="step-circle"><span class="step-number">3</span></div>
+          <span class="step-label">Confirmar</span>
+        </div>
+      </div>
+
+      <h1 class="form-heading">Método de pago</h1>
+      <p class="form-sub">Paso 2 de 3 · Ingresa los datos de tu tarjeta para completar la reserva.</p>
+
+      <!-- Prefilled -->
+      <div class="prefilled-block">
+        <div>
+          <div class="prefilled-label">Comprando como</div>
+          <div class="prefilled-name">Andrés Villalobos Saenz</div>
+          <div class="prefilled-email">avillalobos@gmail.com · +506 8812 3344</div>
+        </div>
+        <button class="prefilled-edit">Editar</button>
+      </div>
+
+      <!-- Card fields -->
+      <div class="form-block">
+        <div class="section-head">Tarjeta de crédito o débito</div>
+
+        <div class="field">
+          <label class="field-label">Número de tarjeta</label>
+          <div class="card-brand-wrap field-card">
+            <input class="field-input" id="card-number" type="text" inputmode="numeric"
+              placeholder="1234 5678 9012 3456" maxlength="19" autocomplete="cc-number">
+            <div class="card-brand" id="card-brand-icon">
+              <svg viewBox="0 0 38 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="38" height="24" rx="4" fill="#1c1c1a"/>
+                <circle cx="15" cy="12" r="5" fill="#3a3836"/>
+                <circle cx="23" cy="12" r="5" fill="#3a3836" fill-opacity=".8"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="field field-row cols-3">
+          <div>
+            <label class="field-label">Vencimiento</label>
+            <input class="field-input" id="card-expiry" type="text" inputmode="numeric"
+              placeholder="MM / AA" maxlength="7" autocomplete="cc-exp">
+          </div>
+          <div>
+            <label class="field-label">CVC</label>
+            <input class="field-input" id="card-cvc" type="text" inputmode="numeric"
+              placeholder="123" maxlength="4" autocomplete="cc-csc">
+          </div>
+          <div>
+            <label class="field-label">ZIP</label>
+            <input class="field-input" id="card-zip" type="text" inputmode="numeric"
+              placeholder="10001" maxlength="10">
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field-label">Nombre en la tarjeta</label>
+          <input class="field-input" id="card-name" type="text"
+            placeholder="Andrés Villalobos" autocomplete="cc-name">
+        </div>
+      </div>
+
+      <!-- Billing -->
+      <div class="form-block">
+        <div class="section-head">Dirección de facturación</div>
+
+        <div class="billing-toggle">
+          <div class="billing-opt active" id="billing-same" onclick="setBilling('same')">Igual que mi cuenta</div>
+          <div class="billing-opt" id="billing-diff" onclick="setBilling('diff')">Otra dirección</div>
+        </div>
+
+        <div id="billing-account-preview" style="background:var(--surface-2);border:1px solid var(--border);border-radius:7px;padding:10px 12px;">
+          <div style="font-size:12px;color:var(--muted);line-height:1.7;">
+            Calle 40, La Uruca, San José 10102<br>Costa Rica
+          </div>
+        </div>
+
+        <div id="billing-address-form" style="display:none;margin-top:2px;">
+          <div class="field">
+            <label class="field-label">País</label>
+            <select class="field-input field-select">
+              <option>Costa Rica</option><option>México</option>
+              <option>Estados Unidos</option><option>Colombia</option>
+              <option>Panamá</option><option>Otro</option>
+            </select>
+          </div>
+          <div class="field">
+            <label class="field-label">Dirección</label>
+            <input class="field-input" type="text" placeholder="Calle, número, apartamento">
+          </div>
+          <div class="field field-row cols-2">
+            <div>
+              <label class="field-label">Ciudad</label>
+              <input class="field-input" type="text" placeholder="San José">
+            </div>
+            <div>
+              <label class="field-label">Código postal</label>
+              <input class="field-input" type="text" placeholder="10102">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Submit -->
+      <div class="submit-wrap">
+        <button class="btn-pay" id="pay-btn" onclick="handlePay()">
+          <div class="spinner"></div>
+          <span class="btn-label" style="display:flex;align-items:center;gap:7px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+            Confirmar y pagar &nbsp;·&nbsp; USD $5,000
+          </span>
+        </button>
+        <div class="pay-note">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+          Cifrado TLS 1.3 · PCI DSS Level 1 · No almacenamos tu CVC
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ══ RIGHT: summary ══════════════════════════════ -->
+    <div class="summary-col">
+
+      <div class="summary-section-label">Tu reserva</div>
+
+      <div class="summary-rows">
+        <div class="summary-row">
+          <span class="summary-row-label">Proyecto</span>
+          <span class="summary-row-value">Duna · Playa del Carmen</span>
+        </div>
+        <div class="summary-row">
+          <span class="summary-row-label">Unidad</span>
+          <span class="summary-row-value">3B — Torre Norte</span>
+        </div>
+        <div class="summary-row">
+          <span class="summary-row-label">Tipo</span>
+          <span class="summary-row-value">Reserva inicial</span>
+        </div>
+        <div class="summary-row">
+          <span class="summary-row-label">Divisa</span>
+          <span class="summary-row-value">USD</span>
+        </div>
+        <div class="summary-row">
+          <span class="summary-row-label">Precio total</span>
+          <span class="summary-row-value">$280,000</span>
+        </div>
+      </div>
+
+      <div class="summary-divider"></div>
+
+      <div class="summary-price-label">Monto de reserva</div>
+      <div class="summary-price">$5,000</div>
+      <div class="summary-price-sub">Bloquea la unidad por 30 días</div>
+
+      <div class="summary-includes">
+        <div class="summary-include-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          Bloqueo exclusivo 30 días
+        </div>
+        <div class="summary-include-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          Acceso al portal del comprador
+        </div>
+        <div class="summary-include-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          Comprobante oficial de reserva
+        </div>
+        <div class="summary-include-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          Asesor dedicado en el proceso
+        </div>
+      </div>
+
+      <div class="summary-trust">
+        <div class="trust-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+          Reserva 100% segura · SSL cifrado
+        </div>
+        <div class="trust-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+          </svg>
+          Sin compromiso hasta verificar pago
+        </div>
+        <div class="trust-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+          </svg>
+          Asesor disponible en menos de 2 h
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ── Success ────────────────────────────────────────── -->
+<div class="success-overlay" id="success-overlay">
+  <div class="success-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+  </div>
+  <div class="success-amount">$5,000 USD</div>
+  <h2 class="success-title">¡Reserva confirmada!</h2>
+  <p class="success-sub">Pago procesado. La Unidad 3B — Torre Norte quedó reservada a tu nombre por los próximos 30 días.</p>
+  <div class="success-id">Ref: DUN-2026-05-3B-00419</div>
+  <button class="btn-success" onclick="document.getElementById('success-overlay').classList.remove('show')">
+    Ir a mi portal →
+  </button>
+</div>
+
+<script>
+function setBilling(mode) {
+  document.getElementById('billing-same').classList.toggle('active', mode === 'same');
+  document.getElementById('billing-diff').classList.toggle('active', mode === 'diff');
+  document.getElementById('billing-account-preview').style.display = mode === 'same' ? 'block' : 'none';
+  document.getElementById('billing-address-form').style.display  = mode === 'diff' ? 'block' : 'none';
+}
+
+document.getElementById('card-number').addEventListener('input', function(e) {
+  let v = e.target.value.replace(/\D/g, '').substring(0, 16);
+  e.target.value = v.replace(/(.{4})/g, '$1 ').trim();
+  updateCardBrand(v);
+});
+
+document.getElementById('card-expiry').addEventListener('input', function(e) {
+  let v = e.target.value.replace(/\D/g, '').substring(0, 4);
+  if (v.length >= 3) v = v.substring(0,2) + ' / ' + v.substring(2);
+  e.target.value = v;
+});
+
+document.getElementById('card-cvc').addEventListener('input', function(e) {
+  e.target.value = e.target.value.replace(/\D/g, '').substring(0, 4);
+});
+
+function updateCardBrand(num) {
+  const icon = document.getElementById('card-brand-icon');
+  if (/^4/.test(num)) {
+    icon.innerHTML = `<svg viewBox="0 0 38 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="38" height="24" rx="4" fill="#1a3a6e"/><text x="5" y="17" fill="white" font-size="13" font-weight="800" font-family="Arial" letter-spacing=".5">VISA</text></svg>`;
+  } else if (/^5[1-5]/.test(num) || /^2[2-7]/.test(num)) {
+    icon.innerHTML = `<svg viewBox="0 0 38 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="38" height="24" rx="4" fill="#1c1c1a"/><circle cx="15" cy="12" r="7" fill="#eb001b" fill-opacity=".9"/><circle cx="23" cy="12" r="7" fill="#f79e1b" fill-opacity=".9"/></svg>`;
+  } else if (/^3[47]/.test(num)) {
+    icon.innerHTML = `<svg viewBox="0 0 38 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="38" height="24" rx="4" fill="#2e77bc"/><text x="4" y="17" fill="white" font-size="9" font-weight="700" font-family="Arial">AMEX</text></svg>`;
+  } else {
+    icon.innerHTML = `<svg viewBox="0 0 38 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="38" height="24" rx="4" fill="#1c1c1a"/><circle cx="15" cy="12" r="5" fill="#3a3836"/><circle cx="23" cy="12" r="5" fill="#3a3836" fill-opacity=".8"/></svg>`;
+  }
+}
+
+function handlePay() {
+  const btn = document.getElementById('pay-btn');
+  btn.classList.add('loading');
+  btn.disabled = true;
+  setTimeout(() => {
+    btn.classList.remove('loading');
+    btn.disabled = false;
+    document.getElementById('success-overlay').classList.add('show');
+  }, 2200);
+}
+</script>
+</body>
+</html>

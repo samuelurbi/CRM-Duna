@@ -24,6 +24,7 @@ const ROUTES = {
   'aprobaciones':   () => import('./views/aprobaciones.js'),
   'tareas':         () => import('./views/tareas.js'),
   'configuracion':  () => import('./views/configuracion.js'),
+  'estadisticas':   () => import('./views/estadisticas.js'),
   // Detalles internos admin
   'expediente':     () => import('./views/expediente-detail.js'),
   'broker-detail':  () => import('./views/broker-detail.js'),
@@ -97,6 +98,22 @@ async function navigate(route) {
     }
 
     if (module.init) module.init(window.DUNA_DATA);
+
+    // Auto-open modal from route param (e.g. #usuarios/actividad)
+    const autoModal = getRouteParam();
+    if (autoModal) {
+      setTimeout(() => {
+        if (autoModal === 'actividad') {
+          const c = window.DUNA_DATA?.clients?.[0];
+          if (c && window.verCompradorModal) {
+            window.verCompradorModal(c.id);
+            setTimeout(() => window.switchCompTab?.('cactividad'), 80);
+          }
+        } else if (autoModal === 'registrarPago') {
+          window.openRegistrarPagoModal?.();
+        }
+      }, 100);
+    }
 
     content.scrollTop = 0;
 

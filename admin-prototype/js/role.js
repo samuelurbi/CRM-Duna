@@ -39,6 +39,7 @@ const ROLES = {
         { route: 'tareas',       icon: '🗒', label: 'Tareas',               badge: '12', badgeCls: 'badge-nav-red' },
       ]},
       { group: 'Sistema', items: [
+        { route: 'estadisticas', icon: '📈', label: 'Estadísticas' },
         { route: 'configuracion',icon: '⚙', label: 'Configuración' },
       ]},
     ],
