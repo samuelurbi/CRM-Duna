@@ -339,7 +339,7 @@
           Vista dedicada de analytics de plataforma: KPIs de visitas, usuarios activos, sesión promedio y tasa de rebote. Incluye gráfica de visitas con selector Día / Semana / Mes, ranking de propiedades más vistas y distribución por fuente de tráfico.
         </div>
         <div class="card-links">
-          <a class="link-btn link-primary" href="admin-prototype/index.html#estadisticas" target="_blank">Ver estadísticas →</a>
+          <a class="link-btn link-primary" href="admin-prototype/index.html?role=admin#estadisticas" target="_blank">Ver estadísticas →</a>
         </div>
       </div>
     </div>
@@ -355,8 +355,8 @@
           En la vista de <strong style="color:var(--cream-dim)">Compradores</strong> se añadió una pestaña <strong style="color:var(--cream-dim)">"Actividad"</strong> dentro del modal de perfil de cada usuario. Muestra sesiones del mes, última conexión, sesión promedio, propiedades más vistas (con barra de progreso) y un feed de últimas acciones en plataforma. El siguiente link abre directamente el modal con esa pestaña activa.
         </div>
         <div class="card-links">
-          <a class="link-btn link-primary" href="admin-prototype/index.html#usuarios/actividad" target="_blank">Abrir modal con actividad →</a>
-          <a class="link-btn link-secondary" href="admin-prototype/index.html#usuarios" target="_blank">Ver lista de usuarios</a>
+          <a class="link-btn link-primary" href="admin-prototype/index.html?role=admin#usuarios/actividad" target="_blank">Abrir modal con actividad →</a>
+          <a class="link-btn link-secondary" href="admin-prototype/index.html?role=admin#usuarios" target="_blank">Ver lista de usuarios</a>
         </div>
       </div>
     </div>
@@ -372,7 +372,7 @@
           El módulo de reportes de avance de obra está diseñado en el panel admin. Complementado con dos emails: el envío periódico del reporte mensual a compradores y la notificación automática cuando se sube un nuevo informe al sistema.
         </div>
         <div class="card-links">
-          <a class="link-btn link-primary" href="admin-prototype/index.html#avance-obra" target="_blank">Ver módulo admin →</a>
+          <a class="link-btn link-primary" href="admin-prototype/index.html?role=admin#avance-obra" target="_blank">Ver módulo admin →</a>
           <a class="link-btn link-orange" href="notas/mails/e-04-avance-de-obra.html" target="_blank">Email avance mensual</a>
           <a class="link-btn link-orange" href="notas/mails/e-12-nuevo-reporte-subido.html" target="_blank">Email nuevo reporte</a>
         </div>
@@ -390,8 +390,8 @@
           Se revisó y ajustó el diseño del modal de registro de pagos en el módulo de transacciones: layout más limpio, campos reorganizados y flujo de confirmación mejorado. El siguiente link abre directamente el modal.
         </div>
         <div class="card-links">
-          <a class="link-btn link-primary" href="admin-prototype/index.html#transacciones/registrarPago" target="_blank">Abrir modal de pago →</a>
-          <a class="link-btn link-secondary" href="admin-prototype/index.html#transacciones" target="_blank">Ver transacciones</a>
+          <a class="link-btn link-primary" href="admin-prototype/index.html?role=admin#transacciones/registrarPago" target="_blank">Abrir modal de pago →</a>
+          <a class="link-btn link-secondary" href="admin-prototype/index.html?role=admin#transacciones" target="_blank">Ver transacciones</a>
         </div>
       </div>
     </div>
@@ -451,7 +451,7 @@
           La vista de comisiones del broker se rediseñó por completo: 4 KPI cards con borde de color por estado (cobradas, por cobrar, vencidas, total acumulado), alerta contextual cuando hay pagos vencidos o pendientes, y tabla más limpia con montos en tipografía grande y filas con color de fondo por estado.
         </div>
         <div class="card-links">
-          <button class="link-btn link-purple" onclick="localStorage.setItem('duna_role','broker'); window.open('admin-prototype/index.html#mis-comisiones','_blank')">Ver mis comisiones →</button>
+          <a class="link-btn link-purple" href="admin-prototype/index.html?role=broker#mis-comisiones" target="_blank">Ver mis comisiones →</a>
         </div>
       </div>
     </div>
@@ -468,23 +468,39 @@
           La vista de contrato del broker se reestructuró con tres pestañas: <strong style="color:var(--cream-dim)">Términos</strong> (grid 2 columnas con condiciones del acuerdo), <strong style="color:var(--cream-dim)">Documentos</strong> (tabla mejorada con alerta de firma pendiente) y <strong style="color:var(--cream-dim)">Tu ejecutivo</strong> (card de contacto con perfil, WhatsApp, email y teléfono directos).
         </div>
         <div class="card-links">
-          <button class="link-btn link-purple" onclick="localStorage.setItem('duna_role','broker'); window.open('admin-prototype/index.html#mi-contrato-broker','_blank')">Ver mi contrato →</button>
+          <a class="link-btn link-purple" href="admin-prototype/index.html?role=broker#mi-contrato-broker" target="_blank">Ver mi contrato →</a>
         </div>
       </div>
     </div>
 
-    <!-- Material de ventas -->
+    <!-- Material de ventas — vista broker -->
     <div class="change-card">
       <div class="card-body">
         <div class="card-top">
-          <span class="card-title">Gestión de Materiales de Venta</span>
+          <span class="card-title">Material de Venta — Vista del broker</span>
           <span class="badge badge-broker">Broker</span>
         </div>
         <div class="card-desc">
-          En el portal del broker se añadió el módulo de <strong style="color:var(--cream-dim)">Material de ventas</strong> con pestañas por categoría (brochures, renders, fichas técnicas, presentaciones). El broker puede previsualizar y descargar cada recurso directamente desde su portal.
+          En el portal del broker se añadió el módulo de <strong style="color:var(--cream-dim)">Material de ventas</strong> con pestañas por categoría (brochures, renders, fichas técnicas, presentaciones). El broker puede previsualizar y descargar cada recurso desde su portal.
         </div>
         <div class="card-links">
-          <button class="link-btn link-purple" onclick="localStorage.setItem('duna_role','broker'); window.open('admin-prototype/index.html#material-broker','_blank')">Ver módulo broker →</button>
+          <a class="link-btn link-purple" href="admin-prototype/index.html?role=broker#material-broker" target="_blank">Ver como broker →</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Material de ventas — gestión admin -->
+    <div class="change-card">
+      <div class="card-body">
+        <div class="card-top">
+          <span class="card-title">Material de Venta — Gestión desde Admin</span>
+          <span class="badge badge-new">Nuevo</span>
+        </div>
+        <div class="card-desc">
+          Desde la vista de <strong style="color:var(--cream-dim)">Brokers y Externos</strong> en el panel admin se puede gestionar el catálogo de materiales: subir recursos, editar nombre y categoría, activar o desactivar visibilidad por recurso. Los cambios se reflejan en tiempo real en el portal del broker.
+        </div>
+        <div class="card-links">
+          <a class="link-btn link-primary" href="admin-prototype/index.html?role=admin#brokers" target="_blank">Ver gestión de materiales →</a>
         </div>
       </div>
     </div>
@@ -492,7 +508,7 @@
 
   <footer class="footer-bar">
     <span>Duna Development Group · CRM Prototipos</span>
-    <a class="footer-index-link" href="index-all.html">Ver índice completo →</a>
+    <a class="footer-index-link" href="admin-prototype/index.html?role=admin" target="_blank">Abrir panel admin →</a>
   </footer>
 
 </div>

@@ -110,7 +110,11 @@ const ROLES = {
 };
 
 // ── Getters / setters ──────────────────────────
-export function getRole()       { return localStorage.getItem('duna_role') || 'admin'; }
+export function getRole() {
+  const urlRole = new URLSearchParams(location.search).get('role');
+  if (urlRole && ROLES[urlRole]) return urlRole;
+  return localStorage.getItem('duna_role') || 'admin';
+}
 export function setRole(role)   { localStorage.setItem('duna_role', role); }
 export function getRoleConfig() { return ROLES[getRole()] || ROLES.admin; }
 export function getAllRoles()    { return Object.entries(ROLES).map(([key, v]) => ({ key, label: v.label, icon: v.icon })); }
