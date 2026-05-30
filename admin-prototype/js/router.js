@@ -3,7 +3,7 @@
    Hash-based SPA. Route guards por rol.
 ═══════════════════════════════════════════════ */
 
-import { canAccess, getRoleConfig, setRole } from './role.js';
+import { canAccess, getRoleConfig } from './role.js';
 import { setActiveNav } from './app.js';
 
 const ROUTES = {
@@ -134,19 +134,6 @@ async function navigate(route) {
 }
 
 export function initRouter() {
-  // Role prefix in hash: #role=admin/estadisticas or #role=broker/mis-comisiones
-  // Apply role and strip prefix before any navigation happens.
-  const raw = window.location.hash.replace('#', '').trim();
-  if (raw.startsWith('role=')) {
-    const rest      = raw.slice('role='.length);
-    const slashIdx  = rest.indexOf('/');
-    const roleName  = slashIdx >= 0 ? rest.slice(0, slashIdx) : rest;
-    const routePart = slashIdx >= 0 ? rest.slice(slashIdx + 1) : '';
-    setRole(roleName);
-    window.location.hash = routePart;
-    // hashchange listener not attached yet — navigate() below handles the updated hash
-  }
-
   window.addEventListener('hashchange', () => navigate(getRouteFromHash()));
 
   // Re-attach nav clicks después de cada renderSidebar (delegado en nav)

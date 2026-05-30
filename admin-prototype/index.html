@@ -10,6 +10,24 @@
   <link rel="stylesheet" href="css/tokens.css">
   <link rel="stylesheet" href="css/layout.css">
   <link rel="stylesheet" href="css/components.css">
+  <script>
+    // Runs inline before any ES module — no caching concerns.
+    // Processes #role=admin/route or #role=broker/route links from the briefing.
+    (function () {
+      var raw = location.hash.replace('#', '').trim();
+      if (raw.indexOf('role=') === 0) {
+        var rest  = raw.slice('role='.length);
+        var slash = rest.indexOf('/');
+        var role  = slash >= 0 ? rest.slice(0, slash) : rest;
+        var route = slash >= 0 ? rest.slice(slash + 1) : '';
+        var valid = ['admin','broker','comprador','agente','agente-senior'];
+        if (valid.indexOf(role) >= 0) {
+          localStorage.setItem('duna_role', role);
+          location.hash = route;
+        }
+      }
+    })();
+  </script>
 </head>
 <body>
 <div class="app">
