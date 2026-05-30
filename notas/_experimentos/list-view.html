@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Makai — List View</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:          #0c0c0c;
+  --bg-surface:  #111110;
+  --bg-card:     #161614;
+  --bg-row:      #131312;
+  --bg-row-h:    #1a1a18;
+  --bg-head:     #101010;
+  --green:       #4A5E3F;
+  --green-cta:   #526844;
+  --green-txt:   #82b870;
+  --green-lite:  rgba(74,94,63,.15);
+  --cream:       #F1EDE3;
+  --cream-dim:   #b8b0a4;
+  --text:        #e4e0d8;
+  --sub:         #7a7670;
+  --muted:       #3e3c39;
+  --border:      rgba(255,255,255,.065);
+  --border-h:    rgba(255,255,255,.1);
+  --orange:      #c97c40;
+  --orange-lite: rgba(201,124,64,.1);
+  --red-lite:    rgba(184,64,64,.08);
+  --pending-lite:rgba(180,130,50,.08);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+
+body {
+  background: var(--bg);
+  font-family: 'Inter', sans-serif;
+  color: var(--text);
+  min-height: 100vh;
+  padding: 52px 40px 80px;
+}
+
+/* ── PAGE HEADER ─────────────────────────── */
+.page-header {
+  margin-bottom: 32px;
+}
+.eyebrow {
+  font-size: 9.5px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--sub);
+  margin-bottom: 6px;
+}
+.page-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 26px;
+  font-weight: 400;
+  color: var(--cream);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+}
+.title-count {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--sub);
+  letter-spacing: 1px;
+  text-transform: none;
+}
+
+/* ── TOOLBAR ─────────────────────────────── */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.search-wrap {
+  position: relative;
+  flex: 0 0 220px;
+}
+.search-wrap input {
+  width: 100%;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 12px 8px 32px;
+  font-size: 12px;
+  font-family: 'Inter', sans-serif;
+  color: var(--text);
+  outline: none;
+  transition: border-color .15s;
+}
+.search-wrap input::placeholder { color: var(--sub); }
+.search-wrap input:focus { border-color: var(--border-h); }
+.search-icon {
+  position: absolute;
+  left: 10px; top: 50%;
+  transform: translateY(-50%);
+  font-size: 12px;
+  color: var(--sub);
+  pointer-events: none;
+}
+
+.filter-tabs {
+  display: flex;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.ftab {
+  padding: 7px 14px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .4px;
+  color: var(--sub);
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  font-family: 'Inter', sans-serif;
+  transition: background .12s, color .12s;
+  border-right: 1px solid var(--border);
+  white-space: nowrap;
+}
+.ftab:last-child { border-right: none; }
+.ftab.active { background: var(--bg-row-h); color: var(--text); }
+.ftab:hover:not(.active) { background: rgba(255,255,255,.03); color: var(--cream-dim); }
+
+.ftab .count {
+  display: inline-block;
+  background: rgba(255,255,255,.06);
+  border-radius: 10px;
+  padding: 1px 6px;
+  font-size: 9px;
+  margin-left: 4px;
+  color: var(--sub);
+}
+.ftab.active .count { background: var(--green-lite); color: var(--green-txt); }
+
+.spacer { flex: 1; }
+
+.btn-export {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 7px 14px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--sub);
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  display: flex; align-items: center; gap: 5px;
+  transition: border-color .15s, color .15s;
+}
+.btn-export:hover { border-color: var(--border-h); color: var(--cream-dim); }
+
+/* ── TABLE WRAP ──────────────────────────── */
+.table-wrap {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+/* Column widths */
+col.c-sel    { width: 40px; }
+col.c-unit   { width: 72px; }
+col.c-status { width: 110px; }
+col.c-floor  { width: 68px; }
+col.c-type   { width: 130px; }
+col.c-dir    { width: 76px; }
+col.c-beds   { width: 60px; }
+col.c-sqft   { width: 86px; }
+col.c-terr   { width: 86px; }
+col.c-price  { width: 106px; }
+col.c-roi    { width: 70px; }
+col.c-actions{ width: auto; }
+
+/* ── THEAD ───────────────────────────────── */
+thead tr {
+  background: var(--bg-head);
+  border-bottom: 1px solid var(--border);
+}
+th {
+  padding: 11px 12px;
+  text-align: left;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--sub);
+  white-space: nowrap;
+  user-select: none;
+  position: relative;
+}
+th.sortable { cursor: pointer; }
+th.sortable:hover { color: var(--cream-dim); }
+
+.sort-icon {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 1px;
+  vertical-align: middle;
+  margin-left: 4px;
+  opacity: .35;
+}
+.sort-icon span {
+  display: block;
+  width: 0; height: 0;
+  border-left: 3.5px solid transparent;
+  border-right: 3.5px solid transparent;
+}
+.sort-icon .asc  { border-bottom: 4px solid currentColor; }
+.sort-icon .desc { border-top: 4px solid currentColor; margin-top: 1px; }
+
+th.sort-asc  .sort-icon { opacity: 1; }
+th.sort-asc  .sort-icon .desc { opacity: .2; }
+th.sort-desc .sort-icon { opacity: 1; }
+th.sort-desc .sort-icon .asc  { opacity: .2; }
+
+th.c-check { padding: 11px 0 11px 14px; }
+
+/* ── TBODY ───────────────────────────────── */
+tbody tr {
+  border-bottom: 1px solid var(--border);
+  transition: background .1s;
+  cursor: pointer;
+}
+tbody tr:last-child { border-bottom: none; }
+tbody tr:hover td { background: var(--bg-row-h); }
+
+td {
+  padding: 11px 12px;
+  font-size: 12px;
+  color: var(--text);
+  background: var(--bg-row);
+  vertical-align: middle;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+td.c-check { padding: 11px 0 11px 14px; }
+
+/* Row tints */
+tr.row-sold   td { background: #111110; opacity: .6; }
+tr.row-sold:hover td { background: #161614; opacity: .8; }
+tr.row-pending td { background: #141410; }
+tr.row-pending:hover td { background: #1a1a14; }
+tr.row-2nd    td { background: #131210; }
+tr.row-2nd:hover td { background: #1c1a14; }
+
+/* ── CELLS ───────────────────────────────── */
+/* Checkbox */
+.chk {
+  width: 14px; height: 14px;
+  accent-color: var(--green-cta);
+  cursor: pointer;
+}
+
+/* Unit # */
+.unit-num {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--cream);
+  letter-spacing: .5px;
+}
+
+/* Status badge */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.badge-avail   { background: var(--green-lite);         color: var(--green-txt); }
+.badge-pending { background: rgba(180,130,50,.15);       color: #c8a052; }
+.badge-sold    { background: rgba(184,64,64,.15);        color: #c06060; }
+.badge-2nd     { background: var(--orange-lite);         color: var(--orange); }
+.badge-soon    { background: rgba(80,80,80,.15);         color: var(--sub); }
+.badge-hot     { background: rgba(184,64,64,.12);        color: #d06060; }
+
+.badge-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.dot-avail   { background: var(--green-txt); }
+.dot-pending { background: #c8a052; animation: blink 1.4s ease-in-out infinite; }
+.dot-sold    { background: #c06060; }
+.dot-2nd     { background: var(--orange); }
+.dot-soon    { background: var(--sub); }
+
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.25} }
+
+/* Typology */
+.type-tag {
+  font-size: 11px;
+  color: var(--cream-dim);
+}
+
+/* Direction */
+.dir-tag {
+  font-size: 11px;
+  color: var(--sub);
+  letter-spacing: .3px;
+}
+
+/* Beds/Bath */
+.spec-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--cream-dim);
+}
+.spec-sep {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+/* Sqft */
+.sqft-val {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--cream-dim);
+}
+.sqft-unit {
+  font-size: 9px;
+  color: var(--sub);
+  margin-left: 2px;
+}
+
+/* Price */
+.price-val {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--green-txt);
+  letter-spacing: -.3px;
+}
+.price-sub {
+  display: block;
+  font-size: 9px;
+  color: var(--sub);
+  margin-top: 1px;
+}
+.price-struck {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+/* ROI */
+.roi-val {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--green-txt);
+}
+.roi-na { color: var(--muted); }
+
+/* Actions cell */
+.actions-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-right: 14px;
+}
+.btn-sm {
+  padding: 5px 12px;
+  border-radius: 5px;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  border: none;
+  outline: none;
+  white-space: nowrap;
+}
+.btn-sm-outline { background: transparent; border: 1px solid var(--border); color: var(--sub); }
+.btn-sm-outline:hover { border-color: var(--border-h); color: var(--cream-dim); }
+.btn-sm-primary { background: var(--green-cta); color: #fff; }
+.btn-sm-primary:hover { background: #5e7a51; }
+.btn-sm-orange  { background: var(--orange); color: #fff; }
+.btn-sm-ghost   { background: transparent; border: 1px solid var(--muted); color: var(--sub); }
+.btn-sm-ghost:hover { border-color: var(--sub); }
+
+/* Wish icon */
+.wish-icon {
+  width: 28px; height: 28px;
+  background: transparent;
+  border: 1px solid var(--muted);
+  border-radius: 5px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--sub);
+  flex-shrink: 0;
+  transition: border-color .1s, color .1s;
+}
+.wish-icon:hover { border-color: var(--sub); color: var(--cream-dim); }
+.wish-icon.active { border-color: rgba(130,184,112,.4); color: var(--green-txt); }
+
+/* Timer inline */
+.timer-inline {
+  display: flex; align-items: center; gap: 4px;
+  font-size: 10px;
+  color: var(--orange);
+  margin-top: 2px;
+}
+.tdot { width: 5px; height: 5px; border-radius: 50%; background: var(--orange); animation: blink 1.4s ease-in-out infinite; }
+
+/* Floor num */
+.floor-val {
+  font-size: 12px;
+  color: var(--cream-dim);
+}
+.floor-ord {
+  font-size: 9px;
+  color: var(--sub);
+}
+
+/* ── FOOTER ──────────────────────────────── */
+.table-footer {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background: var(--bg-head);
+  border-top: 1px solid var(--border);
+  gap: 12px;
+}
+.footer-info {
+  font-size: 11px;
+  color: var(--sub);
+}
+.footer-info strong { color: var(--cream-dim); }
+.pag-spacer { flex: 1; }
+.pag-btns { display: flex; gap: 4px; }
+.pag-btn {
+  width: 28px; height: 28px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--sub);
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+}
+.pag-btn.active { background: var(--green-cta); border-color: transparent; color: #fff; }
+.pag-btn.arrow { font-size: 12px; }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <p class="eyebrow">Makai Residences · Cap Cana</p>
+  <h1 class="page-title">
+    Units
+    <span class="title-count">102 total · 80 available</span>
+  </h1>
+</div>
+
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <div class="search-wrap">
+    <span class="search-icon">⌕</span>
+    <input type="text" placeholder="Search unit, floor, type…">
+  </div>
+
+  <div class="filter-tabs">
+    <button class="ftab active">All <span class="count">102</span></button>
+    <button class="ftab">Available <span class="count">75</span></button>
+    <button class="ftab">Pending <span class="count">4</span></button>
+    <button class="ftab">2nd Chance <span class="count">3</span></button>
+    <button class="ftab">Sold <span class="count">20</span></button>
+  </div>
+
+  <div class="spacer"></div>
+
+  <button class="btn-export">↓ Export</button>
+</div>
+
+<!-- TABLE -->
+<div class="table-wrap">
+  <table>
+    <colgroup>
+      <col class="c-sel">
+      <col class="c-unit">
+      <col class="c-status">
+      <col class="c-floor">
+      <col class="c-type">
+      <col class="c-dir">
+      <col class="c-beds">
+      <col class="c-sqft">
+      <col class="c-terr">
+      <col class="c-price">
+      <col class="c-roi">
+      <col class="c-actions">
+    </colgroup>
+
+    <thead>
+      <tr>
+        <th class="c-check"><input type="checkbox" class="chk"></th>
+        <th class="sortable sort-asc">
+          Unit
+          <span class="sort-icon"><span class="asc"></span><span class="desc"></span></span>
+        </th>
+        <th>Status</th>
+        <th class="sortable">
+          Floor
+          <span class="sort-icon"><span class="asc"></span><span class="desc"></span></span>
+        </th>
+        <th>Type</th>
+        <th>Direction</th>
+        <th class="sortable">
+          Bed/Bath
+          <span class="sort-icon"><span class="asc"></span><span class="desc"></span></span>
+        </th>
+        <th class="sortable">
+          Int sqft
+          <span class="sort-icon"><span class="asc"></span><span class="desc"></span></span>
+        </th>
+        <th class="sortable">
+          Ext sqft
+          <span class="sort-icon"><span class="asc"></span><span class="desc"></span></span>
+        </th>
+        <th class="sortable sort-desc">
+          Price
+          <span class="sort-icon"><span class="asc"></span><span class="desc"></span></span>
+        </th>
+        <th class="sortable">
+          ROI
+          <span class="sort-icon"><span class="asc"></span><span class="desc"></span></span>
+        </th>
+        <th></th>
+      </tr>
+    </thead>
+
+    <tbody>
+
+      <!-- 1 · Available + discount -->
+      <tr>
+        <td class="c-check"><input type="checkbox" class="chk"></td>
+        <td><span class="unit-num">111</span></td>
+        <td>
+          <span class="badge badge-avail">
+            <span class="badge-dot dot-avail"></span>Available
+          </span>
+        </td>
+        <td><span class="floor-val">1<span class="floor-ord">st</span></span></td>
+        <td><span class="type-tag">1 Bed + Family Rm</span></td>
+        <td><span class="dir-tag">SE · Lake</span></td>
+        <td>
+          <span class="spec-cell">1 <span class="spec-sep">/</span> 2</span>
+        </td>
+        <td><span class="sqft-val">959<span class="sqft-unit">sf</span></span></td>
+        <td><span class="sqft-val">207<span class="sqft-unit">sf</span></span></td>
+        <td>
+          <span class="price-val">$431,000</span>
+          <span class="price-sub">✦ $20K off available</span>
+        </td>
+        <td><span class="roi-val">10.3%</span></td>
+        <td>
+          <div class="actions-cell">
+            <div class="wish-icon">♡</div>
+            <button class="btn-sm btn-sm-outline">Info</button>
+            <button class="btn-sm btn-sm-primary">Reserve</button>
+          </div>
+        </td>
+      </tr>
+
+      <!-- 2 · Available high demand -->
+      <tr>
+        <td class="c-check"><input type="checkbox" class="chk"></td>
+        <td><span class="unit-num">204</span></td>
+        <td>
+          <span class="badge badge-hot">
+            <span class="badge-dot dot-sold"></span>Hot
+          </span>
+        </td>
+        <td><span class="floor-val">2<span class="floor-ord">nd</span></span></td>
+        <td><span class="type-tag">2 Bed</span></td>
+        <td><span class="dir-tag">NE · Ocean</span></td>
+        <td><span class="spec-cell">2 <span class="spec-sep">/</span> 2</span></td>
+        <td><span class="sqft-val">1,059<span class="sqft-unit">sf</span></span></td>
+        <td><span class="sqft-val">244<span class="sqft-unit">sf</span></span></td>
+        <td>
+          <span class="price-val">$498,000</span>
+          <span class="price-sub">$470/sqft</span>
+        </td>
+        <td><span class="roi-val">11.1%</span></td>
+        <td>
+          <div class="actions-cell">
+            <div class="wish-icon active">♥</div>
+            <button class="btn-sm btn-sm-outline">Info</button>
+            <button class="btn-sm btn-sm-primary">Reserve</button>
+          </div>
+        </td>
+      </tr>
+
+      <!-- 3 · Available standard -->
+      <tr>
+        <td class="c-check"><input type="checkbox" class="chk"></td>
+        <td><span class="unit-num">215</span></td>
+        <td>
+          <span class="badge badge-avail">
+            <span class="badge-dot dot-avail"></span>Available
+          </span>
+        </td>
+        <td><span class="floor-val">2<span class="floor-ord">nd</span></span></td>
+        <td><span class="type-tag">Studio</span></td>
+        <td><span class="dir-tag">NW · Garden</span></td>
+        <td><span class="spec-cell">0 <span class="spec-sep">/</span> 1</span></td>
+        <td><span class="sqft-val">620<span class="sqft-unit">sf</span></span></td>
+        <td><span class="sqft-val">120<span class="sqft-unit">sf</span></span></td>
+        <td>
+          <span class="price-val">$298,000</span>
+          <span class="price-sub">$480/sqft</span>
+        </td>
+        <td><span class="roi-val">9.8%</span></td>
+        <td>
+          <div class="actions-cell">
+            <div class="wish-icon">♡</div>
+            <button class="btn-sm btn-sm-outline">Info</button>
+            <button class="btn-sm btn-sm-primary">Reserve</button>
+          </div>
+        </td>
+      </tr>
+
+      <!-- 4 · Pending -->
+      <tr class="row-pending">
+        <td class="c-check"><input type="checkbox" class="chk"></td>
+        <td><span class="unit-num">318</span></td>
+        <td>
+          <span class="badge badge-pending">
+            <span class="badge-dot dot-pending"></span>Pending
+          </span>
+        </td>
+        <td><span class="floor-val">3<span class="floor-ord">rd</span></span></td>
+        <td><span class="type-tag">1 Bed</span></td>
+        <td><span class="dir-tag">SW · Pool</span></td>
+        <td><span class="spec-cell">1 <span class="spec-sep">/</span> 1</span></td>
+        <td><span class="sqft-val">820<span class="sqft-unit">sf</span></span></td>
+        <td><span class="sqft-val">180<span class="sqft-unit">sf</span></span></td>
+        <td>
+          <span class="price-val" style="color:var(--cream-dim)">$388,000</span>
+          <div class="timer-inline"><span class="tdot"></span><span class="timer-val">41:22:05</span></div>
+        </td>
+        <td><span class="roi-val">9.5%</span></td>
+        <td>
+          <div class="actions-cell">
+            <div class="wish-icon">♡</div>
+            <button class="btn-sm btn-sm-outline">Info</button>
+            <button class="btn-sm btn-sm-ghost">Notify me</button>
+          </div>
+        </td>
+      </tr>
+
+      <!-- 5 · 2nd Chance -->
+      <tr class="row-2nd">
+        <td class="c-check"><input type="checkbox" class="chk"></td>
+        <td><span class="unit-num">322</span></td>
+        <td>
+          <span class="badge badge-2nd">
+            <span class="badge-dot dot-2nd"></span>2nd Chance
+          </span>
+        </td>
+        <td><span class="floor-val">3<span class="floor-ord">rd</span></span></td>
+        <td><span class="type-tag">1 Bed + Family Rm</span></td>
+        <td><span class="dir-tag">SE · Lake</span></td>
+        <td><span class="spec-cell">1 <span class="spec-sep">/</span> 2</span></td>
+        <td><span class="sqft-val">959<span class="sqft-unit">sf</span></span></td>
+        <td><span class="sqft-val">207<span class="sqft-unit">sf</span></span></td>
+        <td>
+          <span class="price-val" style="color:var(--orange)">$431,000</span>
+          <span class="price-sub" style="color:var(--orange);opacity:.7">Released 3 days ago</span>
+        </td>
+        <td><span class="roi-val">10.8%</span></td>
+        <td>
+          <div class="actions-cell">
+            <div class="wish-icon active">♥</div>
+            <button class="btn-sm btn-sm-outline">Info</button>
+            <button class="btn-sm btn-sm-orange">Reserve</button>
+          </div>
+        </td>
+      </tr>
+
+      <!-- 6 · Available standard -->
+      <tr>
+        <td class="c-check"><input type="checkbox" class="chk"></td>
+        <td><span class="unit-num">401</span></td>
+        <td>
+          <span class="badge badge-avail">
+            <span class="badge-dot dot-avail"></span>Available
+          </span>
+        </td>
+        <td><span class="floor-val">4<span class="floor-ord">th</span></span></td>
+        <td><span class="type-tag">2 Bed</span></td>
+        <td><span class="dir-tag">NE · Ocean</span></td>
+        <td><span class="spec-cell">2 <span class="spec-sep">/</span> 2</span></td>
+        <td><span class="sqft-val">1,059<span class="sqft-unit">sf</span></span></td>
+        <td><span class="sqft-val">244<span class="sqft-unit">sf</span></span></td>
+        <td>
+          <span class="price-val">$502,000</span>
+          <span class="price-sub">$474/sqft</span>
+        </td>
+        <td><span class="roi-val">10.9%</span></td>
+        <td>
+          <div class="actions-cell">
+            <div class="wish-icon">♡</div>
+            <button class="btn-sm btn-sm-outline">Info</button>
+            <button class="btn-sm btn-sm-primary">Reserve</button>
+          </div>
+        </td>
+      </tr>
+
+      <!-- 7 · Sold -->
+      <tr class="row-sold">
+        <td class="c-check"><input type="checkbox" class="chk" disabled></td>
+        <td><span class="unit-num" style="color:var(--sub)">412</span></td>
+        <td>
+          <span class="badge badge-sold">
+            <span class="badge-dot dot-sold"></span>Sold
+          </span>
+        </td>
+        <td><span class="floor-val">4<span class="floor-ord">th</span></span></td>
+        <td><span class="type-tag">2 Bed</span></td>
+        <td><span class="dir-tag">NW · Garden</span></td>
+        <td><span class="spec-cell">2 <span class="spec-sep">/</span> 2</span></td>
+        <td><span class="sqft-val">988<span class="sqft-unit">sf</span></span></td>
+        <td><span class="sqft-val">220<span class="sqft-unit">sf</span></span></td>
+        <td>
+          <span class="price-struck">$465,000</span>
+        </td>
+        <td><span class="roi-na">—</span></td>
+        <td>
+          <div class="actions-cell">
+            <button class="btn-sm btn-sm-outline">Info</button>
+          </div>
+        </td>
+      </tr>
+
+      <!-- 8 · Available -->
+      <tr>
+        <td class="c-check"><input type="checkbox" class="chk"></td>
+        <td><span class="unit-num">503</span></td>
+        <td>
+          <span class="badge badge-avail">
+            <span class="badge-dot dot-avail"></span>Available
+          </span>
+        </td>
+        <td><span class="floor-val">5<span class="floor-ord">th</span></span></td>
+        <td><span class="type-tag">3 Bed</span></td>
+        <td><span class="dir-tag">SE · Panoramic</span></td>
+        <td><span class="spec-cell">3 <span class="spec-sep">/</span> 3</span></td>
+        <td><span class="sqft-val">1,380<span class="sqft-unit">sf</span></span></td>
+        <td><span class="sqft-val">310<span class="sqft-unit">sf</span></span></td>
+        <td>
+          <span class="price-val">$648,000</span>
+          <span class="price-sub">$469/sqft</span>
+        </td>
+        <td><span class="roi-val">10.6%</span></td>
+        <td>
+          <div class="actions-cell">
+            <div class="wish-icon">♡</div>
+            <button class="btn-sm btn-sm-outline">Info</button>
+            <button class="btn-sm btn-sm-primary">Reserve</button>
+          </div>
+        </td>
+      </tr>
+
+      <!-- 9 · Coming soon -->
+      <tr style="opacity:.5">
+        <td class="c-check"><input type="checkbox" class="chk" disabled></td>
+        <td><span class="unit-num" style="color:var(--sub)">507</span></td>
+        <td>
+          <span class="badge badge-soon">
+            <span class="badge-dot dot-soon"></span>Not Ready
+          </span>
+        </td>
+        <td><span class="floor-val">5<span class="floor-ord">th</span></span></td>
+        <td><span class="type-tag">2 Bed</span></td>
+        <td><span class="dir-tag">NE · Ocean</span></td>
+        <td><span class="spec-cell">2 <span class="spec-sep">/</span> 2</span></td>
+        <td><span class="sqft-val">1,059<span class="sqft-unit">sf</span></span></td>
+        <td><span class="sqft-val">244<span class="sqft-unit">sf</span></span></td>
+        <td><span style="color:var(--muted);font-size:11px">TBC</span></td>
+        <td><span class="roi-na">—</span></td>
+        <td>
+          <div class="actions-cell">
+            <button class="btn-sm btn-sm-ghost">Get Notified</button>
+          </div>
+        </td>
+      </tr>
+
+    </tbody>
+  </table>
+
+  <!-- FOOTER / PAGINATION -->
+  <div class="table-footer">
+    <span class="footer-info">Showing <strong>9</strong> of <strong>102</strong> units</span>
+    <div class="pag-spacer"></div>
+    <div class="pag-btns">
+      <button class="pag-btn arrow">‹</button>
+      <button class="pag-btn active">1</button>
+      <button class="pag-btn">2</button>
+      <button class="pag-btn">3</button>
+      <button class="pag-btn" style="font-size:9px;letter-spacing:1px;width:auto;padding:0 8px;">…</button>
+      <button class="pag-btn">12</button>
+      <button class="pag-btn arrow">›</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Live timer
+function tick(){
+  document.querySelectorAll('.timer-val').forEach(el=>{
+    let[h,m,s]=el.textContent.split(':').map(Number);
+    s--;if(s<0){s=59;m--;}if(m<0){m=59;h--;}if(h<0){h=m=s=0;}
+    el.textContent=`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  });
+}
+setInterval(tick,1000);
+
+// Sort headers
+document.querySelectorAll('th.sortable').forEach(th=>{
+  th.addEventListener('click',()=>{
+    const cur = th.classList.contains('sort-asc') ? 'asc' : th.classList.contains('sort-desc') ? 'desc' : null;
+    document.querySelectorAll('th').forEach(t=>t.classList.remove('sort-asc','sort-desc'));
+    if(cur==='asc') th.classList.add('sort-desc');
+    else th.classList.add('sort-asc');
+  });
+});
+
+// Filter tabs
+document.querySelectorAll('.ftab').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.ftab').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+  });
+});
+</script>
+</body>
+</html>

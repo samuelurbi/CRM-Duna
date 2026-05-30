@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Makai · Agendar Videollamada</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0c0c0b;
+  --surface: #161614;
+  --surface-2: #1e1e1b;
+  --border: rgba(255,255,255,.08);
+  --green: #82b870;
+  --green-dim: #4A5E3F;
+  --amber: #c97c40;
+  --text: #F1EDE3;
+  --muted: #7a7670;
+  --red: #c0433a;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: 220px; min-height: 100vh; background: var(--surface);
+  border-right: 1px solid var(--border); display: flex;
+  flex-direction: column; flex-shrink: 0;
+  position: fixed; left: 0; top: 0; bottom: 0;
+}
+.sidebar-logo {
+  padding: 24px 20px 20px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+}
+.sidebar-logo-mark {
+  width: 28px; height: 28px; background: var(--green-dim);
+  border-radius: 6px; display: flex; align-items: center;
+  justify-content: center; font-size: 11px; font-weight: 700; color: var(--green);
+}
+.sidebar-logo-name { font-size: 13px; font-weight: 700; letter-spacing: .1em; color: var(--text); }
+.sidebar-logo-sub { font-size: 9px; color: var(--muted); letter-spacing: .06em; }
+.nav { padding: 16px 10px; flex: 1; }
+.nav-label {
+  font-size: 8.5px; font-weight: 600; color: var(--muted);
+  letter-spacing: .12em; text-transform: uppercase;
+  padding: 0 10px; margin-bottom: 6px; margin-top: 16px;
+}
+.nav-label:first-child { margin-top: 0; }
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 10px; border-radius: 6px; font-size: 13px;
+  color: var(--muted); cursor: pointer; text-decoration: none;
+  transition: background .15s, color .15s; margin-bottom: 1px;
+}
+.nav-item:hover { background: rgba(255,255,255,.05); color: var(--text); }
+.nav-item.active { background: rgba(130,184,112,.1); color: var(--green); }
+.nav-item svg { width: 15px; height: 15px; flex-shrink: 0; }
+.nav-item .badge {
+  margin-left: auto; background: var(--amber); color: #fff;
+  font-size: 9px; font-weight: 700; border-radius: 10px; padding: 1px 6px;
+}
+.sidebar-user {
+  padding: 14px 16px; border-top: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+}
+.sidebar-avatar {
+  width: 32px; height: 32px; border-radius: 50%; background: var(--green-dim);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: var(--green); flex-shrink: 0;
+}
+.sidebar-user-name { font-size: 12px; font-weight: 500; color: var(--text); }
+.sidebar-user-role { font-size: 10px; color: var(--muted); }
+
+/* ── MAIN ── */
+.main { margin-left: 220px; flex: 1; min-height: 100vh; display: flex; flex-direction: column; }
+.topbar {
+  height: 56px; background: var(--surface); border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 32px; position: sticky; top: 0; z-index: 10;
+}
+.topbar-title { font-size: 14px; font-weight: 600; color: var(--text); }
+.topbar-right { display: flex; align-items: center; gap: 12px; }
+.topbar-icon {
+  width: 32px; height: 32px; border-radius: 6px; border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--muted); cursor: pointer; transition: all .15s;
+}
+.topbar-icon:hover { border-color: rgba(255,255,255,.18); color: var(--text); }
+.content { padding: 32px; flex: 1; max-width: 960px; }
+
+/* ── PAGE HEADER ── */
+.page-header { margin-bottom: 28px; }
+.page-title { font-size: 22px; font-weight: 600; color: var(--text); letter-spacing: -.02em; }
+.page-sub { font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+/* ── SECTION ── */
+.section-label {
+  font-size: 10px; font-weight: 700; color: var(--muted);
+  letter-spacing: .12em; text-transform: uppercase; margin-bottom: 14px;
+}
+
+/* ── UPCOMING CALLS ── */
+.upcoming-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 36px; }
+.upcoming-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: 16px 20px;
+  display: flex; align-items: center; gap: 16px;
+}
+.upcoming-icon {
+  width: 40px; height: 40px; border-radius: 10px;
+  background: rgba(130,184,112,.08); border: 1px solid rgba(130,184,112,.15);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--green); flex-shrink: 0;
+}
+.upcoming-body { flex: 1; min-width: 0; }
+.upcoming-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+.upcoming-meta { font-size: 12px; color: var(--muted); }
+.upcoming-date-block { text-align: right; flex-shrink: 0; }
+.upcoming-date { font-size: 13px; font-weight: 600; color: var(--text); }
+.upcoming-time { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.badge-pill {
+  padding: 3px 10px; border-radius: 20px;
+  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
+  flex-shrink: 0;
+}
+.badge-pill.confirmed {
+  background: rgba(130,184,112,.1); color: var(--green);
+  border: 1px solid rgba(130,184,112,.18);
+}
+.badge-pill.pending {
+  background: rgba(201,124,64,.1); color: var(--amber);
+  border: 1px solid rgba(201,124,64,.18);
+}
+.empty-upcoming {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+  padding: 24px; text-align: center; color: var(--muted); font-size: 13px;
+  margin-bottom: 36px;
+}
+
+/* ── SCHEDULE WIDGET ── */
+.schedule-widget {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; overflow: hidden;
+  display: grid; grid-template-columns: 312px 1fr;
+  min-height: 500px;
+}
+
+/* Calendar column */
+.cal-col { border-right: 1px solid var(--border); padding: 28px 24px; }
+.cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; }
+.cal-month-name { font-size: 14px; font-weight: 600; color: var(--text); }
+.cal-navs { display: flex; gap: 6px; }
+.cal-nav-btn {
+  width: 28px; height: 28px; background: transparent; border: 1px solid var(--border);
+  border-radius: 6px; cursor: pointer; display: flex; align-items: center;
+  justify-content: center; color: var(--muted); transition: all .15s;
+}
+.cal-nav-btn:hover { border-color: rgba(255,255,255,.18); color: var(--text); }
+.cal-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); margin-bottom: 8px; }
+.cal-wd { text-align: center; font-size: 10px; font-weight: 600; color: var(--muted); padding: 4px 0; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+.cal-day {
+  aspect-ratio: 1; border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; color: var(--muted); position: relative;
+  cursor: default; user-select: none;
+}
+.cal-day.avail { color: var(--text); cursor: pointer; transition: background .12s; }
+.cal-day.avail:hover { background: rgba(255,255,255,.07); }
+.cal-day.selected { background: var(--green) !important; color: #0c0c0b !important; font-weight: 700; }
+.cal-day.today { box-shadow: inset 0 0 0 1px rgba(255,255,255,.12); }
+.cal-day.past { opacity: .2; }
+.cal-day.weekend { opacity: .18; }
+.cal-legend { margin-top: 22px; display: flex; align-items: center; gap: 18px; }
+.cal-legend-item { display: flex; align-items: center; gap: 6px; font-size: 10px; color: var(--muted); }
+.cal-legend-dot { width: 8px; height: 8px; border-radius: 2px; }
+
+/* Availability column */
+.avail-col { padding: 28px 32px; display: flex; flex-direction: column; overflow: hidden; }
+
+.avail-placeholder {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center; gap: 12px; color: var(--muted);
+}
+.avail-placeholder svg { opacity: .18; }
+.avail-placeholder-title { font-size: 14px; font-weight: 600; color: var(--text); }
+.avail-placeholder-sub { font-size: 13px; max-width: 260px; line-height: 1.5; }
+
+/* Slots panel */
+.avail-date-title { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+.avail-date-sub { font-size: 12px; color: var(--muted); margin-bottom: 22px; }
+.broker-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 16px; background: var(--surface-2);
+  border: 1px solid var(--border); border-radius: 10px; margin-bottom: 22px;
+}
+.broker-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: rgba(201,124,64,.12); display: flex; align-items: center;
+  justify-content: center; font-size: 12px; font-weight: 700;
+  color: var(--amber); flex-shrink: 0;
+}
+.broker-name { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+.broker-role { font-size: 11px; color: var(--muted); }
+.broker-online { margin-left: auto; display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--green); }
+.broker-online-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+
+.time-group { margin-bottom: 18px; }
+.time-group-label {
+  font-size: 10px; font-weight: 600; color: var(--muted);
+  letter-spacing: .1em; text-transform: uppercase; margin-bottom: 10px;
+}
+.time-slots { display: flex; flex-wrap: wrap; gap: 8px; }
+.time-slot {
+  padding: 9px 18px; border-radius: 8px; border: 1px solid var(--border);
+  font-size: 13px; font-weight: 500; color: var(--text);
+  cursor: pointer; transition: all .15s;
+}
+.time-slot:not(.taken):hover { border-color: rgba(130,184,112,.45); color: var(--green); }
+.time-slot.selected { background: var(--green); color: #0c0c0b; border-color: var(--green); font-weight: 700; }
+.time-slot.taken { opacity: .2; cursor: not-allowed; text-decoration: line-through; }
+
+/* Confirm form */
+.form-back {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; color: var(--muted); cursor: pointer;
+  margin-bottom: 18px; transition: color .15s; width: fit-content;
+}
+.form-back:hover { color: var(--text); }
+.selected-summary {
+  display: flex; align-items: center; gap: 14px;
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 14px 16px; margin-bottom: 22px;
+}
+.summary-icon {
+  width: 36px; height: 36px; border-radius: 8px;
+  background: rgba(130,184,112,.1); border: 1px solid rgba(130,184,112,.18);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--green); flex-shrink: 0;
+}
+.summary-date { font-size: 13px; font-weight: 700; color: var(--text); }
+.summary-time { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.summary-change { margin-left: auto; font-size: 11px; color: var(--muted); cursor: pointer; transition: color .15s; }
+.summary-change:hover { color: var(--green); }
+
+.form-row { margin-bottom: 16px; }
+.form-label {
+  display: block; font-size: 11px; font-weight: 600; color: var(--muted);
+  letter-spacing: .08em; text-transform: uppercase; margin-bottom: 6px;
+}
+.form-input, .form-select, .form-textarea {
+  width: 100%; background: var(--bg); border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px 14px; color: var(--text);
+  font-family: 'Inter', sans-serif; font-size: 13px; outline: none;
+  transition: border-color .15s;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus { border-color: rgba(130,184,112,.35); }
+.form-input::placeholder, .form-textarea::placeholder { color: var(--muted); }
+.form-select {
+  appearance: none; cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='7' viewBox='0 0 12 7' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237a7670' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px;
+}
+.form-select option { background: #161614; }
+.form-textarea { resize: none; min-height: 76px; }
+.form-optional { font-size: 10px; color: var(--muted); font-weight: 400; text-transform: none; letter-spacing: 0; margin-left: 4px; }
+.btn-submit {
+  width: 100%; padding: 13px; background: var(--green); color: #0c0c0b;
+  border: none; border-radius: 10px; font-size: 14px; font-weight: 700;
+  font-family: 'Inter', sans-serif; cursor: pointer; transition: background .15s; margin-top: 8px;
+}
+.btn-submit:hover { background: #96cc83; }
+
+/* Confirmed state */
+.confirmed-card {
+  display: flex; flex-direction: column; align-items: center;
+  text-align: center; padding: 48px 32px; gap: 14px;
+}
+.confirmed-icon {
+  width: 60px; height: 60px; border-radius: 50%;
+  background: rgba(130,184,112,.12); border: 1px solid rgba(130,184,112,.2);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--green); margin-bottom: 6px;
+}
+.confirmed-title { font-size: 20px; font-weight: 700; color: var(--text); letter-spacing: -.02em; }
+.confirmed-sub { font-size: 13px; color: var(--muted); max-width: 360px; line-height: 1.55; }
+.confirmed-details {
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: 12px; padding: 4px 0; text-align: left; width: 100%; max-width: 380px;
+}
+.confirmed-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px; border-bottom: 1px solid var(--border);
+}
+.confirmed-row:last-child { border-bottom: none; }
+.confirmed-row-icon {
+  width: 30px; height: 30px; border-radius: 7px;
+  background: rgba(255,255,255,.04); display: flex; align-items: center;
+  justify-content: center; color: var(--muted); flex-shrink: 0;
+}
+.confirmed-row-label { font-size: 11px; color: var(--muted); margin-bottom: 2px; }
+.confirmed-row-val { font-size: 13px; font-weight: 600; color: var(--text); }
+.confirmed-actions { display: flex; gap: 10px; width: 100%; max-width: 380px; }
+.btn-ghost {
+  flex: 1; padding: 10px; background: transparent; border: 1px solid var(--border);
+  border-radius: 8px; font-size: 13px; font-weight: 500; color: var(--text);
+  cursor: pointer; font-family: 'Inter', sans-serif; transition: all .15s;
+  text-decoration: none; display: flex; align-items: center; justify-content: center;
+}
+.btn-ghost:hover { border-color: rgba(255,255,255,.2); }
+.btn-solid {
+  flex: 1; padding: 10px; background: var(--green); border: none;
+  border-radius: 8px; font-size: 13px; font-weight: 700; color: #0c0c0b;
+  cursor: pointer; font-family: 'Inter', sans-serif; transition: background .15s;
+  text-decoration: none; display: flex; align-items: center; justify-content: center;
+}
+.btn-solid:hover { background: #96cc83; }
+</style>
+</head>
+<body>
+
+<!-- ── SIDEBAR ── -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="sidebar-logo-mark">M</div>
+    <div>
+      <div class="sidebar-logo-name">MAKAI</div>
+      <div class="sidebar-logo-sub">RESIDENCES · CAP CANA</div>
+    </div>
+  </div>
+  <nav class="nav">
+    <div class="nav-label">Mi Cuenta</div>
+    <a class="nav-item" href="01-saved-properties.html">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 3.5A1.5 1.5 0 013.5 2h9A1.5 1.5 0 0114 3.5v11l-6-3-6 3V3.5z"/></svg>
+      Propiedades Guardadas
+    </a>
+    <a class="nav-item" href="05-proposals-contracts.html">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 2H3a1 1 0 00-1 1v11l3-2 3 2 3-2 3 2V3a1 1 0 00-1-1z"/><path d="M5 6h6M5 9h4"/></svg>
+      Propuestas &amp; Contratos
+      <span class="badge">1</span>
+    </a>
+    <a class="nav-item" href="02-documents.html">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 2l4 4-7 7H3v-4l7-7z"/><path d="M8.5 3.5l4 4"/></svg>
+      Firmar Documentos
+    </a>
+    <a class="nav-item active" href="03-schedule-video-call.html">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="4" width="10" height="8" rx="1.5"/><path d="M11 7l4-2v6l-4-2"/></svg>
+      Agendar Videollamada
+    </a>
+    <a class="nav-item" href="06-calendar-events.html">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="12" height="11" rx="1.5"/><path d="M5 2v2M11 2v2M2 7h12"/></svg>
+      Calendario &amp; Citas
+    </a>
+    <div class="nav-label">Configuración</div>
+    <a class="nav-item" href="04-user-profile.html">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="5" r="3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>
+      Mi Perfil
+    </a>
+  </nav>
+  <div class="sidebar-user">
+    <div class="sidebar-avatar">GG</div>
+    <div>
+      <div class="sidebar-user-name">Giuseppe Gangemi</div>
+      <div class="sidebar-user-role">Comprador</div>
+    </div>
+  </div>
+</aside>
+
+<!-- ── MAIN ── -->
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-title">Agendar Videollamada</div>
+    <div class="topbar-right">
+      <div class="topbar-icon">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 1a5 5 0 015 5c0 5-1.5 7-5 7S3 11 3 6a5 5 0 015-5z"/><path d="M6 13.5a2 2 0 004 0"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="page-header">
+      <div class="page-title">Agendar Videollamada</div>
+      <div class="page-sub">Programa una sesión con tu asesor de Makai Residences</div>
+    </div>
+
+    <!-- ── UPCOMING CALLS ── -->
+    <div class="section-label">Próximas videollamadas</div>
+    <div class="upcoming-list">
+      <div class="upcoming-card">
+        <div class="upcoming-icon">
+          <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="4" width="10" height="8" rx="1.5"/><path d="M11 7l4-2v6l-4-2"/></svg>
+        </div>
+        <div class="upcoming-body">
+          <div class="upcoming-title">Videollamada con Alejandro Morales</div>
+          <div class="upcoming-meta">Torre B · Apto 4B · Plan de pagos y firma de contrato</div>
+        </div>
+        <div class="upcoming-date-block">
+          <div class="upcoming-date">Jue, 4 jun 2026</div>
+          <div class="upcoming-time">10:00 AM · 30 min</div>
+        </div>
+        <span class="badge-pill confirmed">Confirmada</span>
+      </div>
+    </div>
+
+    <!-- ── SCHEDULE NEW ── -->
+    <div class="section-label">Nueva videollamada</div>
+
+    <div class="schedule-widget">
+      <!-- CALENDAR -->
+      <div class="cal-col">
+        <div class="cal-header">
+          <div class="cal-month-name" id="cal-month-name"></div>
+          <div class="cal-navs">
+            <button class="cal-nav-btn" onclick="prevMonth()" title="Mes anterior">
+              <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M7.5 9L4.5 6l3-3"/></svg>
+            </button>
+            <button class="cal-nav-btn" onclick="nextMonth()" title="Mes siguiente">
+              <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M4.5 9l3-3-3-3"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="cal-weekdays">
+          <div class="cal-wd">Do</div>
+          <div class="cal-wd">Lu</div>
+          <div class="cal-wd">Ma</div>
+          <div class="cal-wd">Mi</div>
+          <div class="cal-wd">Ju</div>
+          <div class="cal-wd">Vi</div>
+          <div class="cal-wd">Sá</div>
+        </div>
+        <div class="cal-grid" id="cal-grid"></div>
+        <div class="cal-legend">
+          <div class="cal-legend-item">
+            <div class="cal-legend-dot" style="background:var(--green);"></div>
+            Disponible
+          </div>
+          <div class="cal-legend-item">
+            <div class="cal-legend-dot" style="background:rgba(255,255,255,.08);"></div>
+            No disponible
+          </div>
+        </div>
+      </div>
+
+      <!-- AVAILABILITY / FORM / CONFIRMED -->
+      <div class="avail-col">
+
+        <!-- Placeholder -->
+        <div id="pane-placeholder" class="avail-placeholder">
+          <svg width="52" height="52" viewBox="0 0 52 52" fill="none" stroke="currentColor" stroke-width="1.1">
+            <rect x="6" y="10" width="40" height="36" rx="4"/><path d="M18 6v8M34 6v8M6 24h40M18 32h4M30 32h4M18 38h4"/>
+          </svg>
+          <div class="avail-placeholder-title">Elige una fecha</div>
+          <div class="avail-placeholder-sub">Selecciona un día disponible para ver los horarios de tu asesor.</div>
+        </div>
+
+        <!-- Slots panel -->
+        <div id="pane-slots" style="display:none;">
+          <div class="avail-date-title" id="slots-date-title"></div>
+          <div class="avail-date-sub">Zona horaria: GMT-4 · Santo Domingo, R.D.</div>
+          <div class="broker-row">
+            <div class="broker-avatar">AM</div>
+            <div>
+              <div class="broker-name">Alejandro Morales</div>
+              <div class="broker-role">Asesor de Ventas · Makai Residences</div>
+            </div>
+            <div class="broker-online">
+              <div class="broker-online-dot"></div>
+              Disponible
+            </div>
+          </div>
+          <div class="time-group">
+            <div class="time-group-label">Mañana</div>
+            <div class="time-slots" id="slots-morning"></div>
+          </div>
+          <div class="time-group">
+            <div class="time-group-label">Tarde</div>
+            <div class="time-slots" id="slots-afternoon"></div>
+          </div>
+        </div>
+
+        <!-- Confirm form -->
+        <div id="pane-form" style="display:none;">
+          <div class="form-back" onclick="goBackToSlots()">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 12L6 8l4-4"/></svg>
+            Volver a los horarios
+          </div>
+          <div class="selected-summary">
+            <div class="summary-icon">
+              <svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="4" width="10" height="8" rx="1.5"/><path d="M11 7l4-2v6l-4-2"/></svg>
+            </div>
+            <div>
+              <div class="summary-date" id="summary-date"></div>
+              <div class="summary-time" id="summary-time"></div>
+            </div>
+            <div class="summary-change" onclick="goBackToSlots()">Cambiar</div>
+          </div>
+          <div class="form-row">
+            <label class="form-label">Propiedad de interés</label>
+            <select class="form-select">
+              <option>Torre B · Apartamento 4B (142 m²)</option>
+              <option>Torre A · Apartamento 2C (98 m²)</option>
+              <option>Penthouse · Torre B (220 m²)</option>
+              <option>Otra propiedad</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label class="form-label">Motivo de la llamada</label>
+            <select class="form-select">
+              <option>Revisión de plan de pagos</option>
+              <option>Revisión de contrato</option>
+              <option>Consulta sobre acabados y personalización</option>
+              <option>Proceso de escrituración y traspaso</option>
+              <option>Consulta general sobre el proyecto</option>
+              <option>Otro</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label class="form-label">Teléfono / WhatsApp</label>
+            <input class="form-input" type="tel" value="+1 (809) 555-1234" placeholder="+1 (809) 000-0000">
+          </div>
+          <div class="form-row">
+            <label class="form-label">Notas <span class="form-optional">(opcional)</span></label>
+            <textarea class="form-textarea" placeholder="¿Hay algo específico que quieras tratar en la llamada?"></textarea>
+          </div>
+          <button class="btn-submit" onclick="submitForm()">
+            Confirmar videollamada
+          </button>
+        </div>
+
+        <!-- Confirmed -->
+        <div id="pane-confirmed" style="display:none;">
+          <div class="confirmed-card">
+            <div class="confirmed-icon">
+              <svg width="26" height="26" viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 13l7 7 11-11"/></svg>
+            </div>
+            <div class="confirmed-title">¡Videollamada agendada!</div>
+            <div class="confirmed-sub">Recibirás el enlace de Google Meet en tu correo. Tu asesor confirmará la cita en breve.</div>
+            <div class="confirmed-details">
+              <div class="confirmed-row">
+                <div class="confirmed-row-icon">
+                  <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="12" height="11" rx="1.5"/><path d="M5 2v2M11 2v2M2 7h12"/></svg>
+                </div>
+                <div>
+                  <div class="confirmed-row-label">Fecha y hora</div>
+                  <div class="confirmed-row-val" id="confirmed-datetime"></div>
+                </div>
+              </div>
+              <div class="confirmed-row">
+                <div class="confirmed-row-icon">
+                  <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="5" r="3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>
+                </div>
+                <div>
+                  <div class="confirmed-row-label">Asesor</div>
+                  <div class="confirmed-row-val">Alejandro Morales</div>
+                </div>
+              </div>
+              <div class="confirmed-row">
+                <div class="confirmed-row-icon">
+                  <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 3.5A1.5 1.5 0 013.5 2h9A1.5 1.5 0 0114 3.5v11l-6-3-6 3V3.5z"/></svg>
+                </div>
+                <div>
+                  <div class="confirmed-row-label">Propiedad</div>
+                  <div class="confirmed-row-val">Torre B · Apartamento 4B</div>
+                </div>
+              </div>
+              <div class="confirmed-row">
+                <div class="confirmed-row-icon">
+                  <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 5v3.5l2 2"/></svg>
+                </div>
+                <div>
+                  <div class="confirmed-row-label">Duración</div>
+                  <div class="confirmed-row-val">30 minutos</div>
+                </div>
+              </div>
+            </div>
+            <div class="confirmed-actions">
+              <a href="06-calendar-events.html" class="btn-ghost">Ver en calendario</a>
+              <a href="01-saved-properties.html" class="btn-solid">Volver al inicio</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+const TODAY = new Date(2026, 4, 28);
+let viewYear = 2026, viewMonth = 5;
+let selectedDate = null, selectedTime = null;
+
+const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const DAYS = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+
+const TAKEN = {
+  '2026-6-2':  ['9:00 AM','3:00 PM'],
+  '2026-6-3':  ['11:00 AM'],
+  '2026-6-4':  ['10:00 AM'],
+  '2026-6-8':  ['9:00 AM','11:00 AM'],
+  '2026-6-9':  ['2:00 PM'],
+  '2026-6-10': ['2:00 PM','4:00 PM'],
+  '2026-6-15': ['9:00 AM','11:00 AM','2:00 PM'],
+  '2026-6-16': ['3:00 PM'],
+  '2026-6-17': ['11:00 AM','3:00 PM'],
+  '2026-6-22': ['2:00 PM','4:00 PM'],
+  '2026-6-23': ['9:00 AM'],
+  '2026-6-24': ['9:00 AM','4:00 PM'],
+};
+
+const MORNING   = ['9:00 AM','10:00 AM','11:00 AM'];
+const AFTERNOON = ['2:00 PM','3:00 PM','4:00 PM'];
+
+function showPane(id) {
+  ['pane-placeholder','pane-slots','pane-form','pane-confirmed'].forEach(p => {
+    document.getElementById(p).style.display = p === id ? 'block' : 'none';
+    if (p === 'pane-placeholder') document.getElementById(p).style.display = p === id ? 'flex' : 'none';
+  });
+}
+
+function renderCalendar() {
+  document.getElementById('cal-month-name').textContent = `${MONTHS[viewMonth]} ${viewYear}`;
+  const grid = document.getElementById('cal-grid');
+  grid.innerHTML = '';
+  const firstDay = new Date(viewYear, viewMonth, 1).getDay();
+  const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+
+  for (let i = 0; i < firstDay; i++) {
+    const el = document.createElement('div');
+    el.className = 'cal-day';
+    grid.appendChild(el);
+  }
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const date = new Date(viewYear, viewMonth, d);
+    const dow = date.getDay();
+    const isPast = date < TODAY;
+    const isWknd = dow === 0 || dow === 6;
+    const isSel = selectedDate && date.toDateString() === selectedDate.toDateString();
+
+    const el = document.createElement('div');
+    let cls = 'cal-day';
+    if (isSel)       cls += ' selected';
+    else if (isPast) cls += ' past';
+    else if (isWknd) cls += ' weekend';
+    else             cls += ' avail';
+    if (date.toDateString() === TODAY.toDateString() && !isSel) cls += ' today';
+    el.className = cls;
+    el.textContent = d;
+    if (!isPast && !isWknd) el.onclick = () => pickDate(date);
+    grid.appendChild(el);
+  }
+}
+
+function pickDate(date) {
+  selectedDate = date;
+  selectedTime = null;
+  renderCalendar();
+  renderSlots(date);
+  showPane('pane-slots');
+}
+
+function renderSlots(date) {
+  const key = `${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()}`;
+  const taken = TAKEN[key] || [];
+  const dayStr = DAYS[date.getDay()];
+  document.getElementById('slots-date-title').textContent =
+    `${dayStr.charAt(0).toUpperCase()+dayStr.slice(1)}, ${date.getDate()} de ${MONTHS[date.getMonth()]} ${date.getFullYear()}`;
+
+  const mkSlots = (container, slots) => {
+    container.innerHTML = slots.map(t => {
+      const isTaken = taken.includes(t);
+      const isSel = selectedTime === t;
+      return `<div class="time-slot${isTaken ? ' taken' : ''}${isSel ? ' selected' : ''}"${!isTaken ? ` onclick="pickTime('${t}')"` : ''}>${t}</div>`;
+    }).join('');
+  };
+  mkSlots(document.getElementById('slots-morning'), MORNING);
+  mkSlots(document.getElementById('slots-afternoon'), AFTERNOON);
+}
+
+function pickTime(t) {
+  selectedTime = t;
+  renderSlots(selectedDate);
+  setTimeout(() => {
+    const dayStr = DAYS[selectedDate.getDay()];
+    document.getElementById('summary-date').textContent =
+      `${dayStr.charAt(0).toUpperCase()+dayStr.slice(1)}, ${selectedDate.getDate()} de ${MONTHS[selectedDate.getMonth()]} ${selectedDate.getFullYear()}`;
+    document.getElementById('summary-time').textContent = `${t} · 30 min · Alejandro Morales`;
+    showPane('pane-form');
+  }, 220);
+}
+
+function goBackToSlots() {
+  renderSlots(selectedDate);
+  showPane('pane-slots');
+}
+
+function submitForm() {
+  const dayStr = DAYS[selectedDate.getDay()];
+  document.getElementById('confirmed-datetime').textContent =
+    `${dayStr.charAt(0).toUpperCase()+dayStr.slice(1)}, ${selectedDate.getDate()} de ${MONTHS[selectedDate.getMonth()]} ${selectedDate.getFullYear()} · ${selectedTime}`;
+  showPane('pane-confirmed');
+}
+
+function prevMonth() {
+  viewMonth--; if (viewMonth < 0) { viewMonth = 11; viewYear--; }
+  renderCalendar();
+}
+function nextMonth() {
+  viewMonth++; if (viewMonth > 11) { viewMonth = 0; viewYear++; }
+  renderCalendar();
+}
+
+renderCalendar();
+</script>
+</body>
+</html>

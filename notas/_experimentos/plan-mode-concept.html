@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Makai Residences — Plan View Concept</title>
+<style>
+/* ── Reset & Base ─────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --gold: #8B6914;
+  --gold-light: #C9A84C;
+  --gold-bg: #F5EDD6;
+  --sold: #9E9E9E;
+  --sold-bg: #E0E0E0;
+  --pending: #C8874A;
+  --available: #6B8F5E;
+  --surface: #FAFAF8;
+  --border: #E5E0D8;
+  --text: #2C2417;
+  --muted: #8C8070;
+  --green-dark: #3D5A3E;
+  --header-h: 56px;
+  --filters-h: 48px;
+  --tabs-h: 48px;
+}
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+  background: var(--surface);
+  color: var(--text);
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Header ───────────────────────────────────────────────────── */
+.header {
+  height: var(--header-h);
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  flex-shrink: 0;
+  z-index: 30;
+}
+.logo {
+  font-family: Georgia, serif;
+  font-size: 18px;
+  letter-spacing: 4px;
+  font-weight: 400;
+  color: var(--text);
+}
+.units-counter {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: .5px;
+  color: var(--text);
+}
+.units-counter span { color: var(--muted); font-weight: 400; }
+.header-right { display: flex; align-items: center; gap: 20px; }
+.menu-btn {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.avatar {
+  width: 32px; height: 32px;
+  background: var(--gold-bg);
+  border-radius: 50%;
+  border: 1.5px solid var(--gold-light);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: var(--gold);
+}
+
+/* ── Filters ──────────────────────────────────────────────────── */
+.filters {
+  height: var(--filters-h);
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  flex-shrink: 0;
+  z-index: 25;
+}
+.search-box {
+  display: flex; align-items: center; gap: 6px;
+  border: 1px solid var(--border); border-radius: 6px;
+  padding: 4px 10px; background: var(--surface);
+  width: 110px;
+}
+.search-box input {
+  border: none; background: none; font-size: 12px; color: var(--text);
+  outline: none; width: 100%;
+}
+.search-box svg { flex-shrink: 0; color: var(--muted); }
+.filter-select {
+  border: 1px solid var(--border); border-radius: 6px;
+  padding: 5px 10px; font-size: 12px; color: var(--text);
+  background: var(--surface); cursor: pointer; outline: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238C8070'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  padding-right: 24px;
+  min-width: 90px;
+}
+.filter-sep { flex: 1; }
+.view-toggle {
+  display: flex; align-items: center;
+  border: 1px solid var(--border); border-radius: 8px;
+  overflow: hidden; background: var(--surface);
+}
+.view-btn {
+  padding: 5px 13px; font-size: 12px; font-weight: 500;
+  background: none; border: none; cursor: pointer;
+  color: var(--muted); display: flex; align-items: center; gap: 5px;
+  transition: all .15s; white-space: nowrap;
+}
+.view-btn.active {
+  background: var(--green-dark); color: #fff;
+}
+.view-btn + .view-btn { border-left: 1px solid var(--border); }
+.matches-badge {
+  background: var(--gold-bg); color: var(--gold);
+  border: 1px solid var(--gold-light); border-radius: 99px;
+  padding: 4px 12px; font-size: 11px; font-weight: 600;
+}
+.reset-btn {
+  background: none; border: 1px solid var(--border); border-radius: 6px;
+  padding: 5px 12px; font-size: 12px; color: var(--muted);
+  cursor: pointer; display: flex; align-items: center; gap: 5px;
+}
+
+/* ── Floor Tabs ───────────────────────────────────────────────── */
+.floor-tabs {
+  height: var(--tabs-h);
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  gap: 6px;
+  flex-shrink: 0;
+  z-index: 20;
+}
+.floor-tabs-label {
+  font-size: 11px; font-weight: 600; letter-spacing: .5px;
+  text-transform: uppercase; color: var(--muted);
+  margin-right: 8px; white-space: nowrap;
+}
+.floor-tab {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 14px; border-radius: 99px;
+  border: 1.5px solid var(--border);
+  background: #fff; cursor: pointer;
+  font-size: 12px; font-weight: 600; color: var(--muted);
+  transition: all .18s; white-space: nowrap;
+  position: relative;
+}
+.floor-tab:hover { border-color: var(--gold-light); color: var(--text); }
+.floor-tab.active {
+  background: var(--green-dark); color: #fff;
+  border-color: var(--green-dark);
+}
+.floor-tab .avail-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  flex-shrink: 0;
+}
+.floor-tab .avail-count {
+  font-size: 10px; font-weight: 700;
+  opacity: .75;
+}
+.floor-tab.soldout { opacity: .5; }
+.floor-tab.soldout .avail-dot { background: var(--sold); }
+.floor-tab:not(.soldout) .avail-dot { background: var(--available); }
+.floor-tab.active .avail-dot { background: rgba(255,255,255,.7); }
+.floor-tab.active .avail-count { opacity: .9; }
+
+/* ── Plan Area ────────────────────────────────────────────────── */
+.plan-area {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  background: #F0EDE6;
+  cursor: grab;
+}
+.plan-area:active { cursor: grabbing; }
+.plan-canvas {
+  position: absolute;
+  transform-origin: center center;
+  transition: none;
+  user-select: none;
+}
+.compass {
+  position: absolute; bottom: 20px; left: 20px;
+  width: 56px; height: 56px;
+  background: rgba(255,255,255,.9); border-radius: 50%;
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 700; color: var(--muted);
+  letter-spacing: 1px; z-index: 5; pointer-events: none;
+}
+.zoom-btns {
+  position: absolute; bottom: 20px; right: 20px;
+  display: flex; flex-direction: column; gap: 4px; z-index: 5;
+}
+.zoom-btn {
+  width: 36px; height: 36px;
+  background: rgba(255,255,255,.95); border: 1px solid var(--border);
+  border-radius: 8px; font-size: 18px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 300; color: var(--text);
+  box-shadow: 0 1px 4px rgba(0,0,0,.1);
+  transition: background .15s;
+}
+.zoom-btn:hover { background: #fff; }
+.zoom-level {
+  background: rgba(255,255,255,.85); border: 1px solid var(--border);
+  border-radius: 6px; padding: 3px 8px; font-size: 11px;
+  color: var(--muted); text-align: center;
+}
+.orientation-label {
+  position: absolute; bottom: 28px; left: 50%;
+  transform: translateX(-50%);
+  font-size: 11px; font-weight: 600; letter-spacing: 2px;
+  color: var(--muted); text-transform: uppercase;
+  pointer-events: none; z-index: 5;
+}
+
+/* ── Unit Bubble ──────────────────────────────────────────────── */
+.unit-bubble {
+  position: absolute;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  transition: transform .15s, box-shadow .15s;
+  box-shadow: 0 2px 8px rgba(0,0,0,.2);
+}
+.unit-bubble:hover {
+  transform: scale(1.08);
+  box-shadow: 0 4px 16px rgba(0,0,0,.3);
+  z-index: 10;
+}
+.unit-bubble.available {
+  background: var(--gold-light);
+  border: 2px solid var(--gold);
+}
+.unit-bubble.sold {
+  background: var(--sold);
+  border: 2px solid #888;
+  cursor: default;
+}
+.unit-bubble.pending {
+  background: var(--pending);
+  border: 2px solid #A0622A;
+}
+.unit-bubble.selected {
+  border-width: 3px;
+  transform: scale(1.12);
+  z-index: 10;
+}
+.unit-bubble .unit-num {
+  font-size: 11px; font-weight: 700; color: #fff;
+  line-height: 1;
+}
+.unit-bubble .unit-price {
+  font-size: 9px; color: rgba(255,255,255,.85);
+  line-height: 1; margin-top: 2px;
+}
+.unit-bubble.sold .unit-num,
+.unit-bubble.sold .unit-price { color: rgba(255,255,255,.7); }
+
+/* ── Detail Panel ─────────────────────────────────────────────── */
+.detail-panel {
+  position: absolute; top: 0; left: 0; bottom: 0;
+  width: 340px;
+  background: #fff;
+  border-right: 1px solid var(--border);
+  z-index: 20;
+  display: flex; flex-direction: column;
+  transform: translateX(-100%);
+  transition: transform .3s cubic-bezier(.4,0,.2,1);
+  box-shadow: 4px 0 24px rgba(0,0,0,.08);
+}
+.detail-panel.open { transform: translateX(0); }
+.panel-close {
+  position: absolute; top: 12px; right: 12px;
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--surface); border: 1px solid var(--border);
+  cursor: pointer; font-size: 16px; color: var(--muted);
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s;
+}
+.panel-close:hover { background: var(--border); }
+.panel-img {
+  height: 180px; background: #E8E4DC;
+  flex-shrink: 0; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+}
+.panel-img svg { opacity: .25; }
+.panel-body { flex: 1; overflow-y: auto; padding: 18px 20px 24px; }
+.panel-project { font-size: 11px; color: var(--muted); font-weight: 500; letter-spacing: .5px; text-transform: uppercase; }
+.panel-unit { font-size: 22px; font-weight: 700; color: var(--text); margin: 2px 0 4px; font-family: Georgia, serif; }
+.panel-status {
+  display: inline-block; font-size: 10px; font-weight: 700;
+  letter-spacing: 1px; text-transform: uppercase;
+  padding: 3px 8px; border-radius: 4px; margin-bottom: 14px;
+}
+.panel-status.available { background: #EAF3E8; color: var(--available); }
+.panel-status.sold { background: #F0F0F0; color: var(--sold); }
+.panel-status.pending { background: #FEF0E6; color: var(--pending); }
+.panel-details {
+  font-size: 11px; color: var(--muted);
+  margin-bottom: 14px; line-height: 1.7;
+}
+.panel-details strong { color: var(--text); }
+.panel-price-block { margin-bottom: 18px; }
+.panel-price {
+  font-size: 28px; font-weight: 700; color: var(--text);
+  font-family: Georgia, serif; line-height: 1;
+}
+.panel-price-sub { font-size: 12px; color: var(--muted); margin-top: 3px; }
+.panel-chips {
+  display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 18px;
+}
+.chip {
+  display: flex; align-items: center; gap: 5px;
+  background: var(--gold-bg); border: 1px solid var(--gold-light);
+  border-radius: 6px; padding: 4px 9px;
+  font-size: 11px; font-weight: 600; color: var(--gold);
+}
+.panel-metrics {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 8px; margin-bottom: 20px;
+}
+.metric {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px 12px;
+}
+.metric-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; margin-bottom: 3px; }
+.metric-value { font-size: 14px; font-weight: 700; color: var(--text); }
+.metric-value span { font-size: 11px; font-weight: 400; color: var(--muted); }
+.panel-actions { display: flex; flex-direction: column; gap: 8px; }
+.btn-primary {
+  width: 100%; padding: 11px;
+  background: var(--green-dark); color: #fff;
+  border: none; border-radius: 8px;
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  transition: background .15s; letter-spacing: .3px;
+}
+.btn-primary:hover { background: #2E4530; }
+.btn-secondary {
+  width: 100%; padding: 10px;
+  background: #fff; color: var(--text);
+  border: 1.5px solid var(--border); border-radius: 8px;
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  transition: all .15s;
+}
+.btn-secondary:hover { border-color: var(--gold-light); color: var(--gold); }
+.btn-row { display: flex; gap: 8px; }
+.btn-icon {
+  flex: 1; padding: 9px;
+  background: var(--surface); color: var(--muted);
+  border: 1px solid var(--border); border-radius: 8px;
+  font-size: 12px; cursor: pointer; transition: all .15s;
+  display: flex; align-items: center; justify-content: center; gap: 5px;
+}
+.btn-icon:hover { border-color: var(--gold-light); color: var(--gold); }
+
+/* ── Floor Label ──────────────────────────────────────────────── */
+.floor-label-badge {
+  position: absolute; top: 16px; left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255,255,255,.92); border: 1px solid var(--border);
+  border-radius: 8px; padding: 6px 16px;
+  font-size: 12px; font-weight: 700; color: var(--text);
+  letter-spacing: .5px; pointer-events: none; z-index: 5;
+  box-shadow: 0 1px 6px rgba(0,0,0,.08);
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="logo">MAKAI</div>
+  <div class="units-counter">26 OF 102 UNITS SOLD <span>· Makai Residences</span></div>
+  <div class="header-right">
+    <button class="menu-btn">MENU ☰</button>
+    <div class="avatar">SR</div>
+  </div>
+</div>
+
+<!-- FILTERS -->
+<div class="filters">
+  <div class="search-box">
+    <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+    </svg>
+    <input type="text" placeholder="Unit No.">
+  </div>
+  <select class="filter-select"><option>Price</option></select>
+  <select class="filter-select"><option>Unit Type</option></select>
+  <select class="filter-select"><option>Direction</option></select>
+  <select class="filter-select"><option>Outlook</option></select>
+  <div class="filter-sep"></div>
+  <div class="view-toggle">
+    <button class="view-btn" onclick="setView(this,'grid')">⊞ GRID</button>
+    <button class="view-btn active" onclick="setView(this,'plan')">◎ PLAN</button>
+    <button class="view-btn" onclick="setView(this,'list')">≡ LIST</button>
+  </div>
+  <div class="matches-badge">⚭ 102 Matches</div>
+  <button class="reset-btn">↺ Reset</button>
+</div>
+
+<!-- FLOOR TABS -->
+<div class="floor-tabs">
+  <span class="floor-tabs-label">Piso</span>
+  <button class="floor-tab" data-floor="1" onclick="setFloor(1,this)">
+    <span class="avail-dot"></span>P1<span class="avail-count">10</span>
+  </button>
+  <button class="floor-tab active" data-floor="2" onclick="setFloor(2,this)">
+    <span class="avail-dot"></span>P2<span class="avail-count">8</span>
+  </button>
+  <button class="floor-tab" data-floor="3" onclick="setFloor(3,this)">
+    <span class="avail-dot"></span>P3<span class="avail-count">7</span>
+  </button>
+  <button class="floor-tab" data-floor="4" onclick="setFloor(4,this)">
+    <span class="avail-dot"></span>P4<span class="avail-count">5</span>
+  </button>
+  <button class="floor-tab soldout" data-floor="5" onclick="setFloor(5,this)">
+    <span class="avail-dot"></span>P5<span class="avail-count">0</span>
+  </button>
+  <button class="floor-tab" data-floor="6" onclick="setFloor(6,this)">
+    <span class="avail-dot"></span>P6<span class="avail-count">3</span>
+  </button>
+  <button class="floor-tab" data-floor="7" onclick="setFloor(7,this)">
+    <span class="avail-dot"></span>P7<span class="avail-count">6</span>
+  </button>
+</div>
+
+<!-- PLAN AREA -->
+<div class="plan-area" id="planArea">
+
+  <div class="floor-label-badge" id="floorLabel">Piso 2 — 8 unidades disponibles</div>
+
+  <!-- Plan Canvas (pannable/zoomable) -->
+  <div class="plan-canvas" id="planCanvas">
+    <!-- SVG Building Footprint -->
+    <svg id="planSvg" width="900" height="620" viewBox="0 0 900 620" style="display:block">
+      <defs>
+        <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+          <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#00000018"/>
+        </filter>
+      </defs>
+
+      <!-- Ground/site -->
+      <rect width="900" height="620" fill="#EAE5DB"/>
+
+      <!-- Phase 1 (left wing) -->
+      <g filter="url(#shadow)">
+        <polygon points="80,160 280,80 360,220 340,480 160,520 60,380"
+          fill="#F5F0E8" stroke="#D4C9B0" stroke-width="1.5"/>
+        <!-- interior hatching -->
+        <polygon points="100,175 265,100 340,230 325,460 175,500 80,375"
+          fill="none" stroke="#D4C9B0" stroke-width=".5" stroke-dasharray="4,6"/>
+      </g>
+
+      <!-- Phase 2 (right V-shape) -->
+      <g filter="url(#shadow)">
+        <polygon points="480,80 620,60 820,160 840,360 720,480 600,500 500,420 440,300 480,180"
+          fill="#F5F0E8" stroke="#D4C9B0" stroke-width="1.5"/>
+        <polygon points="498,95 610,75 805,170 822,355 712,465 598,485 512,410 455,305 495,185"
+          fill="none" stroke="#D4C9B0" stroke-width=".5" stroke-dasharray="4,6"/>
+      </g>
+
+      <!-- Pool / amenity center -->
+      <ellipse cx="430" cy="300" rx="55" ry="70"
+        fill="#B8D8D4" stroke="#8CBAB5" stroke-width="1.5" opacity=".7"/>
+      <text x="430" y="304" text-anchor="middle" font-size="9" fill="#4A8C88" font-weight="600">POOL</text>
+
+      <!-- Phase labels -->
+      <text x="185" y="320" text-anchor="middle" font-size="13" fill="#8C7A60" font-weight="700" letter-spacing="2">PHASE 1</text>
+      <text x="660" y="200" text-anchor="middle" font-size="13" fill="#8C7A60" font-weight="700" letter-spacing="2">PHASE 2</text>
+
+      <!-- Orientation -->
+      <text x="430" y="590" text-anchor="middle" font-size="10" fill="#8C7A60" font-weight="600" letter-spacing="3">SEA &amp; LAKE FACING</text>
+
+      <!-- Compass rose (static in SVG) -->
+      <g transform="translate(58,550)">
+        <circle r="22" fill="rgba(255,255,255,.8)" stroke="#D4C9B0"/>
+        <text y="-10" text-anchor="middle" font-size="9" fill="#8C7A60" font-weight="700">N</text>
+        <text y="16" text-anchor="middle" font-size="7" fill="#8C7A60">S</text>
+        <text x="14" y="3" text-anchor="middle" font-size="7" fill="#8C7A60">E</text>
+        <text x="-14" y="3" text-anchor="middle" font-size="7" fill="#8C7A60">W</text>
+        <line x1="0" y1="-14" x2="0" y2="14" stroke="#8C7A60" stroke-width="1"/>
+        <line x1="-14" y1="0" x2="14" y2="0" stroke="#8C7A60" stroke-width=".5"/>
+      </g>
+    </svg>
+
+    <!-- Unit Bubbles — positioned absolutely over the SVG -->
+    <div id="bubblesLayer" style="position:absolute;top:0;left:0;width:900px;height:620px;pointer-events:none"></div>
+  </div>
+
+  <!-- Zoom controls -->
+  <div class="zoom-btns">
+    <button class="zoom-btn" onclick="zoomBy(1.2)">+</button>
+    <button class="zoom-btn" onclick="zoomBy(0.8)">−</button>
+    <div class="zoom-level" id="zoomLevel">64%</div>
+  </div>
+</div>
+
+<!-- DETAIL PANEL -->
+<div class="detail-panel" id="detailPanel">
+  <button class="panel-close" onclick="closePanel()">×</button>
+  <div class="panel-img" id="panelImg">
+    <!-- Placeholder floor plan illustration -->
+    <svg width="200" height="140" viewBox="0 0 200 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="20" y="10" width="160" height="120" rx="2" stroke="#8C7A60" stroke-width="2"/>
+      <rect x="20" y="10" width="80" height="70" fill="none" stroke="#8C7A60" stroke-width="1"/>
+      <rect x="100" y="10" width="80" height="50" fill="none" stroke="#8C7A60" stroke-width="1"/>
+      <rect x="20" y="80" width="50" height="50" fill="none" stroke="#8C7A60" stroke-width="1"/>
+      <rect x="70" y="80" width="130" height="50" fill="none" stroke="#8C7A60" stroke-width="1"/>
+      <circle cx="60" cy="130" r="15" stroke="#8C7A60" stroke-width="1" stroke-dasharray="3,2"/>
+    </svg>
+  </div>
+  <div class="panel-body" id="panelBody">
+    <!-- Filled by JS -->
+  </div>
+</div>
+
+<script>
+// ── Data ───────────────────────────────────────────────────────
+const FLOORS = {
+  1: [
+    {id:'111',status:'available',beds:2,baths:2,sqft:980,terrace:180,price:431000,dir:'NW',outlook:'Golf'},
+    {id:'112',status:'available',beds:2,baths:2,sqft:980,terrace:180,price:431000,dir:'NW',outlook:'Sea'},
+    {id:'113',status:'available',beds:1,baths:1.5,sqft:630,terrace:120,price:329000,dir:'SE',outlook:'Lake'},
+    {id:'114',status:'available',beds:2,baths:2,sqft:1020,terrace:200,price:452000,dir:'SW',outlook:'Sea'},
+    {id:'115',status:'available',beds:3,baths:3,sqft:1480,terrace:320,price:487000,dir:'S',outlook:'Sea & Lake'},
+    {id:'116',status:'available',beds:2,baths:2,sqft:1030,terrace:210,price:502000,dir:'SE',outlook:'Sea'},
+    {id:'117',status:'available',beds:2,baths:2,sqft:980,terrace:175,price:406000,dir:'NE',outlook:'Golf'},
+    {id:'118',status:'available',beds:2,baths:2,sqft:980,terrace:175,price:406000,dir:'NE',outlook:'Golf'},
+    {id:'119',status:'available',beds:1,baths:1.5,sqft:630,terrace:130,price:431000,dir:'E',outlook:'Sea'},
+    {id:'120',status:'sold',beds:2,baths:2,sqft:980,terrace:180,price:437000,dir:'N',outlook:'Golf'},
+    {id:'121',status:'available',beds:2,baths:2,sqft:980,terrace:180,price:452000,dir:'NE',outlook:'Sea'},
+    {id:'122',status:'available',beds:2,baths:2,sqft:980,terrace:180,price:452000,dir:'E',outlook:'Lake'},
+    {id:'123',status:'sold',beds:2,baths:2,sqft:980,terrace:180,price:431000,dir:'SE',outlook:'Sea'},
+    {id:'124',status:'sold',beds:3,baths:3,sqft:1480,terrace:300,price:null,dir:'N',outlook:'Golf'},
+  ],
+  2: [
+    {id:'211',status:'available',beds:2,baths:2,sqft:980,terrace:180,price:447000,dir:'NW',outlook:'Golf'},
+    {id:'212',status:'available',beds:2,baths:2,sqft:980,terrace:180,price:447000,dir:'NW',outlook:'Sea'},
+    {id:'213',status:'available',beds:1,baths:1.5,sqft:630,terrace:120,price:342000,dir:'SE',outlook:'Lake'},
+    {id:'214',status:'available',beds:2,baths:2,sqft:1020,terrace:200,price:470000,dir:'SW',outlook:'Sea'},
+    {id:'215',status:'pending',beds:3,baths:3,sqft:1480,terrace:320,price:498000,dir:'S',outlook:'Sea & Lake'},
+    {id:'216',status:'sold',beds:2,baths:2,sqft:1030,terrace:210,price:515000,dir:'SE',outlook:'Sea'},
+    {id:'217',status:'sold',beds:2,baths:2,sqft:980,terrace:175,price:418000,dir:'NE',outlook:'Golf'},
+    {id:'218',status:'available',beds:2,baths:2,sqft:980,terrace:175,price:418000,dir:'NE',outlook:'Golf'},
+    {id:'219',status:'available',beds:1,baths:1.5,sqft:630,terrace:130,price:442000,dir:'E',outlook:'Sea'},
+    {id:'220',status:'available',beds:2,baths:2,sqft:980,terrace:180,price:454000,dir:'N',outlook:'Golf'},
+    {id:'221',status:'sold',beds:2,baths:2,sqft:980,terrace:180,price:462000,dir:'NE',outlook:'Sea'},
+    {id:'222',status:'sold',beds:2,baths:2,sqft:980,terrace:180,price:454000,dir:'E',outlook:'Lake'},
+    {id:'223',status:'sold',beds:2,baths:2,sqft:980,terrace:180,price:null,dir:'SE',outlook:'Sea'},
+    {id:'224',status:'sold',beds:3,baths:3,sqft:1480,terrace:300,price:null,dir:'N',outlook:'Golf'},
+  ],
+};
+
+// Unit positions per floor (x,y center) relative to 900x620 SVG
+const POSITIONS = {
+  '11x': [{x:155,y:200},{x:195,y:245},{x:220,y:295},{x:215,y:345},{x:195,y:390},{x:185,y:420}],
+  '12x': [{x:700,y:130},{x:760,y:155},{x:800,y:210},{x:810,y:270},{x:790,y:330},{x:750,y:390},{x:700,y:440},{x:650,y:460}],
+};
+
+// Generate positions dynamically for each floor
+function getPositions(floor) {
+  const p1 = [
+    {x:150,y:190},{x:180,y:235},{x:205,y:285},{x:200,y:335},
+    {x:185,y:385},{x:175,y:420}
+  ];
+  const p2 = [
+    {x:695,y:120},{x:755,y:148},{x:798,y:203},{x:808,y:263},
+    {x:787,y:323},{x:748,y:383},{x:698,y:432},{x:648,y:452}
+  ];
+  return [...p1, ...p2];
+}
+
+// ── State ──────────────────────────────────────────────────────
+let currentFloor = 2;
+let selectedUnit = null;
+let scale = 0.64;
+let panX = 0, panY = 0;
+let isPanning = false;
+let startX, startY, startPanX, startPanY;
+
+// ── Floor selection ────────────────────────────────────────────
+function setFloor(n, btn) {
+  currentFloor = n;
+  document.querySelectorAll('.floor-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  selectedUnit = null;
+  closePanel();
+
+  // Update label
+  const counts = {1:10,2:8,3:7,4:5,5:0,6:3,7:6};
+  const avail = counts[n] || 0;
+  document.getElementById('floorLabel').textContent =
+    `Piso ${n} — ${avail > 0 ? avail + ' unidades disponibles' : 'Sold out'}`;
+
+  renderBubbles();
+}
+
+// ── Render unit bubbles ────────────────────────────────────────
+function renderBubbles() {
+  const layer = document.getElementById('bubblesLayer');
+  const units = FLOORS[currentFloor] || FLOORS[2];
+  const positions = getPositions(currentFloor);
+  const size = 44;
+
+  layer.innerHTML = '';
+  units.forEach((u, i) => {
+    const pos = positions[i] || {x: 200 + i * 50, y: 300};
+    const div = document.createElement('div');
+    div.className = `unit-bubble ${u.status}${selectedUnit === u.id ? ' selected' : ''}`;
+    div.style.cssText = `
+      width:${size}px;height:${size}px;
+      left:${pos.x - size/2}px;top:${pos.y - size/2}px;
+      pointer-events:auto;
+    `;
+    div.innerHTML = `
+      <div class="unit-num">${u.id}</div>
+      <div class="unit-price">${u.price ? '$'+(u.price/1000).toFixed(0)+'k' : 'SOLD'}</div>
+    `;
+    if (u.status !== 'sold') {
+      div.onclick = () => openUnit(u);
+    }
+    layer.appendChild(div);
+  });
+}
+
+// ── Detail panel ───────────────────────────────────────────────
+function openUnit(u) {
+  selectedUnit = u.id;
+  renderBubbles();
+
+  const statusLabel = {available:'Disponible',sold:'Vendido',pending:'Reservado'};
+  const priceStr = u.price ? '$' + u.price.toLocaleString('en-US') : '—';
+  const sqftTotal = u.sqft + u.terrace;
+
+  document.getElementById('panelBody').innerHTML = `
+    <div class="panel-project">Makai Residences</div>
+    <div class="panel-unit">Unidad ${u.id}</div>
+    <span class="panel-status ${u.status}">${statusLabel[u.status]}</span>
+    <div class="panel-details">
+      Piso ${currentFloor} &nbsp;·&nbsp; <strong>${u.beds} hab.</strong> &nbsp;·&nbsp; ${u.baths} baños &nbsp;·&nbsp; ${u.dir} &nbsp;·&nbsp; ${u.outlook} Facing
+    </div>
+    <div class="panel-price-block">
+      <div class="panel-price">${priceStr}</div>
+      <div class="panel-price-sub">$${Math.round(u.price/u.sqft).toLocaleString()}/sqft · Desde $5,000 de reserva</div>
+    </div>
+    <div class="panel-chips">
+      <div class="chip">🛏 ${u.beds} Bed</div>
+      <div class="chip">🚿 ${u.baths} Bath</div>
+      <div class="chip">⊞ ${u.sqft} sqft</div>
+      <div class="chip">🌿 ${u.terrace} sqft terraza</div>
+      <div class="chip">⊟ ${sqftTotal} total</div>
+    </div>
+    <div class="panel-metrics">
+      <div class="metric">
+        <div class="metric-label">Renta estimada</div>
+        <div class="metric-value">$${(u.price*0.013/12).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g,",")} <span>/mes</span></div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">ROI anual</div>
+        <div class="metric-value">~15 <span>%</span></div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Entrega estimada</div>
+        <div class="metric-value">Q4 <span>2027</span></div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Valor 2027</div>
+        <div class="metric-value">$${Math.round(u.price*1.14/1000)}k <span>est.</span></div>
+      </div>
+    </div>
+    <div class="panel-actions">
+      <button class="btn-primary">📅 Agendar Videollamada</button>
+      <button class="btn-secondary">💳 Reservar Online — desde $5,000</button>
+      <div class="btn-row">
+        <button class="btn-icon">💬 WhatsApp</button>
+        <button class="btn-icon">📤 Compartir</button>
+        <button class="btn-icon">♡ Guardar</button>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('detailPanel').classList.add('open');
+}
+
+function closePanel() {
+  selectedUnit = null;
+  document.getElementById('detailPanel').classList.remove('open');
+  renderBubbles();
+}
+
+// ── View toggle ────────────────────────────────────────────────
+function setView(btn, view) {
+  document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ── Zoom / Pan ─────────────────────────────────────────────────
+const area = document.getElementById('planArea');
+const canvas = document.getElementById('planCanvas');
+
+function applyTransform() {
+  canvas.style.transform = `translate(${panX}px,${panY}px) scale(${scale})`;
+  document.getElementById('zoomLevel').textContent = Math.round(scale * 100) + '%';
+}
+
+function centerCanvas() {
+  const aw = area.offsetWidth, ah = area.offsetHeight;
+  const cw = 900, ch = 620;
+  panX = (aw - cw * scale) / 2;
+  panY = (ah - ch * scale) / 2;
+  applyTransform();
+}
+
+function zoomBy(factor) {
+  const newScale = Math.min(2, Math.max(0.3, scale * factor));
+  const aw = area.offsetWidth, ah = area.offsetHeight;
+  const cx = aw / 2, cy = ah / 2;
+  panX = cx - (cx - panX) * (newScale / scale);
+  panY = cy - (cy - panY) * (newScale / scale);
+  scale = newScale;
+  applyTransform();
+}
+
+// Mouse wheel zoom
+area.addEventListener('wheel', e => {
+  e.preventDefault();
+  const factor = e.deltaY < 0 ? 1.12 : 0.9;
+  const rect = area.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+  const newScale = Math.min(2, Math.max(0.3, scale * factor));
+  panX = mx - (mx - panX) * (newScale / scale);
+  panY = my - (my - panY) * (newScale / scale);
+  scale = newScale;
+  applyTransform();
+}, {passive: false});
+
+// Drag to pan
+area.addEventListener('mousedown', e => {
+  if (e.target.closest('.unit-bubble') || e.target.closest('.detail-panel') || e.target.closest('.zoom-btns')) return;
+  isPanning = true;
+  startX = e.clientX; startY = e.clientY;
+  startPanX = panX; startPanY = panY;
+});
+window.addEventListener('mousemove', e => {
+  if (!isPanning) return;
+  panX = startPanX + (e.clientX - startX);
+  panY = startPanY + (e.clientY - startY);
+  applyTransform();
+});
+window.addEventListener('mouseup', () => { isPanning = false; });
+
+// Touch support
+area.addEventListener('touchstart', e => {
+  if (e.touches.length === 1) {
+    isPanning = true;
+    startX = e.touches[0].clientX; startY = e.touches[0].clientY;
+    startPanX = panX; startPanY = panY;
+  }
+}, {passive: true});
+area.addEventListener('touchmove', e => {
+  if (!isPanning || e.touches.length !== 1) return;
+  panX = startPanX + (e.touches[0].clientX - startX);
+  panY = startPanY + (e.touches[0].clientY - startY);
+  applyTransform();
+}, {passive: true});
+area.addEventListener('touchend', () => { isPanning = false; });
+
+// ── Init ───────────────────────────────────────────────────────
+window.addEventListener('load', () => {
+  centerCanvas();
+  renderBubbles();
+});
+window.addEventListener('resize', centerCanvas);
+</script>
+</body>
+</html>

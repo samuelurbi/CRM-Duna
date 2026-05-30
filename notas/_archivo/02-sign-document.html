@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Makai · Documentos</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0c0c0b; --surface: #161614; --surface-2: #1e1e1b;
+  --border: rgba(255,255,255,.08); --green: #82b870; --green-dim: #4A5E3F;
+  --amber: #c97c40; --text: #F1EDE3; --muted: #7a7670; --red: #c0433a;
+}
+body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; -webkit-font-smoothing: antialiased; }
+
+/* shared sidebar */
+.sidebar { width: 220px; min-height: 100vh; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; position: fixed; left: 0; top: 0; bottom: 0; }
+.sidebar-logo { padding: 24px 20px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+.sidebar-logo-mark { width: 28px; height: 28px; background: var(--green-dim); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--green); }
+.sidebar-logo-name { font-size: 13px; font-weight: 700; letter-spacing: .1em; }
+.sidebar-logo-sub { font-size: 9px; color: var(--muted); letter-spacing: .06em; }
+.nav { padding: 16px 10px; flex: 1; }
+.nav-label { font-size: 8.5px; font-weight: 600; color: var(--muted); letter-spacing: .12em; text-transform: uppercase; padding: 0 10px; margin-bottom: 6px; margin-top: 16px; }
+.nav-label:first-child { margin-top: 0; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 6px; font-size: 13px; color: var(--muted); cursor: pointer; text-decoration: none; transition: background .15s, color .15s; margin-bottom: 1px; }
+.nav-item:hover { background: rgba(255,255,255,.05); color: var(--text); }
+.nav-item.active { background: rgba(130,184,112,.1); color: var(--green); }
+.nav-item svg { width: 15px; height: 15px; flex-shrink: 0; }
+.nav-item .badge { margin-left: auto; background: var(--amber); color: #fff; font-size: 9px; font-weight: 700; border-radius: 10px; padding: 1px 6px; }
+.sidebar-user { padding: 14px 16px; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+.sidebar-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--green-dim); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--green); flex-shrink: 0; }
+.sidebar-user-name { font-size: 12px; font-weight: 500; }
+.sidebar-user-role { font-size: 10px; color: var(--muted); }
+
+.main { margin-left: 220px; flex: 1; }
+.topbar { height: 56px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 32px; position: sticky; top: 0; z-index: 10; }
+.topbar-title { font-size: 14px; font-weight: 600; }
+.content { padding: 32px; }
+
+/* page */
+.page-header { margin-bottom: 28px; }
+.page-title { font-size: 22px; font-weight: 600; letter-spacing: -.02em; }
+.page-sub { font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+/* doc list */
+.doc-list { display: flex; flex-direction: column; gap: 10px; max-width: 720px; }
+.doc-row {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+  padding: 16px 20px; display: flex; align-items: center; gap: 16px;
+  transition: border-color .15s;
+}
+.doc-row:hover { border-color: rgba(255,255,255,.14); }
+.doc-icon {
+  width: 40px; height: 40px; border-radius: 8px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.doc-icon svg { width: 20px; height: 20px; }
+.doc-icon.pending { background: rgba(201,124,64,.12); color: var(--amber); }
+.doc-icon.signed { background: rgba(130,184,112,.1); color: var(--green); }
+.doc-info { flex: 1; }
+.doc-name { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+.doc-meta { font-size: 11px; color: var(--muted); }
+.doc-status {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 10px; font-weight: 600; padding: 3px 10px; border-radius: 20px;
+  white-space: nowrap;
+}
+.doc-status.pending { background: rgba(201,124,64,.12); color: var(--amber); border: 1px solid rgba(201,124,64,.2); }
+.doc-status.signed { background: rgba(130,184,112,.1); color: var(--green); border: 1px solid rgba(130,184,112,.2); }
+.doc-status.review { background: rgba(59,130,246,.1); color: #60a5fa; border: 1px solid rgba(59,130,246,.2); }
+.doc-status svg { width: 10px; height: 10px; }
+.doc-actions { display: flex; gap: 8px; align-items: center; }
+.btn { padding: 7px 14px; border-radius: 6px; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; border: none; transition: background .15s; white-space: nowrap; }
+.btn-primary { background: var(--amber); color: #fff; }
+.btn-primary:hover { background: #b86e36; }
+.btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--muted); }
+.btn-ghost:hover { border-color: rgba(255,255,255,.18); color: var(--text); }
+.btn-green { background: var(--green-dim); color: var(--green); }
+.btn-green:hover { background: #3d5034; }
+
+/* MODAL OVERLAY */
+.modal-overlay {
+  display: none; position: fixed; inset: 0; z-index: 50;
+  background: rgba(0,0,0,.8); backdrop-filter: blur(4px);
+  align-items: center; justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+
+/* SIGN MODAL — full document viewer */
+.sign-modal {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+  width: 860px; max-width: 95vw; height: 90vh; max-height: 90vh;
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.sign-modal-header {
+  padding: 18px 24px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+}
+.sign-modal-title { font-size: 15px; font-weight: 600; }
+.sign-modal-subtitle { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.close-btn { background: none; border: none; cursor: pointer; color: var(--muted); padding: 4px; display: flex; align-items: center; }
+.close-btn:hover { color: var(--text); }
+
+/* steps */
+.steps-bar {
+  display: flex; align-items: center; padding: 14px 24px;
+  border-bottom: 1px solid var(--border); gap: 8px; flex-shrink: 0;
+  background: var(--surface-2);
+}
+.step {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 11px; font-weight: 500; color: var(--muted); position: relative;
+}
+.step.active { color: var(--text); }
+.step.done { color: var(--green); }
+.step-num {
+  width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid var(--border);
+  display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700;
+}
+.step.active .step-num { border-color: var(--amber); color: var(--amber); background: rgba(201,124,64,.1); }
+.step.done .step-num { border-color: var(--green); background: rgba(130,184,112,.1); color: var(--green); }
+.step-sep { flex: 1; height: 1px; background: var(--border); max-width: 40px; }
+
+/* panels */
+.sign-body { flex: 1; display: flex; overflow: hidden; }
+.doc-preview-panel {
+  flex: 1; overflow-y: auto; padding: 24px;
+  display: flex; flex-direction: column; gap: 16px;
+}
+.doc-page {
+  background: #fff; border-radius: 4px; padding: 40px 48px;
+  color: #111; font-size: 11px; line-height: 1.8; min-height: 300px;
+  position: relative;
+}
+.doc-page h3 { font-size: 16px; font-weight: 700; text-align: center; margin-bottom: 24px; color: #111; }
+.doc-page p { margin-bottom: 12px; }
+.doc-page .signature-zone {
+  border: 2px dashed var(--amber); border-radius: 6px;
+  padding: 16px 20px; margin-top: 32px; background: rgba(201,124,64,.04);
+  display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer; transition: background .15s;
+}
+.doc-page .signature-zone:hover { background: rgba(201,124,64,.08); }
+.sig-zone-label { font-size: 10px; font-weight: 600; color: var(--amber); text-transform: uppercase; letter-spacing: .08em; }
+.sig-zone-name { font-size: 12px; color: #555; }
+.sig-zone-cta { font-size: 11px; font-weight: 600; color: var(--amber); }
+.sig-placed { display: none; font-size: 22px; font-weight: 300; color: #111; font-family: Georgia, serif; font-style: italic; padding: 8px 0; }
+
+/* action panel */
+.action-panel {
+  width: 260px; flex-shrink: 0; border-left: 1px solid var(--border);
+  display: flex; flex-direction: column; padding: 24px;
+}
+.action-panel-title { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 16px; }
+.action-doc-info { background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 20px; }
+.action-doc-name { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+.action-doc-meta { font-size: 10px; color: var(--muted); line-height: 1.6; }
+.sig-status-list { flex: 1; }
+.sig-field-row { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.sig-field-row:last-child { border-bottom: none; }
+.sig-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); flex-shrink: 0; }
+.sig-dot.done { background: var(--green); }
+.sig-dot.pending { background: var(--amber); }
+.sig-field-lbl { font-size: 11px; color: var(--muted); }
+.sig-field-lbl.pending { color: var(--amber); }
+.sig-field-lbl.done { color: var(--green); }
+.action-panel-footer { margin-top: 20px; display: flex; flex-direction: column; gap: 8px; }
+
+/* SIGNATURE PAD STEP */
+.sig-pad-panel { display: none; flex-direction: column; align-items: center; padding: 32px 24px; gap: 16px; }
+.sig-pad-panel.open { display: flex; }
+.sig-pad-label { font-size: 13px; font-weight: 600; color: var(--text); align-self: flex-start; }
+.sig-pad-sub { font-size: 11px; color: var(--muted); align-self: flex-start; margin-top: -10px; }
+.sig-tabs { display: flex; gap: 0; border: 1px solid var(--border); border-radius: 7px; overflow: hidden; align-self: flex-start; margin-bottom: 4px; }
+.sig-tab { padding: 7px 16px; background: transparent; border: none; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 500; color: var(--muted); transition: background .15s, color .15s; }
+.sig-tab.active { background: rgba(255,255,255,.07); color: var(--text); }
+canvas#sig-canvas {
+  border: 1px solid var(--border); border-radius: 8px;
+  background: #fff; cursor: crosshair; touch-action: none;
+}
+.sig-type-input {
+  width: 100%; background: #fff; border: 1px solid var(--border); border-radius: 8px;
+  padding: 16px 20px; font-size: 28px; font-family: Georgia, serif; font-style: italic;
+  color: #111; outline: none; text-align: center;
+}
+.sig-pad-actions { display: flex; gap: 8px; align-self: stretch; }
+
+/* success */
+.success-panel { display: none; flex-direction: column; align-items: center; justify-content: center; flex: 1; padding: 40px; text-align: center; }
+.success-panel.open { display: flex; }
+.success-icon { width: 56px; height: 56px; background: rgba(130,184,112,.1); border: 1px solid rgba(130,184,112,.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; }
+.success-icon svg { width: 26px; height: 26px; color: var(--green); }
+.success-title { font-size: 20px; font-weight: 600; margin-bottom: 8px; }
+.success-sub { font-size: 13px; color: var(--muted); max-width: 320px; margin-bottom: 28px; line-height: 1.6; }
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="sidebar-logo-mark">M</div>
+    <div><div class="sidebar-logo-name">MAKAI</div><div class="sidebar-logo-sub">Portal del Comprador</div></div>
+  </div>
+  <nav class="nav">
+    <div class="nav-label">Principal</div>
+    <a class="nav-item" href="01-saved-properties.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Resumen
+    </a>
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+      Propiedades
+    </a>
+    <a class="nav-item" href="01-saved-properties.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      Guardadas
+    </a>
+    <div class="nav-label">Gestión</div>
+    <a class="nav-item active" href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      Documentos
+      <span class="badge">2</span>
+    </a>
+    <a class="nav-item" href="05-proposals-contracts.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Propuestas <span class="badge">1</span>
+    </a>
+    <a class="nav-item" href="06-calendar-events.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Calendario
+    </a>
+  </nav>
+  <div class="sidebar-user">
+    <div class="sidebar-avatar">GG</div>
+    <div><div class="sidebar-user-name">Giuseppe Gangemi</div><div class="sidebar-user-role">Comprador</div></div>
+  </div>
+</aside>
+
+<main class="main">
+  <header class="topbar">
+    <span class="topbar-title">Documentos</span>
+    <div style="display:flex;gap:16px;align-items:center;">
+      <div style="width:32px;height:32px;border-radius:6px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);position:relative;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <span style="position:absolute;top:6px;right:6px;width:6px;height:6px;background:var(--amber);border-radius:50%;border:1.5px solid var(--surface);"></span>
+      </div>
+      <a href="04-user-profile.html" style="text-decoration:none"><div class="sidebar-avatar">GG</div></a>
+    </div>
+  </header>
+
+  <div class="content">
+    <div class="page-header">
+      <div class="page-title">Documentos</div>
+      <div class="page-sub">Firma y gestión de contratos · Makai Residences</div>
+    </div>
+
+    <!-- Pending banner -->
+    <div style="background:rgba(201,124,64,.08);border:1px solid rgba(201,124,64,.2);border-radius:10px;padding:14px 18px;display:flex;align-items:center;gap:12px;margin-bottom:24px;max-width:720px;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <div>
+        <div style="font-size:12px;font-weight:600;color:var(--amber);">2 documentos requieren tu firma</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:1px;">Revisa y firma para continuar con el proceso de compra.</div>
+      </div>
+    </div>
+
+    <div class="doc-list">
+      <!-- Pending -->
+      <div class="doc-row">
+        <div class="doc-icon pending">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>
+        </div>
+        <div class="doc-info">
+          <div class="doc-name">Carta de Intención de Compra</div>
+          <div class="doc-meta">Enviado por Carlos Ramírez · 20 may 2025 · Unit A-101</div>
+        </div>
+        <div class="doc-status pending">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Pendiente de firma
+        </div>
+        <div class="doc-actions">
+          <button class="btn btn-ghost" onclick="downloadDoc()">Descargar</button>
+          <button class="btn btn-primary" onclick="openSignModal('Carta de Intención de Compra', 'Unit A-101')">Firmar</button>
+        </div>
+      </div>
+
+      <!-- Pending 2 -->
+      <div class="doc-row">
+        <div class="doc-icon pending">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </div>
+        <div class="doc-info">
+          <div class="doc-name">Acuerdo de Reserva</div>
+          <div class="doc-meta">Enviado por Carlos Ramírez · 21 may 2025 · Unit A-101 · $5,000 USD</div>
+        </div>
+        <div class="doc-status pending">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Pendiente de firma
+        </div>
+        <div class="doc-actions">
+          <button class="btn btn-ghost" onclick="downloadDoc()">Descargar</button>
+          <button class="btn btn-primary" onclick="openSignModal('Acuerdo de Reserva', 'Unit A-101')">Firmar</button>
+        </div>
+      </div>
+
+      <!-- Signed -->
+      <div class="doc-row" style="opacity:.7;">
+        <div class="doc-icon signed">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div class="doc-info">
+          <div class="doc-name">NDA · Acuerdo de Confidencialidad</div>
+          <div class="doc-meta">Firmado el 10 may 2025 · Válido hasta 10 may 2026</div>
+        </div>
+        <div class="doc-status signed">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+          Firmado
+        </div>
+        <div class="doc-actions">
+          <button class="btn btn-ghost" onclick="downloadDoc()">Descargar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- ── SIGN MODAL ── -->
+<div class="modal-overlay" id="sign-modal" onclick="handleOverlayClick(event)">
+  <div class="sign-modal">
+    <!-- Header -->
+    <div class="sign-modal-header">
+      <div>
+        <div class="sign-modal-title" id="modal-doc-title">Carta de Intención de Compra</div>
+        <div class="sign-modal-subtitle" id="modal-doc-sub">Unit A-101 · Makai Residences</div>
+      </div>
+      <button class="close-btn" onclick="closeSignModal()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <!-- Steps -->
+    <div class="steps-bar">
+      <div class="step active" id="step-1-ind">
+        <div class="step-num">1</div>
+        Revisar documento
+      </div>
+      <div class="step-sep"></div>
+      <div class="step" id="step-2-ind">
+        <div class="step-num">2</div>
+        Agregar firma
+      </div>
+      <div class="step-sep"></div>
+      <div class="step" id="step-3-ind">
+        <div class="step-num">3</div>
+        Confirmado
+      </div>
+    </div>
+
+    <!-- Body -->
+    <div class="sign-body" id="step-review">
+      <!-- Document preview -->
+      <div class="doc-preview-panel">
+        <div class="doc-page">
+          <h3>CARTA DE INTENCIÓN DE COMPRA</h3>
+          <p><strong>Proyecto:</strong> Makai Residences, Cap Cana, República Dominicana</p>
+          <p><strong>Unidad:</strong> A-101 · Piso 1 · Orientación SE · Vista al lago</p>
+          <p><strong>Comprador:</strong> Giuseppe Gangemi</p>
+          <p><strong>Precio de venta:</strong> USD $450,000 (cuatrocientos cincuenta mil dólares americanos)</p>
+          <p>Por medio de la presente, el comprador manifiesta su intención formal de adquirir la unidad referida bajo las condiciones establecidas en el Plan de Pagos adjunto, sujeto a la firma del Contrato de Promesa de Compraventa dentro de los 60 días siguientes a la firma de este documento.</p>
+          <p><strong>Plan de pagos acordado:</strong></p>
+          <p>· Reserva: $5,000 USD a la firma<br>
+          · Inicial: $130,000 USD (60 días)<br>
+          · Cuotas de construcción: $157,500 USD (18 meses)<br>
+          · Contraentrega: $157,500 USD (Q4 2026)</p>
+          <p>El presente documento no constituye un contrato vinculante hasta la firma del Contrato de Promesa de Compraventa ante Notario Público.</p>
+          <div class="signature-zone" id="sig-zone" onclick="goToSign()">
+            <div>
+              <div class="sig-zone-label">Campo de firma requerido</div>
+              <div class="sig-zone-name" style="margin-top:4px;">Giuseppe Gangemi · Comprador</div>
+            </div>
+            <div class="sig-zone-cta">Firmar aquí →</div>
+          </div>
+          <div class="sig-placed" id="sig-placed">Giuseppe Gangemi</div>
+        </div>
+      </div>
+
+      <!-- Action panel -->
+      <div class="action-panel">
+        <div class="action-panel-title">Detalles</div>
+        <div class="action-doc-info">
+          <div class="action-doc-name" id="panel-doc-name">Carta de Intención de Compra</div>
+          <div class="action-doc-meta">
+            Enviado por: Carlos Ramírez<br>
+            Fecha: 20 may 2025<br>
+            Vence: 27 may 2025<br>
+            Páginas: 2
+          </div>
+        </div>
+        <div class="action-panel-title">Campos de firma</div>
+        <div class="sig-status-list">
+          <div class="sig-field-row">
+            <div class="sig-dot pending" id="sig-dot-1"></div>
+            <div class="sig-field-lbl pending" id="sig-lbl-1">Firma del comprador</div>
+          </div>
+        </div>
+        <div class="action-panel-footer">
+          <button class="btn btn-ghost" onclick="downloadDoc()" style="width:100%;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;margin-right:5px;vertical-align:middle;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Descargar PDF
+          </button>
+          <button class="btn btn-primary" onclick="goToSign()" style="width:100%;">Agregar mi firma</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 2: Signature pad -->
+    <div class="sig-pad-panel" id="step-sign">
+      <div class="sig-pad-label">Agrega tu firma</div>
+      <div class="sig-pad-sub">Tu firma tiene validez legal equivalente a una firma manuscrita.</div>
+      <div class="sig-tabs">
+        <button class="sig-tab active" onclick="switchSigTab('draw', this)">Dibujar</button>
+        <button class="sig-tab" onclick="switchSigTab('type', this)">Escribir</button>
+      </div>
+      <canvas id="sig-canvas" width="500" height="200"></canvas>
+      <input type="text" id="sig-type" class="sig-type-input" placeholder="Escribe tu nombre…" value="Giuseppe Gangemi" style="display:none;" oninput="updatePreview(this.value)">
+      <div class="sig-pad-actions">
+        <button class="btn btn-ghost" onclick="clearSig()" style="flex:1;">Limpiar</button>
+        <button class="btn btn-ghost" onclick="backToReview()" style="flex:1;">Volver</button>
+        <button class="btn btn-primary" onclick="confirmSig()" style="flex:1;">Confirmar firma</button>
+      </div>
+    </div>
+
+    <!-- STEP 3: Success -->
+    <div class="success-panel" id="step-success">
+      <div class="success-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div class="success-title">Documento firmado</div>
+      <div class="success-sub">Tu firma fue registrada el <strong id="sig-date"></strong>. Recibirás una copia por email y quedará disponible aquí.</div>
+      <div style="display:flex;gap:10px;">
+        <button class="btn btn-ghost" onclick="downloadDoc()">Descargar copia</button>
+        <button class="btn btn-green" onclick="closeSignModal()">Volver a documentos</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentMode = 'draw';
+let isDrawing = false;
+let canvas, ctx;
+
+function openSignModal(docTitle, docSub) {
+  document.getElementById('modal-doc-title').textContent = docTitle;
+  document.getElementById('modal-doc-sub').textContent = docSub + ' · Makai Residences';
+  document.getElementById('panel-doc-name').textContent = docTitle;
+  resetModal();
+  document.getElementById('sign-modal').classList.add('open');
+  setTimeout(initCanvas, 50);
+}
+
+function closeSignModal() {
+  document.getElementById('sign-modal').classList.remove('open');
+}
+
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById('sign-modal')) closeSignModal();
+}
+
+function resetModal() {
+  showPanel('review');
+  setStep(1);
+  document.getElementById('sig-placed').style.display = 'none';
+  document.getElementById('sig-zone').style.display = 'flex';
+  document.getElementById('sig-dot-1').className = 'sig-dot pending';
+  document.getElementById('sig-lbl-1').className = 'sig-field-lbl pending';
+  document.getElementById('sig-lbl-1').textContent = 'Firma del comprador';
+}
+
+function showPanel(which) {
+  document.getElementById('step-review').style.display = which === 'review' ? 'flex' : 'none';
+  document.getElementById('step-sign').className = 'sig-pad-panel' + (which === 'sign' ? ' open' : '');
+  document.getElementById('step-success').className = 'success-panel' + (which === 'success' ? ' open' : '');
+}
+
+function setStep(n) {
+  [1,2,3].forEach(i => {
+    const el = document.getElementById('step-' + i + '-ind');
+    el.className = 'step' + (i < n ? ' done' : i === n ? ' active' : '');
+    el.querySelector('.step-num').textContent = i < n ? '✓' : i;
+  });
+}
+
+function goToSign() {
+  showPanel('sign');
+  setStep(2);
+  setTimeout(initCanvas, 50);
+}
+
+function backToReview() {
+  showPanel('review');
+  setStep(1);
+}
+
+function initCanvas() {
+  canvas = document.getElementById('sig-canvas');
+  ctx = canvas.getContext('2d');
+  ctx.strokeStyle = '#111827';
+  ctx.lineWidth = 2.5;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  addCanvasEvents();
+}
+
+function addCanvasEvents() {
+  canvas.onmousedown = (e) => { isDrawing = true; const r = canvas.getBoundingClientRect(); ctx.beginPath(); ctx.moveTo(e.clientX - r.left, e.clientY - r.top); };
+  canvas.onmousemove = (e) => { if (!isDrawing) return; const r = canvas.getBoundingClientRect(); ctx.lineTo(e.clientX - r.left, e.clientY - r.top); ctx.stroke(); };
+  canvas.onmouseup = () => isDrawing = false;
+  canvas.onmouseleave = () => isDrawing = false;
+  canvas.ontouchstart = (e) => { e.preventDefault(); isDrawing = true; const r = canvas.getBoundingClientRect(); const t = e.touches[0]; ctx.beginPath(); ctx.moveTo(t.clientX - r.left, t.clientY - r.top); };
+  canvas.ontouchmove = (e) => { e.preventDefault(); if (!isDrawing) return; const r = canvas.getBoundingClientRect(); const t = e.touches[0]; ctx.lineTo(t.clientX - r.left, t.clientY - r.top); ctx.stroke(); };
+  canvas.ontouchend = () => isDrawing = false;
+}
+
+function clearSig() {
+  if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+  document.getElementById('sig-type').value = '';
+}
+
+function switchSigTab(mode, btn) {
+  currentMode = mode;
+  document.querySelectorAll('.sig-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  const isType = mode === 'type';
+  canvas.style.display = isType ? 'none' : 'block';
+  document.getElementById('sig-type').style.display = isType ? 'block' : 'none';
+}
+
+function confirmSig() {
+  document.getElementById('sig-date').textContent = new Date().toLocaleDateString('es-DO', {day:'numeric',month:'long',year:'numeric'});
+  document.getElementById('sig-zone').style.display = 'none';
+  document.getElementById('sig-placed').style.display = 'block';
+  document.getElementById('sig-dot-1').className = 'sig-dot done';
+  document.getElementById('sig-lbl-1').className = 'sig-field-lbl done';
+  document.getElementById('sig-lbl-1').textContent = 'Firmado';
+  showPanel('success');
+  setStep(3);
+}
+
+function downloadDoc() {
+  alert('Descargando documento…');
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Makai · Propuestas y Contratos</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0c0c0b;
+  --surface: #161614;
+  --surface-2: #1e1e1b;
+  --border: rgba(255,255,255,.08);
+  --green: #82b870;
+  --green-dim: #4A5E3F;
+  --amber: #c97c40;
+  --text: #F1EDE3;
+  --muted: #7a7670;
+  --red: #c0433a;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: 220px;
+  min-height: 100vh;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  position: fixed;
+  left: 0; top: 0; bottom: 0;
+}
+.sidebar-logo {
+  padding: 24px 20px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+}
+.sidebar-logo-mark {
+  width: 28px; height: 28px; background: var(--green-dim);
+  border-radius: 6px; display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: var(--green);
+}
+.sidebar-logo-name { font-size: 13px; font-weight: 700; letter-spacing: .1em; color: var(--text); }
+.sidebar-logo-sub { font-size: 9px; color: var(--muted); letter-spacing: .06em; }
+.nav { padding: 16px 10px; flex: 1; }
+.nav-label {
+  font-size: 8.5px; font-weight: 600; color: var(--muted);
+  letter-spacing: .12em; text-transform: uppercase;
+  padding: 0 10px; margin-bottom: 6px; margin-top: 16px;
+}
+.nav-label:first-child { margin-top: 0; }
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 10px; border-radius: 6px;
+  font-size: 13px; color: var(--muted);
+  cursor: pointer; text-decoration: none;
+  transition: background .15s, color .15s;
+  margin-bottom: 1px;
+}
+.nav-item:hover { background: rgba(255,255,255,.05); color: var(--text); }
+.nav-item.active { background: rgba(130,184,112,.1); color: var(--green); }
+.nav-item svg { width: 15px; height: 15px; flex-shrink: 0; }
+.nav-item .badge {
+  margin-left: auto; background: var(--amber); color: #fff;
+  font-size: 9px; font-weight: 700; border-radius: 10px; padding: 1px 6px;
+}
+.sidebar-user {
+  padding: 14px 16px; border-top: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+}
+.sidebar-avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--green-dim); display: flex; align-items: center;
+  justify-content: center; font-size: 12px; font-weight: 700; color: var(--green);
+  flex-shrink: 0;
+}
+.sidebar-user-info { flex: 1; min-width: 0; }
+.sidebar-user-name { font-size: 12px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sidebar-user-role { font-size: 10px; color: var(--muted); }
+
+/* ── MAIN ── */
+.main {
+  margin-left: 220px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* ── TOP BAR ── */
+.topbar {
+  padding: 18px 32px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 16px;
+  background: var(--bg);
+  position: sticky; top: 0; z-index: 50;
+}
+.topbar-title { font-size: 15px; font-weight: 600; color: var(--text); }
+.topbar-sub { font-size: 12px; color: var(--muted); margin-left: auto; }
+
+/* ── LAYOUT: LIST + DETAIL ── */
+.content-area {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ── PROPOSALS LIST (LEFT COLUMN) ── */
+.proposals-col {
+  width: 340px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.proposals-col-header {
+  padding: 20px 20px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.proposals-col-title {
+  font-size: 11px; font-weight: 600; color: var(--muted);
+  letter-spacing: .1em; text-transform: uppercase; margin-bottom: 12px;
+}
+.filter-tabs {
+  display: flex; gap: 4px;
+}
+.filter-tab {
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 11px; font-weight: 500; color: var(--muted);
+  cursor: pointer; border: 1px solid transparent;
+  transition: all .15s;
+}
+.filter-tab:hover { color: var(--text); }
+.filter-tab.active {
+  background: rgba(130,184,112,.12);
+  border-color: rgba(130,184,112,.25);
+  color: var(--green);
+}
+
+.proposals-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+.proposals-list::-webkit-scrollbar { width: 4px; }
+.proposals-list::-webkit-scrollbar-track { background: transparent; }
+.proposals-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.proposal-item {
+  padding: 14px 20px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border);
+  transition: background .12s;
+  position: relative;
+}
+.proposal-item:last-child { border-bottom: none; }
+.proposal-item:hover { background: rgba(255,255,255,.03); }
+.proposal-item.active { background: rgba(130,184,112,.06); }
+.proposal-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 2px;
+  background: var(--green);
+}
+
+.proposal-item-top {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  margin-bottom: 5px;
+}
+.proposal-item-title {
+  font-size: 13px; font-weight: 600; color: var(--text);
+  line-height: 1.3;
+}
+.proposal-status {
+  font-size: 9px; font-weight: 700; letter-spacing: .06em;
+  padding: 3px 7px; border-radius: 10px;
+  text-transform: uppercase; flex-shrink: 0; margin-left: 8px;
+}
+.proposal-status.pending { background: rgba(201,124,64,.15); color: var(--amber); }
+.proposal-status.approved { background: rgba(130,184,112,.15); color: var(--green); }
+.proposal-status.rejected { background: rgba(192,67,58,.15); color: var(--red); }
+.proposal-status.expired { background: rgba(122,118,112,.15); color: var(--muted); }
+
+.proposal-item-meta {
+  font-size: 11px; color: var(--muted);
+  display: flex; align-items: center; gap: 8px;
+}
+.proposal-item-amount {
+  font-size: 12px; font-weight: 600; color: var(--text); margin-top: 6px;
+}
+.proposal-type-dot {
+  width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
+}
+.proposal-type-dot.presupuesto { background: var(--amber); }
+.proposal-type-dot.contrato { background: var(--green); }
+
+/* ── DETAIL PANEL (RIGHT) ── */
+.detail-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  padding: 32px 36px;
+}
+.detail-col::-webkit-scrollbar { width: 4px; }
+.detail-col::-webkit-scrollbar-track { background: transparent; }
+.detail-col::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+/* Empty state */
+.empty-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--muted);
+}
+.empty-state svg { opacity: .3; }
+.empty-state-title { font-size: 15px; font-weight: 600; color: var(--text); }
+.empty-state-sub { font-size: 13px; color: var(--muted); text-align: center; max-width: 280px; }
+
+/* Detail header */
+.detail-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 28px;
+  gap: 16px;
+}
+.detail-title-block {}
+.detail-type-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 10px; font-weight: 600; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .1em;
+  margin-bottom: 8px;
+}
+.detail-title {
+  font-size: 22px; font-weight: 700; color: var(--text);
+  letter-spacing: -.02em; line-height: 1.2; margin-bottom: 8px;
+}
+.detail-meta-row {
+  display: flex; align-items: center; gap: 16px;
+  font-size: 12px; color: var(--muted);
+}
+.detail-meta-sep { opacity: .4; }
+.detail-status-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 6px;
+}
+.detail-status-badge.pending { background: rgba(201,124,64,.12); color: var(--amber); border: 1px solid rgba(201,124,64,.2); }
+.detail-status-badge.approved { background: rgba(130,184,112,.12); color: var(--green); border: 1px solid rgba(130,184,112,.2); }
+.detail-status-badge.rejected { background: rgba(192,67,58,.12); color: var(--red); border: 1px solid rgba(192,67,58,.2); }
+.detail-status-badge.expired { background: rgba(122,118,112,.12); color: var(--muted); border: 1px solid rgba(122,118,112,.2); }
+
+/* Proposal body */
+.detail-section { margin-bottom: 28px; }
+.detail-section-title {
+  font-size: 10px; font-weight: 700; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .12em;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* Key figures */
+.figures-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.figure-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+}
+.figure-label { font-size: 10px; color: var(--muted); margin-bottom: 6px; }
+.figure-value { font-size: 20px; font-weight: 700; color: var(--text); letter-spacing: -.02em; }
+.figure-value.green { color: var(--green); }
+.figure-value.amber { color: var(--amber); }
+.figure-sub { font-size: 10px; color: var(--muted); margin-top: 3px; }
+
+/* Line items */
+.line-items {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.line-item {
+  display: flex; align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.line-item:last-child { border-bottom: none; }
+.line-item-name { flex: 1; color: var(--text); }
+.line-item-desc { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.line-item-amount { font-weight: 600; color: var(--text); }
+.line-item-amount.total { color: var(--green); font-size: 15px; }
+.line-item-total { background: rgba(130,184,112,.05); }
+
+/* Document preview */
+.doc-preview {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  display: flex; align-items: center; gap: 14px;
+  cursor: pointer;
+  transition: background .15s;
+}
+.doc-preview:hover { background: var(--surface-2); }
+.doc-icon {
+  width: 40px; height: 48px;
+  background: rgba(201,124,64,.1);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.doc-preview-name { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+.doc-preview-meta { font-size: 11px; color: var(--muted); }
+.doc-preview-action {
+  margin-left: auto;
+  font-size: 11px; color: var(--green); font-weight: 600;
+  display: flex; align-items: center; gap: 4px;
+}
+
+/* Notes from broker */
+.broker-note {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--amber);
+  border-radius: 10px;
+  padding: 16px;
+  font-size: 13px; color: var(--text); line-height: 1.6;
+}
+.broker-note-author {
+  font-size: 11px; color: var(--muted);
+  margin-bottom: 8px; display: flex; align-items: center; gap: 6px;
+}
+.broker-note-author strong { color: var(--text); }
+
+/* Action area — for pending proposals */
+.action-area {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+}
+.action-area-title {
+  font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px;
+}
+.action-area-sub { font-size: 12px; color: var(--muted); margin-bottom: 16px; }
+.comment-field {
+  width: 100%; background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  color: var(--text); font-family: 'Inter', sans-serif; font-size: 13px;
+  resize: none; min-height: 80px;
+  transition: border-color .15s; outline: none;
+  margin-bottom: 12px;
+}
+.comment-field::placeholder { color: var(--muted); }
+.comment-field:focus { border-color: rgba(130,184,112,.4); }
+.action-btns { display: flex; gap: 10px; }
+.btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 10px 20px; border-radius: 8px;
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  border: none; transition: all .15s; font-family: 'Inter', sans-serif;
+}
+.btn-approve {
+  background: var(--green); color: #0c0c0b; flex: 1;
+  justify-content: center;
+}
+.btn-approve:hover { background: #96cc83; }
+.btn-reject {
+  background: rgba(192,67,58,.15); color: var(--red);
+  border: 1px solid rgba(192,67,58,.25); flex: 1;
+  justify-content: center;
+}
+.btn-reject:hover { background: rgba(192,67,58,.25); }
+.btn-download {
+  background: var(--surface-2); color: var(--text);
+  border: 1px solid var(--border);
+}
+.btn-download:hover { background: rgba(255,255,255,.06); }
+
+/* Expiry warning */
+.expiry-warning {
+  display: flex; align-items: center; gap: 10px;
+  background: rgba(201,124,64,.08);
+  border: 1px solid rgba(201,124,64,.2);
+  border-radius: 8px; padding: 10px 14px;
+  font-size: 12px; color: var(--amber);
+  margin-bottom: 14px;
+}
+
+/* History thread */
+.history-thread { display: flex; flex-direction: column; gap: 0; }
+.history-event {
+  display: flex; gap: 14px;
+  padding-bottom: 20px;
+  position: relative;
+}
+.history-event:last-child { padding-bottom: 0; }
+.history-event:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: 15px; top: 32px; bottom: 0;
+  width: 1px; background: var(--border);
+}
+.history-dot {
+  width: 30px; height: 30px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; margin-top: 2px;
+}
+.history-dot.sent { background: rgba(122,118,112,.12); }
+.history-dot.approved { background: rgba(130,184,112,.15); }
+.history-dot.rejected { background: rgba(192,67,58,.12); }
+.history-dot.comment { background: rgba(201,124,64,.1); }
+.history-dot.expired { background: rgba(122,118,112,.08); }
+.history-event-body { flex: 1; }
+.history-event-title {
+  font-size: 13px; font-weight: 600; color: var(--text);
+  margin-bottom: 3px;
+}
+.history-event-meta { font-size: 11px; color: var(--muted); margin-bottom: 6px; }
+.history-event-comment {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 12px; color: var(--text); line-height: 1.5;
+}
+
+/* Resolved state */
+.resolved-state {
+  display: flex; align-items: center; gap: 14px;
+  background: rgba(130,184,112,.06);
+  border: 1px solid rgba(130,184,112,.15);
+  border-radius: 12px;
+  padding: 18px 20px;
+}
+.resolved-icon {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: rgba(130,184,112,.15);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.resolved-title { font-size: 14px; font-weight: 600; color: var(--green); margin-bottom: 3px; }
+.resolved-sub { font-size: 12px; color: var(--muted); }
+
+/* Rejected resolved state */
+.rejected-state {
+  display: flex; align-items: center; gap: 14px;
+  background: rgba(192,67,58,.06);
+  border: 1px solid rgba(192,67,58,.15);
+  border-radius: 12px;
+  padding: 18px 20px;
+}
+.rejected-icon {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: rgba(192,67,58,.12);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.rejected-title { font-size: 14px; font-weight: 600; color: var(--red); margin-bottom: 3px; }
+.rejected-sub { font-size: 12px; color: var(--muted); }
+
+/* ── TOAST ── */
+.toast-wrap {
+  position: fixed; bottom: 24px; right: 24px; z-index: 200;
+  display: flex; flex-direction: column; gap: 8px; pointer-events: none;
+}
+.toast {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px; padding: 12px 18px;
+  font-size: 13px; color: var(--text);
+  display: flex; align-items: center; gap: 10px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.4);
+  opacity: 0; transform: translateY(8px);
+  transition: all .25s ease; pointer-events: auto;
+  min-width: 240px;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+.toast-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.toast-dot.green { background: var(--green); }
+.toast-dot.red { background: var(--red); }
+.toast-dot.amber { background: var(--amber); }
+
+/* ── CONFIRM MODAL ── */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.7);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 100; opacity: 0; pointer-events: none;
+  transition: opacity .2s;
+}
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+.modal-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 32px;
+  width: 460px; max-width: 90vw;
+  transform: translateY(16px); transition: transform .2s;
+}
+.modal-overlay.open .modal-box { transform: translateY(0); }
+.modal-icon {
+  width: 48px; height: 48px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 16px;
+}
+.modal-icon.approve-icon { background: rgba(130,184,112,.15); }
+.modal-icon.reject-icon { background: rgba(192,67,58,.12); }
+.modal-title { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+.modal-sub { font-size: 13px; color: var(--muted); line-height: 1.5; margin-bottom: 24px; }
+.modal-comment-label { font-size: 11px; color: var(--muted); margin-bottom: 6px; }
+.modal-btns { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+.btn-sm { padding: 8px 18px; font-size: 12px; }
+.btn-cancel {
+  background: transparent; color: var(--muted);
+  border: 1px solid var(--border); border-radius: 8px;
+  padding: 8px 18px; font-size: 12px; font-weight: 500;
+  cursor: pointer; transition: all .15s; font-family: 'Inter', sans-serif;
+}
+.btn-cancel:hover { color: var(--text); border-color: rgba(255,255,255,.2); }
+.btn-confirm-approve {
+  background: var(--green); color: #0c0c0b;
+  border-radius: 8px; padding: 8px 20px; font-size: 12px; font-weight: 700;
+  cursor: pointer; border: none; font-family: 'Inter', sans-serif;
+  transition: background .15s;
+}
+.btn-confirm-approve:hover { background: #96cc83; }
+.btn-confirm-reject {
+  background: var(--red); color: #fff;
+  border-radius: 8px; padding: 8px 20px; font-size: 12px; font-weight: 700;
+  cursor: pointer; border: none; font-family: 'Inter', sans-serif;
+  transition: background .15s;
+}
+.btn-confirm-reject:hover { background: #d4564d; }
+</style>
+</head>
+<body>
+
+<!-- ── SIDEBAR ── -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="sidebar-logo-mark">M</div>
+    <div>
+      <div class="sidebar-logo-name">MAKAI</div>
+      <div class="sidebar-logo-sub">RESIDENCES · CAP CANA</div>
+    </div>
+  </div>
+  <nav class="nav">
+    <div class="nav-label">Mi Cuenta</div>
+    <a href="01-saved-properties.html" class="nav-item">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 3.5A1.5 1.5 0 013.5 2h9A1.5 1.5 0 0114 3.5v11l-6-3-6 3V3.5z"/></svg>
+      Propiedades Guardadas
+    </a>
+    <a href="05-proposals-contracts.html" class="nav-item active">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 2H3a1 1 0 00-1 1v11l3-2 3 2 3-2 3 2V3a1 1 0 00-1-1z"/><path d="M5 6h6M5 9h4"/></svg>
+      Propuestas &amp; Contratos
+      <span class="badge" id="pending-badge">1</span>
+    </a>
+    <a href="02-sign-document.html" class="nav-item">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 2l4 4-7 7H3v-4l7-7z"/><path d="M8.5 3.5l4 4"/></svg>
+      Firmar Documentos
+    </a>
+    <a href="06-calendar-events.html" class="nav-item">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="12" height="11" rx="1.5"/><path d="M5 2v2M11 2v2M2 7h12"/></svg>
+      Calendario
+    </a>
+
+    <div class="nav-label">Configuración</div>
+    <a href="04-user-profile.html" class="nav-item">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="5" r="3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>
+      Mi Perfil
+    </a>
+  </nav>
+  <div class="sidebar-user">
+    <div class="sidebar-avatar">GG</div>
+    <div class="sidebar-user-info">
+      <div class="sidebar-user-name">Giuseppe Gangemi</div>
+      <div class="sidebar-user-role">Comprador</div>
+    </div>
+  </div>
+</aside>
+
+<!-- ── MAIN ── -->
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-title">Propuestas &amp; Contratos</div>
+    <div class="topbar-sub" id="topbar-sub">3 propuestas · 1 pendiente de acción</div>
+  </div>
+
+  <div class="content-area">
+
+    <!-- ── LEFT: PROPOSALS LIST ── -->
+    <div class="proposals-col">
+      <div class="proposals-col-header">
+        <div class="proposals-col-title">Historial</div>
+        <div class="filter-tabs">
+          <div class="filter-tab active" onclick="filterProposals('all', this)">Todas</div>
+          <div class="filter-tab" onclick="filterProposals('pending', this)">Pendientes</div>
+          <div class="filter-tab" onclick="filterProposals('closed', this)">Cerradas</div>
+        </div>
+      </div>
+      <div class="proposals-list" id="proposals-list">
+        <!-- Injected by JS -->
+      </div>
+    </div>
+
+    <!-- ── RIGHT: DETAIL PANEL ── -->
+    <div class="detail-col" id="detail-col">
+      <!-- Injected by JS -->
+      <div class="empty-state">
+        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.2">
+          <rect x="8" y="10" width="32" height="34" rx="3"/>
+          <path d="M16 20h16M16 27h12M16 34h8"/>
+        </svg>
+        <div class="empty-state-title">Selecciona una propuesta</div>
+        <div class="empty-state-sub">Elige una propuesta del listado para ver los detalles y tomar acción.</div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- ── CONFIRM MODAL ── -->
+<div class="modal-overlay" id="confirm-modal" onclick="closeModalOnBg(event)">
+  <div class="modal-box" id="modal-box">
+    <div class="modal-icon" id="modal-icon">
+      <!-- icon injected by JS -->
+    </div>
+    <div class="modal-title" id="modal-title"></div>
+    <div class="modal-sub" id="modal-sub"></div>
+    <div class="modal-comment-label" id="modal-comment-label"></div>
+    <textarea class="comment-field" id="modal-comment" placeholder="Escribe un comentario (opcional)..." style="display:none;"></textarea>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="btn-confirm-approve" id="modal-confirm-btn" onclick="executeAction()"></button>
+    </div>
+  </div>
+</div>
+
+<!-- ── TOAST ── -->
+<div class="toast-wrap" id="toasts"></div>
+
+<script>
+/* ── DATA ── */
+const proposals = [
+  {
+    id: 'p3',
+    type: 'contrato',
+    title: 'Contrato de Promesa de Compraventa',
+    subtitle: 'Torre B · Apto 4B',
+    status: 'pending',
+    amount: '$385,000',
+    sentBy: 'Alejandro Morales',
+    sentDate: '19 may 2026',
+    expiresDate: '26 may 2026',
+    daysLeft: 7,
+    document: 'Contrato_Promesa_Apto4B.pdf',
+    docSize: '2.4 MB',
+    brokerNote: 'Giuseppe, adjunto el contrato de promesa de compraventa para el Apartamento 4B. Los términos acordados incluyen el precio final, el plan de pagos a 24 meses y las condiciones de entrega. Por favor revísalo con tu asesor legal y confirma tu aceptación antes del 26 de mayo.',
+    figures: [
+      { label: 'Precio de venta', value: '$385,000', sub: 'USD, precio fijo', cls: '' },
+      { label: 'Reserva inicial', value: '$38,500', sub: '10% al firmar', cls: '' },
+      { label: 'Cuotas mensuales', value: '$14,604', sub: '24 cuotas', cls: 'amber' },
+    ],
+    lineItems: [
+      { name: 'Precio base del inmueble', desc: 'Apartamento 4B · 142 m²', amount: '$365,000' },
+      { name: 'Bodega asignada', desc: 'B-12, nivel -1', amount: '$8,000' },
+      { name: 'Espacio de parqueo', desc: '2 plazas cubiertas', amount: '$12,000' },
+      { name: 'Total', desc: '', amount: '$385,000', total: true },
+    ],
+    history: [
+      { type: 'sent', title: 'Contrato enviado', meta: '19 may 2026 · 10:22 AM', comment: null },
+    ]
+  },
+  {
+    id: 'p2',
+    type: 'presupuesto',
+    title: 'Propuesta de Personalización de Acabados',
+    subtitle: 'Torre B · Apto 4B',
+    status: 'approved',
+    amount: '$24,800',
+    sentBy: 'Alejandro Morales',
+    sentDate: '8 may 2026',
+    expiresDate: null,
+    daysLeft: null,
+    document: 'Presupuesto_Acabados_v2.pdf',
+    docSize: '1.1 MB',
+    brokerNote: 'Incluye la selección premium que conversamos: pisos de mármol travertino en áreas sociales, revestimiento de madera en habitación principal y cocina de diseño italiano. Esta versión refleja los cambios solicitados respecto al primer presupuesto.',
+    figures: [
+      { label: 'Personalización total', value: '$24,800', sub: 'Paquete premium', cls: '' },
+      { label: 'Incluido en contrato', value: '$0 extra', sub: 'Ya integrado', cls: 'green' },
+      { label: 'Ahorro vs. catálogo', value: '$3,200', sub: 'Precio especial', cls: 'green' },
+    ],
+    lineItems: [
+      { name: 'Pisos mármol travertino', desc: 'Sala, comedor, pasillos (85 m²)', amount: '$12,750' },
+      { name: 'Revestimiento madera', desc: 'Habitación principal (22 m²)', amount: '$6,600' },
+      { name: 'Cocina italiana Scavolini', desc: 'Configuración isla + alacena', amount: '$5,450' },
+      { name: 'Total', desc: '', amount: '$24,800', total: true },
+    ],
+    history: [
+      { type: 'sent', title: 'Presupuesto enviado (v2)', meta: '8 may 2026 · 3:15 PM', comment: null },
+      { type: 'comment', title: 'Comentaste', meta: '9 may 2026 · 11:42 AM', comment: 'Todo en orden. Aprobado.' },
+      { type: 'approved', title: 'Propuesta aprobada', meta: '9 may 2026 · 11:43 AM', comment: null },
+    ]
+  },
+  {
+    id: 'p1',
+    type: 'presupuesto',
+    title: 'Primera Propuesta de Acabados',
+    subtitle: 'Torre B · Apto 4B',
+    status: 'rejected',
+    amount: '$31,500',
+    sentBy: 'Alejandro Morales',
+    sentDate: '29 abr 2026',
+    expiresDate: null,
+    daysLeft: null,
+    document: 'Presupuesto_Acabados_v1.pdf',
+    docSize: '980 KB',
+    brokerNote: 'Primera propuesta de personalización con todos los upgrades del catálogo estándar.',
+    figures: [
+      { label: 'Personalización total', value: '$31,500', sub: 'Catálogo completo', cls: '' },
+      { label: 'Diferencia vs. v2', value: '+$6,700', sub: 'Propuesta anterior', cls: '' },
+      { label: 'Estado', value: 'Rechazada', sub: 'Ver motivo', cls: '' },
+    ],
+    lineItems: [
+      { name: 'Paquete acabados premium', desc: 'Según catálogo estándar 2026', amount: '$31,500' },
+      { name: 'Total', desc: '', amount: '$31,500', total: true },
+    ],
+    history: [
+      { type: 'sent', title: 'Presupuesto enviado (v1)', meta: '29 abr 2026 · 9:05 AM', comment: null },
+      { type: 'comment', title: 'Comentaste', meta: '30 abr 2026 · 4:22 PM', comment: 'El precio está fuera de mi presupuesto. ¿Podemos revisar las opciones y ajustar la selección de acabados?' },
+      { type: 'rejected', title: 'Propuesta rechazada', meta: '30 abr 2026 · 4:23 PM', comment: null },
+    ]
+  }
+];
+
+let activeFilter = 'all';
+let activeId = null;
+let pendingAction = null;
+
+/* ── RENDER LIST ── */
+function renderList() {
+  const list = document.getElementById('proposals-list');
+  const filtered = proposals.filter(p => {
+    if (activeFilter === 'pending') return p.status === 'pending';
+    if (activeFilter === 'closed') return ['approved','rejected','expired'].includes(p.status);
+    return true;
+  });
+
+  list.innerHTML = filtered.map(p => `
+    <div class="proposal-item ${activeId === p.id ? 'active' : ''}" onclick="selectProposal('${p.id}')">
+      <div class="proposal-item-top">
+        <div class="proposal-item-title">${p.title}</div>
+        <span class="proposal-status ${p.status}">${statusLabel(p.status)}</span>
+      </div>
+      <div class="proposal-item-meta">
+        <span class="proposal-type-dot ${p.type}"></span>
+        ${p.type === 'presupuesto' ? 'Presupuesto' : 'Contrato'} · ${p.subtitle}
+      </div>
+      <div class="proposal-item-amount">${p.amount}</div>
+      <div class="proposal-item-meta" style="margin-top:5px;">
+        ${p.sentDate} · ${p.sentBy.split(' ')[0]}
+      </div>
+    </div>
+  `).join('');
+}
+
+function statusLabel(s) {
+  return { pending:'Pendiente', approved:'Aprobada', rejected:'Rechazada', expired:'Vencida' }[s] || s;
+}
+
+/* ── SELECT PROPOSAL ── */
+function selectProposal(id) {
+  activeId = id;
+  renderList();
+  renderDetail();
+}
+
+function filterProposals(f, el) {
+  activeFilter = f;
+  document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderList();
+}
+
+/* ── RENDER DETAIL ── */
+function renderDetail() {
+  const p = proposals.find(x => x.id === activeId);
+  if (!p) return;
+
+  const col = document.getElementById('detail-col');
+  const expiryHtml = (p.status === 'pending' && p.daysLeft !== null) ? `
+    <div class="expiry-warning">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="8" cy="8" r="6"/><path d="M8 5v3.5l2 1.5"/></svg>
+      Vence el ${p.expiresDate} — quedan ${p.daysLeft} días para responder
+    </div>
+  ` : '';
+
+  const actionAreaHtml = p.status === 'pending' ? `
+    <div class="detail-section">
+      <div class="detail-section-title">Tu respuesta</div>
+      ${expiryHtml}
+      <div class="action-area">
+        <div class="action-area-title">¿Aceptas esta propuesta?</div>
+        <div class="action-area-sub">Puedes adjuntar un comentario antes de confirmar tu decisión.</div>
+        <textarea class="comment-field" id="inline-comment" placeholder="Escribe un comentario (opcional)..."></textarea>
+        <div class="action-btns">
+          <button class="btn btn-reject" onclick="openModal('reject','${p.id}')">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4L4 12M4 4l8 8"/></svg>
+            Rechazar
+          </button>
+          <button class="btn btn-approve" onclick="openModal('approve','${p.id}')">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8l4 4 6-7"/></svg>
+            Aprobar propuesta
+          </button>
+        </div>
+      </div>
+    </div>
+  ` : p.status === 'approved' ? `
+    <div class="detail-section">
+      <div class="resolved-state">
+        <div class="resolved-icon">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#82b870" stroke-width="2"><path d="M4 10l4 4 8-8"/></svg>
+        </div>
+        <div>
+          <div class="resolved-title">Propuesta aprobada</div>
+          <div class="resolved-sub">Aprobaste esta propuesta. Tu asesor fue notificado.</div>
+        </div>
+      </div>
+    </div>
+  ` : p.status === 'rejected' ? `
+    <div class="detail-section">
+      <div class="rejected-state">
+        <div class="rejected-icon">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#c0433a" stroke-width="2"><path d="M15 5L5 15M5 5l10 10"/></svg>
+        </div>
+        <div>
+          <div class="rejected-title">Propuesta rechazada</div>
+          <div class="rejected-sub">Tu asesor recibió tu feedback y prepara una versión revisada.</div>
+        </div>
+      </div>
+    </div>
+  ` : '';
+
+  col.innerHTML = `
+    <!-- Header -->
+    <div class="detail-header">
+      <div class="detail-title-block">
+        <div class="detail-type-badge">
+          <span class="proposal-type-dot ${p.type}" style="width:7px;height:7px;"></span>
+          ${p.type === 'presupuesto' ? 'Presupuesto' : 'Contrato'} · ${p.subtitle}
+        </div>
+        <div class="detail-title">${p.title}</div>
+        <div class="detail-meta-row">
+          <span>Enviado por ${p.sentBy}</span>
+          <span class="detail-meta-sep">·</span>
+          <span>${p.sentDate}</span>
+        </div>
+      </div>
+      <div>
+        <span class="detail-status-badge ${p.status}">${statusLabel(p.status)}</span>
+      </div>
+    </div>
+
+    <!-- Figures -->
+    <div class="detail-section">
+      <div class="detail-section-title">Resumen económico</div>
+      <div class="figures-grid">
+        ${p.figures.map(f => `
+          <div class="figure-card">
+            <div class="figure-label">${f.label}</div>
+            <div class="figure-value ${f.cls}">${f.value}</div>
+            <div class="figure-sub">${f.sub}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <!-- Line items -->
+    <div class="detail-section">
+      <div class="detail-section-title">Desglose</div>
+      <div class="line-items">
+        ${p.lineItems.map(li => `
+          <div class="line-item ${li.total ? 'line-item-total' : ''}">
+            <div style="flex:1">
+              <div class="line-item-name">${li.name}</div>
+              ${li.desc ? `<div class="line-item-desc">${li.desc}</div>` : ''}
+            </div>
+            <div class="line-item-amount ${li.total ? 'total' : ''}">${li.amount}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <!-- Document -->
+    <div class="detail-section">
+      <div class="detail-section-title">Documento adjunto</div>
+      <div class="doc-preview" onclick="showToast('Descargando ${p.document}...','amber')">
+        <div class="doc-icon">
+          <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="#c97c40" stroke-width="1.5"><path d="M9 2H4a1 1 0 00-1 1v10a1 1 0 001 1h8a1 1 0 001-1V6L9 2z"/><path d="M9 2v4h4"/></svg>
+        </div>
+        <div>
+          <div class="doc-preview-name">${p.document}</div>
+          <div class="doc-preview-meta">${p.docSize} · PDF</div>
+        </div>
+        <div class="doc-preview-action">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3v8M5 8l3 3 3-3"/><path d="M3 13h10"/></svg>
+          Descargar
+        </div>
+      </div>
+    </div>
+
+    <!-- Broker note -->
+    <div class="detail-section">
+      <div class="detail-section-title">Mensaje de tu asesor</div>
+      <div class="broker-note">
+        <div class="broker-note-author">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="5" r="3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>
+          <strong>${p.sentBy}</strong> · ${p.sentDate}
+        </div>
+        ${p.brokerNote}
+      </div>
+    </div>
+
+    <!-- Action area (pending / resolved) -->
+    ${actionAreaHtml}
+
+    <!-- History -->
+    <div class="detail-section">
+      <div class="detail-section-title">Historial de la propuesta</div>
+      <div class="history-thread">
+        ${p.history.map(h => `
+          <div class="history-event">
+            <div class="history-dot ${h.type}">
+              ${historyIcon(h.type)}
+            </div>
+            <div class="history-event-body">
+              <div class="history-event-title">${h.title}</div>
+              <div class="history-event-meta">${h.meta}</div>
+              ${h.comment ? `<div class="history-event-comment">${h.comment}</div>` : ''}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function historyIcon(type) {
+  const icons = {
+    sent: `<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#7a7670" stroke-width="1.8"><path d="M2 8l12-6-6 12-2-6-4 0z"/></svg>`,
+    approved: `<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#82b870" stroke-width="2"><path d="M3 8l4 4 6-7"/></svg>`,
+    rejected: `<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#c0433a" stroke-width="2"><path d="M12 4L4 12M4 4l8 8"/></svg>`,
+    comment: `<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#c97c40" stroke-width="1.8"><path d="M14 10a1 1 0 01-1 1H5l-3 3V3a1 1 0 011-1h10a1 1 0 011 1v7z"/></svg>`,
+    expired: `<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#7a7670" stroke-width="1.8"><circle cx="8" cy="8" r="6"/><path d="M8 5v3.5l2 1.5"/></svg>`,
+  };
+  return icons[type] || icons.sent;
+}
+
+/* ── MODAL ── */
+function openModal(action, id) {
+  pendingAction = { action, id };
+  const modal = document.getElementById('confirm-modal');
+  const icon = document.getElementById('modal-icon');
+  const title = document.getElementById('modal-title');
+  const sub = document.getElementById('modal-sub');
+  const label = document.getElementById('modal-comment-label');
+  const comment = document.getElementById('modal-comment');
+  const confirmBtn = document.getElementById('modal-confirm-btn');
+
+  const inlineComment = document.getElementById('inline-comment');
+  const existingComment = inlineComment ? inlineComment.value.trim() : '';
+
+  if (action === 'approve') {
+    icon.className = 'modal-icon approve-icon';
+    icon.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#82b870" stroke-width="2.5"><path d="M5 12l5 5L20 7"/></svg>`;
+    title.textContent = 'Aprobar propuesta';
+    sub.textContent = 'Una vez aprobada, tu asesor será notificado y se procederá según los términos acordados.';
+    confirmBtn.textContent = 'Confirmar aprobación';
+    confirmBtn.className = 'btn-confirm-approve';
+  } else {
+    icon.className = 'modal-icon reject-icon';
+    icon.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#c0433a" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>`;
+    title.textContent = 'Rechazar propuesta';
+    sub.textContent = 'Tu asesor recibirá tu feedback y podrá enviarte una propuesta revisada.';
+    confirmBtn.textContent = 'Confirmar rechazo';
+    confirmBtn.className = 'btn-confirm-reject';
+  }
+
+  label.textContent = existingComment ? '' : 'Comentario (opcional)';
+  label.style.display = existingComment ? 'none' : 'block';
+  comment.style.display = existingComment ? 'none' : 'block';
+  if (existingComment) {
+    comment.value = existingComment;
+    comment.style.display = 'none';
+    sub.textContent += ` Tu comentario: "${existingComment}"`;
+  }
+
+  modal.classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('confirm-modal').classList.remove('open');
+  pendingAction = null;
+}
+
+function closeModalOnBg(e) {
+  if (e.target === document.getElementById('confirm-modal')) closeModal();
+}
+
+function executeAction() {
+  if (!pendingAction) return;
+  const { action, id } = pendingAction;
+  const commentEl = document.getElementById('modal-comment');
+  const inlineComment = document.getElementById('inline-comment');
+  const comment = (commentEl && commentEl.style.display !== 'none')
+    ? commentEl.value.trim()
+    : (inlineComment ? inlineComment.value.trim() : '');
+
+  const p = proposals.find(x => x.id === id);
+  if (!p) return;
+
+  if (action === 'approve') {
+    p.status = 'approved';
+    const now = '23 may 2026';
+    if (comment) p.history.push({ type: 'comment', title: 'Comentaste', meta: `${now} · Ahora`, comment });
+    p.history.push({ type: 'approved', title: 'Propuesta aprobada', meta: `${now} · Ahora`, comment: null });
+    showToast('Propuesta aprobada. Tu asesor fue notificado.', 'green');
+  } else {
+    p.status = 'rejected';
+    const now = '23 may 2026';
+    if (comment) p.history.push({ type: 'comment', title: 'Comentaste', meta: `${now} · Ahora`, comment });
+    p.history.push({ type: 'rejected', title: 'Propuesta rechazada', meta: `${now} · Ahora`, comment: null });
+    showToast('Propuesta rechazada. Tu feedback fue enviado.', 'red');
+  }
+
+  closeModal();
+  updateBadge();
+  renderList();
+  renderDetail();
+}
+
+function updateBadge() {
+  const pending = proposals.filter(p => p.status === 'pending').length;
+  const badge = document.getElementById('pending-badge');
+  const topSub = document.getElementById('topbar-sub');
+  if (badge) {
+    badge.textContent = pending;
+    badge.style.display = pending > 0 ? '' : 'none';
+  }
+  if (topSub) {
+    topSub.textContent = `${proposals.length} propuestas · ${pending} pendiente${pending !== 1 ? 's' : ''} de acción`;
+  }
+}
+
+/* ── TOAST ── */
+function showToast(msg, color) {
+  const wrap = document.getElementById('toasts');
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.innerHTML = `<span class="toast-dot ${color}"></span>${msg}`;
+  wrap.appendChild(t);
+  requestAnimationFrame(() => { requestAnimationFrame(() => t.classList.add('show')); });
+  setTimeout(() => {
+    t.classList.remove('show');
+    setTimeout(() => t.remove(), 300);
+  }, 3500);
+}
+
+/* ── INIT ── */
+renderList();
+updateBadge();
+
+// Pre-select the first pending proposal
+const firstPending = proposals.find(p => p.status === 'pending');
+if (firstPending) selectProposal(firstPending.id);
+</script>
+</body>
+</html>

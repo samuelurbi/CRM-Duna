@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Backlog Diseño — CRM Duna</title>
+<style>
+:root{color-scheme:light;--bg:#f5f5f4;--surface:#fff;--border:#e7e5e4;--text:#1c1917;--muted:#78716c;--done-text:#a8a29e;--accent:#2563eb}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:13px;line-height:1.5}
+.hd{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 16px 10px;position:sticky;top:0;z-index:20}
+.hd-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.hd-title{font-size:14px;font-weight:600;letter-spacing:-.3px}
+.hd-sub{font-size:11px;color:var(--muted);margin-top:1px}
+.save-btn{background:#16a34a;color:#fff;border:none;border-radius:6px;padding:5px 14px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:background .15s;white-space:nowrap}
+.save-btn:hover{background:#15803d}
+.save-btn:disabled{background:#d1fae5;color:#86efac;cursor:default}
+.save-badge{background:#fff;color:#15803d;border-radius:99px;padding:0 6px;font-size:10px;font-weight:700;min-width:18px;text-align:center}
+.prog-track{height:4px;background:var(--border);border-radius:99px;overflow:hidden;margin-bottom:6px}
+.prog-fill{height:100%;background:linear-gradient(90deg,#2563eb,#7c3aed);border-radius:99px;transition:width .5s cubic-bezier(.4,0,.2,1)}
+.prog-stats{display:flex;gap:14px;font-size:11px;color:var(--muted)}
+.prog-stats strong{color:var(--text);font-weight:600}
+.filters{display:flex;gap:5px;flex-wrap:wrap;padding:8px 16px;background:var(--bg);border-bottom:1px solid var(--border);position:sticky;top:82px;z-index:10}
+.fb{border:1px solid var(--border);background:var(--surface);border-radius:99px;padding:3px 10px;font-size:11px;color:var(--muted);cursor:pointer;transition:all .15s;white-space:nowrap}
+.fb:hover{border-color:#a8a29e;color:var(--text)}
+.fb.on{background:#1e3a8a;color:#fff;border-color:#1e3a8a}
+.content{padding:12px 16px 80px}
+.phase{background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;overflow:hidden}
+.phase-hd{display:flex;align-items:center;gap:8px;padding:9px 13px;background:#eff6ff;border-bottom:1px solid #dbeafe;cursor:pointer;user-select:none}
+.phase-hd:hover{background:#dbeafe}
+.phase-name{font-size:12px;font-weight:600;color:#1e40af;flex:1;min-width:0}
+.ph-badge{font-size:10px;font-weight:600;border-radius:99px;padding:1px 7px;background:#dbeafe;color:#1d4ed8;white-space:nowrap}
+.ph-badge.done{background:#dcfce7;color:#15803d}
+.chevron{font-size:9px;color:#93c5fd;transition:transform .2s;flex-shrink:0}
+.phase.closed .chevron{transform:rotate(-90deg)}
+.phase.closed .phase-body{display:none}
+.phase-note{font-size:11px;color:#64748b;font-style:italic;padding:5px 13px;background:#f8faff;border-bottom:1px solid #f1f5f9}
+.sg-hd{padding:5px 13px;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);background:#fafaf9;border-bottom:1px solid var(--border)}
+.task{display:flex;align-items:flex-start;border-bottom:1px solid #f5f5f4;transition:background .1s;position:relative;background:var(--surface)}
+.task:last-child{border-bottom:none}
+.task:hover{background:#fafaf9}
+.task.done{opacity:.5}
+.task.drag-over-top{border-top:2px solid var(--accent)}
+.task.drag-over-bottom{border-bottom:2px solid var(--accent)!important}
+.task.dragging{opacity:.3}
+.drag-h{flex-shrink:0;width:22px;display:flex;align-items:center;justify-content:center;cursor:grab;color:#e0ddd9;font-size:12px;padding:8px 0 8px 8px;user-select:none;transition:color .15s}
+.task:hover .drag-h{color:#c0bbb5}
+.drag-h:active{cursor:grabbing}
+.cb-wrap{flex-shrink:0;padding:8px 6px 8px 4px}
+.cb{width:15px;height:15px;border:1.5px solid #d4d0cc;border-radius:4px;cursor:pointer;appearance:none;background:white;position:relative;transition:all .15s;display:block;margin-top:1px}
+.cb:hover{border-color:var(--accent)}
+.cb:checked{background:var(--accent);border-color:var(--accent)}
+.cb:checked::after{content:'';position:absolute;top:2px;left:4px;width:5px;height:3px;border:1.5px solid white;border-top:none;border-right:none;transform:rotate(-45deg)}
+.task-body{flex:1;min-width:0;padding:7px 13px 7px 0}
+.task-meta{display:flex;align-items:center;gap:5px;margin-bottom:3px;flex-wrap:wrap}
+.prio{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.prio.hi{background:#ef4444}
+.prio.me{background:#f59e0b}
+.prio.lo{background:#d1d5db}
+.type-tag{font-size:9px;font-weight:600;border-radius:4px;padding:1px 5px;letter-spacing:.2px;white-space:nowrap}
+.tag-P{background:#ede9fe;color:#6d28d9}
+.tag-C{background:#dbeafe;color:#1d4ed8}
+.tag-F{background:#fef3c7;color:#92400e}
+.tag-L{background:#d1fae5;color:#065f46}
+.tag-I{background:#fce7f3;color:#9d174d}
+.task-text{font-size:12px;color:var(--text);line-height:1.4}
+.task.done .task-text{text-decoration:line-through;color:var(--done-text)}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1c1917;color:white;border-radius:8px;padding:9px 18px;font-size:12px;font-weight:500;opacity:0;pointer-events:none;transition:opacity .25s;z-index:99;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,.3)}
+.toast.show{opacity:1}
+.toast.ok{background:#15803d}
+.toast.err{background:#dc2626}
+</style>
+</head>
+<body>
+
+<!-- ESTADO DEL BACKLOG (legible por Claude)
+  Total: 100 tareas | Completadas: 3 | Pendientes: 97
+  Última actualización: 2026-05-02
+-->
+<script type="application/json" id="bdata">{"phases":[{"title":"FASE 1 — Frontend Público (Tipologías y Precios)","note":"🧭 Puerta de entrada al CRM. Es lo primero que ve cualquier visitante. Prioridad máxima.","li":21,"sgs":[{"title":"1.1 Dashboard principal (layout y estructura base)","note":"","tasks":[{"done":true,"type":"P","prio":"hi","text":"Layout general del dashboard: grid de cards, header, filtros, selector de vista","li":25},{"done":true,"type":"C","prio":"hi","text":"Header del proyecto: logo + nombre + selector de proyecto (dropdown multi-branding)","li":26},{"done":true,"type":"C","prio":"hi","text":"Banner/hero: imagen + logo + contador \"X OF 102 UNITS SOLD\" + led verde gif + usuarios en línea","li":27},{"done":true,"type":"C","prio":"me","text":"Barra de filtros: Unit Type, Price, Direction, Outlook, Floor, Sort + botón Reset + \"Showing All\"","li":28},{"done":true,"type":"L","prio":"me","text":"Comportamiento de filtros: estados activos, conteo de resultados, reset individual o total","li":29}]},{"title":"1.2 Cards de tipología","note":"Dentro del grid, el bloque visual más importante. Diseñar los 3 modos.","tasks":[{"done":true,"type":"C","prio":"hi","text":"Card modo Grid: foto/plano, badge estado (SOLD/PENDING/AVAILABLE), precio + badge descuento tachado, número unidad, planta, habitaciones, baños, sqft interior, sqft terraza, sqft total, amenidades (iconos), botones \"MORE INFO\" y \"RESERVE\"","li":34},{"done":true,"type":"C","prio":"hi","text":"Badge \"ADD TO LIST\" + contador de personas que la tienen guardada","li":35},{"done":true,"type":"C","prio":"me","text":"Badge \"Esta unidad fue liberada hace 3 días\" (segunda oportunidad)","li":36},{"done":true,"type":"C","prio":"me","text":"Temporizador de reserva en card: \"Tu unidad está reservada por 48 horas\" con countdown","li":37},{"done":true,"type":"C","prio":"me","text":"Card modo List: vista alternativa compacta","li":38},{"done":true,"type":"C","prio":"lo","text":"Card modo Plan: vista sobre plano del edificio","li":39}]},{"title":"1.3 Popup / Drawer de detalle de unidad","note":"Se abre al hacer clic en una card. Es donde ocurre la conversión real.","tasks":[{"done":true,"type":"P","prio":"hi","text":"Estructura y layout general del popup/drawer: header con nombre proyecto + nº unidad + logo","li":44},{"done":true,"type":"C","prio":"hi","text":"Jerarquía de precios: precio total (grande) → precio/sqft → \"Comienza con $5,000\"","li":45},{"done":true,"type":"C","prio":"hi","text":"Galería de fotos/renders + plano 3D con slider de flechas","li":46},{"done":true,"type":"C","prio":"hi","text":"Tabs \"Para Vivir / Para Invertir\": dos modos que reorganizan la info según perfil","li":47},{"done":true,"type":"C","prio":"me","text":"Badge de descuento + tooltip \"Válido hasta el 30 de abril\" al hacer hover","li":48},{"done":true,"type":"C","prio":"me","text":"Comparativa de mercado: \"$450/sqft — Precio 12% por debajo del mercado en Cap Cana\"","li":49},{"done":true,"type":"C","prio":"me","text":"Valor proyectado en entrega: \"Precio hoy: $431,000 · Valor estimado en entrega (2027): $490,000+\"","li":50},{"done":true,"type":"C","prio":"me","text":"Conversor de moneda en tiempo real: toggle USD → EUR / CAD / BRL / COP / MXN","li":51},{"done":true,"type":"C","prio":"me","text":"Botones de descarga de planos: \"Plano con medidas\" + \"Plano sin medidas\" (botones separados)","li":52},{"done":true,"type":"C","prio":"me","text":"Contador de demanda en vivo: \"👁 12 personas están viendo este proyecto\" / \"23 vieron esta unidad hoy\"","li":53},{"done":true,"type":"C","prio":"me","text":"Estado del asesor: \"Tu asesor está disponible ahora mismo\" (color llamativo + efecto de movimiento)","li":54},{"done":true,"type":"F","prio":"me","text":"Si asesor no disponible: \"Tu asesor estará disponible en 2h\" → popup de captura (nombre, email, teléfono, hora preferible)","li":55},{"done":true,"type":"C","prio":"lo","text":"Botón \"Agendar Videollamada\" → popup con calendario integrado","li":56},{"done":true,"type":"C","prio":"hi","text":"Progress bar global de ventas: \"22 DE 102 UNIDADES VENDIDAS\" + aviso de escasez por tipología","li":57}]},{"title":"1.4 Botones de acción (dentro del popup)","note":"El cierre del funnel. Cada botón tiene un flujo distinto.","tasks":[{"done":true,"type":"C","prio":"hi","text":"Botón AGENDAR VIDEOLLAMADA (primario)","li":62},{"done":true,"type":"C","prio":"hi","text":"Botón CONTACTAR POR WHATSAPP → abre WhatsApp con texto pre-cargado con datos de la unidad","li":63},{"done":true,"type":"C","prio":"me","text":"Botón RESERVAR ONLINE (secundario) + subtexto \"Reserva 100% reembolsable\"","li":64},{"done":true,"type":"C","prio":"me","text":"Botón COMPARTIR / \"Enviar a un socio / pareja\" → adjunta ficha PDF en un clic","li":65},{"done":true,"type":"C","prio":"me","text":"Botón GUARDAR / \"Agregar a la lista\" → oferta de activar alertas de precio/disponibilidad","li":66},{"done":true,"type":"C","prio":"lo","text":"Enlace discreto de descarga de responsabilidad","li":67}]},{"title":"1.5 Flujos post-acción del popup","note":"Qué pasa después de que el usuario hace clic en cada botón.","tasks":[{"done":true,"type":"F","prio":"hi","text":"Flujo \"Reservar Online\": popup de login/register → confirmación de unidad → pago $5,000 Stripe → redirección al Portal del Comprador","li":72},{"done":true,"type":"F","prio":"me","text":"Flujo \"Agendar Videollamada\": popup con selector de fecha/hora (Google Calendar) → confirmación","li":73},{"done":true,"type":"F","prio":"me","text":"Flujo \"Guardar unidad\": modal de confirmación → activación de alertas de precio o escasez","li":74}]}]},{"title":"FASE 2 — Autenticación","note":"Aparece en medio del flujo de reserva o al intentar acceder a portales privados.","li":78,"sgs":[{"title":"","note":"","tasks":[{"done":false,"type":"P","prio":"hi","text":"Pantalla de Login: imagen del proyecto (branding dinámico), email + contraseña, \"Sign In with Google\", \"¿Olvidaste tu contraseña?\", enlace a Register","li":81},{"done":false,"type":"P","prio":"hi","text":"Pantalla de Register: nombre, apellido, email, país, teléfono, contraseña + campo \"¿Eres profesional o cliente final?\"","li":82},{"done":false,"type":"F","prio":"hi","text":"Redirección post-login según rol: Comprador → portal | Agente → panel | Admin → panel admin | Broker → portal o pantalla de espera","li":83},{"done":false,"type":"P","prio":"me","text":"Pantalla de recuperación de contraseña","li":84},{"done":false,"type":"P","prio":"me","text":"Pantalla de espera para broker pendiente de aprobación","li":85}]}]},{"title":"FASE 3 — Portal del Comprador","note":"Lo que ve el cliente después de reservar. Su espacio privado durante todo el proceso de compra.","li":89,"sgs":[{"title":"","note":"","tasks":[{"done":false,"type":"P","prio":"hi","text":"Inicio / Home: bienvenida personalizada, alerta de acción urgente (banner rojo), estado general, próximo pago, asesor asignado, accesos rápidos","li":92},{"done":false,"type":"P","prio":"hi","text":"Mi Compra — Timeline: 6 pasos con estados visuales (completado / en proceso / pendiente / bloqueado)","li":93},{"done":false,"type":"P","prio":"hi","text":"Mis Documentos: 4 docs obligatorios + adicionales con estados (Firmar / En revisión / Firmado / Descargar)","li":94},{"done":false,"type":"F","prio":"me","text":"Flujo de firma digital: integración DocuSign dentro del portal","li":95},{"done":false,"type":"P","prio":"me","text":"Plan de Pagos: tabla con tramos, fechas, montos, estado de cada cuota + botón Stripe","li":96},{"done":false,"type":"P","prio":"me","text":"Avance de Obra: barra de progreso + galería por etapas (Q1/Q2/Q3/Q4) + hitos","li":97},{"done":false,"type":"P","prio":"me","text":"Mensajes / Chat interno: thread de mensajes con equipo Duna, historial, indicador de lectura","li":98},{"done":false,"type":"P","prio":"lo","text":"Mi Unidad: ficha completa con operaciones financieras + documentos asociados","li":99},{"done":false,"type":"P","prio":"lo","text":"Mi Perfil — Datos personales","li":100},{"done":false,"type":"P","prio":"lo","text":"Mi Perfil — Acceso y seguridad: contraseña, 2FA, historial de accesos","li":101},{"done":false,"type":"P","prio":"lo","text":"Mi Perfil — Preferencias: idioma, zona horaria, moneda, notificaciones (toggle + frecuencia)","li":102},{"done":false,"type":"P","prio":"lo","text":"Mi Perfil — Zona de peligro: exportar datos (ZIP), eliminar cuenta","li":103}]}]},{"title":"FASE 4 — Módulo Presupuesto / Pack Bienvenida","note":"Usado internamente por agentes y admin para configurar el plan de pago de cada cliente.","li":107,"sgs":[{"title":"","note":"","tasks":[{"done":false,"type":"P","prio":"me","text":"Configuración básica del presupuesto: precio total, etapas, porcentajes, fechas","li":110},{"done":false,"type":"P","prio":"me","text":"Tramos de pago detallados: tabla (Reserva, Entrada, Cuotas, Cierre) con fechas, montos, estado","li":111},{"done":false,"type":"P","prio":"me","text":"Pack de bienvenida: 4 documentos a firmar en orden con estado y botón \"Firmar ahora\"","li":112},{"done":false,"type":"P","prio":"lo","text":"Resumen financiero global: estructura del plan, cobros, comisiones, totales","li":113}]}]},{"title":"FASE 5 — Panel de Agente","note":"Herramienta interna de ventas. Primero el dashboard, luego cada sección.","li":117,"sgs":[{"title":"","note":"","tasks":[{"done":false,"type":"P","prio":"me","text":"Dashboard del agente: KPIs (leads activos, cierres del mes, pagos pendientes), alertas del día, actividad reciente","li":120},{"done":false,"type":"P","prio":"me","text":"Mis Clientes: tabla con estado de cada proceso, filtros, búsqueda","li":121},{"done":false,"type":"P","prio":"me","text":"Ficha de cliente: datos personales, historial de interacciones, documentos, pagos, chat","li":122},{"done":false,"type":"P","prio":"lo","text":"Pipeline de ventas: vista kanban/lista con estados del lead (contacto → reserva → compra → postventa)","li":123},{"done":false,"type":"P","prio":"lo","text":"Gestión documental del agente","li":124},{"done":false,"type":"P","prio":"lo","text":"Reservas y contratos","li":125},{"done":false,"type":"P","prio":"lo","text":"Postventa","li":126},{"done":false,"type":"P","prio":"lo","text":"Aprobaciones","li":127}]},{"title":"Agente Senior (permisos adicionales)","note":"","tasks":[{"done":false,"type":"P","prio":"lo","text":"Vista del equipo: lista de agentes con sus KPIs","li":130},{"done":false,"type":"P","prio":"lo","text":"Reportes de ventas por agente","li":131},{"done":false,"type":"L","prio":"lo","text":"Reasignación de clientes entre agentes","li":132}]}]},{"title":"FASE 6 — Portal de Profesionales (Brokers y Agencias)","note":"Portal externo para captadores con su propia lógica de comisiones.","li":136,"sgs":[{"title":"","note":"","tasks":[{"done":false,"type":"P","prio":"me","text":"Dashboard del broker: KPIs (tipologías disponibles, clientes referidos, comisiones totales/pendientes)","li":139},{"done":false,"type":"P","prio":"me","text":"Mis Clientes: lista con estado + calculadora de comisión integrada por cliente","li":140},{"done":false,"type":"P","prio":"me","text":"Mi Acuerdo: acuerdo de colaboración con Duna + firma digital","li":141},{"done":false,"type":"P","prio":"lo","text":"Comisiones y Facturas: historial por transacción con estados (pendiente / aprobada / pagada)","li":142},{"done":false,"type":"P","prio":"lo","text":"Analítica de comisiones: por proyecto, tipología, estado","li":143},{"done":false,"type":"P","prio":"lo","text":"Material de Ventas: grid de recursos aprobados por Duna (no modificables, con nota legal)","li":144},{"done":false,"type":"P","prio":"lo","text":"Mensajes: chat directo con equipo comercial de Duna","li":145}]}]},{"title":"FASE 7 — Panel de Administrador","note":"Dashboard interno más complejo. Primero el dashboard global, luego módulos por orden de uso frecuente.","li":149,"sgs":[{"title":"","note":"","tasks":[{"done":false,"type":"P","prio":"me","text":"Dashboard global: métricas consolidadas multi-proyecto, aprobaciones urgentes, expedientes recientes, tareas del día","li":152},{"done":false,"type":"P","prio":"me","text":"Gestión de Expedientes: lista de clientes con filtros y búsqueda","li":153},{"done":false,"type":"P","prio":"me","text":"Gestión de Unidades: tabla completa, toggle disponibilidad, filtros, + Nueva Unidad","li":154},{"done":false,"type":"P","prio":"me","text":"Aprobaciones: cola de aprobaciones urgentes (descuentos, cancelaciones, devoluciones)","li":155},{"done":false,"type":"P","prio":"lo","text":"Transacciones: métricas, tabla detallada con estados, exportación","li":156},{"done":false,"type":"P","prio":"lo","text":"Informe de Transacciones: filtros por tipo, exportación CSV/Excel/PDF","li":157},{"done":false,"type":"P","prio":"lo","text":"Registro de Usuarios: lista con roles, métricas por rol, acciones CRUD","li":158},{"done":false,"type":"P","prio":"lo","text":"Gestión de Proyectos: CRUD de proyectos","li":159},{"done":false,"type":"P","prio":"lo","text":"Gestión de Externos (Brokers): lista, comisiones pendientes, analítica, retenciones DGII","li":160}]},{"title":"Configuración del Sistema (Admin)","note":"","tasks":[{"done":false,"type":"P","prio":"lo","text":"Alertas críticas configurables","li":163},{"done":false,"type":"P","prio":"lo","text":"Lanzamiento y ventas (textos UI, botones, idiomas, pasarela activa)","li":164},{"done":false,"type":"P","prio":"lo","text":"Flujos de registro (KYC, documentos requeridos, 2FA)","li":165},{"done":false,"type":"P","prio":"lo","text":"Plantillas de notificaciones (editor de emails automáticos + temporización)","li":166},{"done":false,"type":"P","prio":"lo","text":"Base de firma (DocuSign u otro proveedor)","li":167},{"done":false,"type":"P","prio":"lo","text":"Ficha de proyecto (campos configurables)","li":168},{"done":false,"type":"P","prio":"lo","text":"Tipos de transacción","li":169},{"done":false,"type":"P","prio":"lo","text":"Costos y precios (comisiones, descuentos, etiquetas)","li":170},{"done":false,"type":"P","prio":"lo","text":"Correo y enlace (SMTP, URLs legales)","li":171},{"done":false,"type":"P","prio":"lo","text":"Imágenes y marca por proyecto (logo, banner, favicon, login)","li":172}]}]},{"title":"FASE 8 — Integraciones y lógica transversal","note":"Se diseñan los estados de carga, error y éxito de cada integración.","li":176,"sgs":[{"title":"","note":"","tasks":[{"done":false,"type":"I","prio":"lo","text":"Integración Stripe: estados de pago (cargando, exitoso, fallido)","li":179},{"done":false,"type":"I","prio":"lo","text":"API firma digital (DocuSign): estados del documento dentro del flujo","li":180},{"done":false,"type":"I","prio":"lo","text":"WhatsApp API: mensajes pre-cargados y notificaciones","li":181},{"done":false,"type":"I","prio":"lo","text":"Exchangerate API: conversor de moneda en tiempo real (loading + error states)","li":182},{"done":false,"type":"I","prio":"lo","text":"Google Calendar: popup de agendado de videollamadas","li":183},{"done":false,"type":"L","prio":"lo","text":"Filtros avanzados de tipologías","li":184},{"done":false,"type":"L","prio":"lo","text":"Motor de automatización de los 7 pasos post-reserva","li":185},{"done":true,"type":"C","prio":"lo","text":"Card modo Grid — completada 2026-05-10","li":194}]}]}],"total":100,"done":35}</script>
+
+<div class="hd">
+  <div class="hd-row">
+    <div>
+      <div class="hd-title">Backlog Diseño — CRM Duna</div>
+      <div class="hd-sub">Abre en el navegador · Diseñador: Samuel</div>
+    </div>
+    <button class="save-btn" id="save-btn" onclick="guardar()">
+      ↓ Guardar <span class="save-badge" id="save-count">25</span>
+    </button>
+  </div>
+  <div class="prog-track"><div class="prog-fill" id="prog-fill" style="width: 35%;"></div></div>
+  <div class="prog-stats" id="prog-stats"><span><strong>35</strong> completadas</span><span><strong>65</strong> pendientes</span><span><strong>35%</strong></span></div>
+</div>
+
+<div class="filters">
+  <button class="fb" onclick="setFilter('all',this)">Todas</button>
+  <button class="fb on" onclick="setFilter('FASE 1',this)">F1 Frontend</button>
+  <button class="fb" onclick="setFilter('FASE 2',this)">F2 Auth</button>
+  <button class="fb" onclick="setFilter('FASE 3',this)">F3 Comprador</button>
+  <button class="fb" onclick="setFilter('FASE 4',this)">F4 Presupuesto</button>
+  <button class="fb" onclick="setFilter('FASE 5',this)">F5 Agente</button>
+  <button class="fb" onclick="setFilter('FASE 6',this)">F6 Broker</button>
+  <button class="fb" onclick="setFilter('FASE 7',this)">F7 Admin</button>
+  <button class="fb" onclick="setFilter('FASE 8',this)">F8 Integraciones</button>
+</div>
+
+<div class="content" id="content"><div class="phase" id="ph-21"><div class="phase-hd" onclick="togglePhase('ph-21')"><div class="phase-name">FASE 1 — Frontend Público (Tipologías y Precios)</div><span class="ph-badge">9/34</span><span class="chevron">▼</span></div><div class="phase-body"><div class="phase-note">🧭 Puerta de entrada al CRM. Es lo primero que ve cualquier visitante. Prioridad máxima.</div><div class="sg-hd">1.1 Dashboard principal (layout y estructura base)</div><div class="task done" id="t-25" data-li="25" data-key="0_0" draggable="true" ondragstart="dStart(event,25,'0_0')" ondragover="dOver(event,25,'0_0')" ondragleave="dLeave(event)" ondrop="dDrop(event,25,'0_0')" ondragend="dEnd()"><div class="drag-h" title="Arrastrar">⋮</div><div class="cb-wrap"><input type="checkbox" class="cb" checked="" onchange="onCk(25,this.checked)"></div><div class="task-body"><div class="task-meta"><div class="prio hi"></div><span class="type-tag tag-P">Pantalla</span></div><div class="task-text">Layout general del dashboard: grid de cards, header, filtros, selector de vista</div></div></div><div class="task done" id="t-26" data-li="26" data-key="0_0" draggable="true" ondragstart="dStart(event,26,'0_0')" ondragover="dOver(event,26,'0_0')" ondragleave="dLeave(event)" ondrop="dDrop(event,26,'0_0')" ondragend="dEnd()"><div class="drag-h" title="Arrastrar">⋮</div><div class="cb-wrap"><input type="checkbox" class="cb" checked="" onchange="onCk(26,this.checked)"></div><div class="task-body"><div class="task-meta"><div class="prio hi"></div><span class="type-tag tag-C">Componente</span></div><div class="task-text">Header del proyecto: logo + nombre + selector de proyecto (dropdown multi-branding)</div></div></div><div class="task done" id="t-27" data-li="27" data-key="0_0" draggable="true" ondragstart="dStart(event,27,'0_0')" ondragover="dOver(event,27,'0_0')" ondragleave="dLeave(event)" ondrop="dDrop(event,27,'0_0')" ondragend="dEnd()"><div class="drag-h" title="Arrastrar">⋮</div><div class="cb-wrap"><input type="checkbox" class="cb" checked="" onchange="onCk(27,this.checked)"></div><div class="task-body"><div class="task-meta"><div class="prio hi"></div><span class="type-tag tag-C">Componente</span></div><div class="task-text">Banner/hero: imagen + logo + contador "X OF 102 UNITS SOLD" + led verde gif + usuarios en línea</div></div></div><div class="task done" id="t-28" data-li="28" data-key="0_0" draggable="true" ondragstart="dStart(event,28,'0_0')" ondragover="dOver(event,28,'0_0')" ondragleave="dLeave(event)" ondrop="dDrop(event,28,'0_0')" ondragend="dEnd()"><div class="drag-h" title="Arrastrar">⋮</div><div class="cb-wrap"><input type="checkbox" class="cb" checked="" onchange="onCk(28,this.checked)"></div><div class="task-body"><div class="task-meta"><div class="prio me"></div><span class="type-tag tag-C">Componente</span></div><div class="task-text">Barra de filtros: Unit Type, Price, Direction, Outlook, Floor, Sort + botón Reset + "Showing All"</div></div></div><div class="task done" id="t-29" data-li="29" data-key="0_0" draggable="true" ondragstart="dStart(event,29,'0_0')" ondragover="dOver(event,29,'0_0')" ondragleave="dLeave(event)" ondrop="dDrop(event,29,'0_0')" ondragend="dEnd()"><div class="drag-h" title="Arrastrar">⋮</div><div class="cb-wrap"><input type="checkbox" class="cb" checked="" onchange="onCk(29,this.checked)"></div><div class="task-body"><div class="task-meta"><div class="prio me"></div><span class="type-tag tag-L">Lógica</span></div><div class="task-text">Comportamiento de filtros: estados activos, conteo de resultados, reset individual o total</div></div></div><div class="sg-hd">1.2 Cards de tipología</div><div class="task done" id="t-34" data-li="34" data-key="0_1" draggable="true" ondragstart="dStart(event,34,'0_1')" ondragover="dOver(event,34,'0_1')" ondragleave="dLeave(event)" ondrop="dDrop(event,34,'0_1')" ondragend="dEnd()"><div class="drag-h" title="Arrastrar">⋮</div><div class="cb-wrap"><input type="checkbox" class="cb" checked="" onchange="onCk(34,this.checked)"></div><div class="task-body"><div class="task-meta"><div class="prio hi"></div><span class="type-tag tag-C">Componente</span></div><div class="task-text">Card modo Grid: foto/plano, badge estado (SOLD/PENDING/AVAILABLE), precio + badge descuento tachado, número unidad, planta, habitaciones, baños, sqft interior, sqft terraza, sqft total, amenidades (iconos), botones "MORE INFO" y "RESERVE"</div></div></div><div class="task done" id="t-35" data-li="35" data-key="0_1" draggable="true" ondragstart="dStart(event,35,'0_1')" ondragover="dOver(event,35,'0_1')" ondragleave="dLeave(event)" ondrop="dDrop(event,35,'0_1')" ondragend="dEnd()"><div class="drag-h" title="Arrastrar">⋮</div><div class="cb-wrap"><input type="checkbox" class="cb" checked="" onchange="onCk(35,this.checked)"></div><div class="task-body"><div class="task-meta"><div class="prio hi"></div><span class="type-tag tag-C">Componente</span></div><div class="task-text">Badge "ADD TO LIST" + contador de personas que la tienen guardada</div></div></div><div class="task done" id="t-36" data-li="36" data-key="0_1" draggable="true" ondragstart="dStart(event,36,'0_1')" ondragover="dOver(event,36,'0_1')" ondragleave="dLeave(event)" ondrop="dDrop(event,36,'0_1')" ondragend="dEnd()"><div class="drag-h" title="Arrastrar">⋮</div><div class="cb-wrap"><input type="checkbox" class="cb" checked="" onchange="onCk(36,this.checked)"></div><div class="task-body"><div class="task-meta"><div class="prio me"></div><span class="type-tag tag-C">Componente</span></div><div class="task-text">Badge "Esta unidad fue liberada hace 3 días" (segunda oportunidad)</div></div></div><div class="task done" id="t-37" data-li="37" data-key="0_1" draggable="true" ondragstart="dStart(event,37,'0_1')" ondragover="dOver(event,37,'0_1')" ondragleave="dLeave(event)" ondrop="dDrop(event,37,'0_1')" ondragend="dEnd()"><div class="drag-h" title="Arrastrar">⋮</div><div class="cb-wrap"><input type="checkbox" class="cb" checked="" onchange="onCk(37,this.checked)"></div><div class="task-body"><div class="task-meta"><div class="prio me"></div><span class="type-tag tag-C">Componente</span></div><div class="task-text">Temporizador de reserva en card: "Tu unidad está reservada por 48 horas" con countdown</div></div></div><div class="task done" id="t-38" data-li="38" data-key="0_1" draggable="true" ondragstart="dStart(event,38,'0_1')" ondragover="dOver(event,38,'0_1')" ondragleave="dLeave(event)" ondrop="dDrop(event,38,'0_1')" ondragend="dEnd()"><div class="drag-h" title="Arrastrar">⋮</div><div class="cb-wrap"><input type="checkbox" class="cb" onchange="onCk(38,this.checked)"></div><div class="task-body"><div class="task-meta"><div class="prio me"></div><span class="type-tag tag-C">Componente</span></div><div class="task-text">Card modo List: vista alternativa compacta</div></div></div><div class="task done" id="t-39" data-li="39" data-key="0_1" draggable="true" ondragstart="dStart(event,39,'0_1')" ondragover="dOver(event,39,'0_1')" ondragleave="dLeave(event)" ondrop="dDrop(event,39,'0_1')" ondragend="dEnd()"><div class="drag-h" title="Arrastrar">⋮</div><div class="cb-wrap"><input type="checkbox" class="cb" onchange="onCk(39,this.checked)"></div><div class="task-body"><div class="task-meta"><div class="prio lo"></div><span class="type-tag tag-C">Componente</span></div><div class="task-text">Card modo Plan: vista sobre plano del edificio</div></div></div><div class="sg-hd">1.3 Popup / Drawer de detalle de unidad</div><div class="task done" id="t-44" data-li="44" data-key="0_2" draggable="true" ondragstart="dStart(event,44,'0_2')" ondragover="dOver(event,44,'0_2')" ondragleave="dLeave(event)" ondrop="dDrop(event,44,'0_2')" ondragend="dEnd()"><div class="drag-h" title="Arrastrar">⋮</div><div class="cb-wrap"><input type="checkbox" class="cb" onchange="onCk(44,this.checked)"></div><div class="task-body"><div class="task-meta"><div class="prio hi"></div><span class="type-tag tag-P">Pantalla</span></div><div class="task-text">Estructura y layout general del popup/drawer: header con nombre proyecto + nº unidad + logo</div></div></div><div class="task done" id="t-45" data-li="45" data-key="0_2" draggable="true" ondragstart="dStart(event,45,'0_2')" ondragover="dOver(event,45,'0_2')" ondragleave="dLeave(event)" ondrop="dDrop(event,45,'0_2')" ondragend="dEnd()"><div class="drag-h" title="Arrastrar">⋮</div><div class="cb-wrap"><input type="checkbox" class="cb" onchange="onCk(45,this.checked)"></div><div class="task-body"><div class="task-meta"><div class="prio hi"></div><span class="type-tag tag-C">Componente</span></div><div class="task-text">Jerarquía de precios: precio total (grande) → precio/sqft → "Comienza con $5,000"</div></div></div><div class="task done" id="t-46" data-li="46" data-key="0_2" draggable="true" ondragstart="dStart(event,46,'0_2')" ondragover="dOver(event,46,'0_2')" ondragleave="dLeave(event)" ondrop="dDrop(event,46,'0_2')" ondragend="dEnd()"><div class="drag-h" title="Arrastrar">⋮</div><div class="cb-wrap"><input type="checkbox" class="cb" onchange="onCk(46,this.checked)"></div><div class="task-body"><div class="task-meta"><div class="prio hi"></div><span class="type-tag tag-C">Componente</span></div><div class="task-text">Galería de fotos/renders + plano 3D con slider de flechas</div></div></div><div class="task done" id="t-47" data-li="47" data-key="0_2" draggable="true" ondragstart="dStart(event,47,'0_2')" ondragover="dOver(event,47,'0_2')" ondragleave="dLeave(event)" ondrop="dDrop(event,47,'0_2')" ondragend="dEnd()"><div class="drag-h" title="Arrastrar">⋮</div><div class="cb-wrap"><input type="checkbox" class="cb" onchange="onCk(47,this.checked)"></div><div class="task-body"><div class="task-meta"><div class="prio hi"></div><span class="type-tag tag-C">Componente</span></div><div class="task-text">Tabs "Para Vivir / Para Invertir": dos modos que reorganizan la info según perfil</div></div></div><div class="task done" id="t-48" data-li="48" data-key="0_2" draggable="true" ondragstart="dStart(event,48,'0_2')" ondragover="dOver(event,48,'0_2')" ondragleave="dLeave(event)" ondrop="dDrop(event,48,'0_2')" ondragend="dEnd()"><div class="drag-h" title="Arrastrar">⋮</div><div class="cb-wrap"><input type="checkbox" class="cb" onchange="onCk(48,this.checked)"></div><div class="task-body"><div class="task-meta"><div class="prio me"></div><span class="type-tag tag-C">Componente</span></div><div class="task-text">Badge de descuento + tooltip "Válido hasta el 30 de abril" al hacer hover</div></div></div><div class="task done" id="t-49" data-li="49" data-key="0_2" draggable="true" ondragstart="dStart(event,49,'0_2')" ondragover="dOver(event,49,'0_2')" ondragleave="dLeave(event)" ondrop="dDrop(event,49,'0_2')" ondragend="dEnd()"><div class="drag-h" title="Arrastrar">⋮</div><div class="cb-wrap"><input type="checkbox" class="cb" onchange="onCk(49,this.checked)"></div><div class="task-body"><div class="task-meta"><div class="prio me"></div><span class="type-tag tag-C">Componente</span></div><div class="task-text">Comparativa de mercado: "$450/sqft — Precio 12% por debajo del mercado en Cap Cana"</div></div></div><div class="task done" id="t-50" data-li="50" data-key="0_2" draggable="true" ondragstart="dStart(event,50,'0_2')" ondragover="dOver(event,50,'0_2')" ondragleave="dLeave(event)" ondrop="dDrop(event,50,'0_2')" ondragend="dEnd()"><div class="drag-h" title="Arrastrar">⋮</div><div class="cb-wrap"><input type="checkbox" class="cb" onchange="onCk(50,this.checked)"></div><div class="task-body"><div class="task-meta"><div class="prio me"></div><span class="type-tag tag-C">Componente</span></div><div class="task-text">Valor proyectado en entrega: "Precio hoy: $431,000 · Valor estimado en entrega (2027): $490,000+"</div></div></div><div class="task done" id="t-51" data-li="51" data-key="0_2" draggable="true" ondragstart="dStart(event,51,'0_2')" ondragover="dOver(event,51,'0_2')" ondragleave="dLeave(event)" ondrop="dDrop(event,51,'0_2')" ondragend="dEnd()"><div class="drag-h" title="Arrastrar">⋮</div><div class="cb-wrap"><input type="checkbox" class="cb" onchange="onCk(51,this.checked)"></div><div class="task-body"><div class="task-meta"><div class="prio me"></div><span class="type-tag tag-C">Componente</span></div><div class="task-text">Conversor de moneda en tiempo real: toggle USD → EUR / CAD / BRL / COP / MXN</div></div></div><div class="task done" id="t-52" data-li="52" data-key="0_2" draggable="true" ondragstart="dStart(event,52,'0_2')" ondragover="dOver(event,52,'0_2')" ondragleave="dLeave(event)" ondrop="dDrop(event,52,'0_2')" ondragend="dEnd()"><div class="drag-h" title="Arrastrar">⋮</div><div class="cb-wrap"><input type="checkbox" class="cb" onchange="onCk(52,this.checked)"></div><div class="task-body"><div class="task-meta"><div class="prio me"></div><span class="type-tag tag-C">Componente</span></div><div class="task-text">Botones de descarga de planos: "Plano con medidas" + "Plano sin medidas" (botones separados)</div></div></div><div class="task done" id="t-53" data-li="53" data-key="0_2" draggable="true" ondragstart="dStart(event,53,'0_2')" ondragover="dOver(event,53,'0_2')" ondragleave="dLeave(event)" ondrop="dDrop(event,53,'0_2')" ondragend="dEnd()"><div class="drag-h" title="Arrastrar">⋮</div><div class="cb-wrap"><input type="checkbox" class="cb" onchange="onCk(53,this.checked)"></div><div class="task-body"><div class="task-meta"><div class="prio me"></div><span class="type-tag tag-C">Componente</span></div><div class="task-text">Contador de demanda en vivo: "👁 12 personas están viendo este proyecto" / "23 vieron esta unidad hoy"</div></div></div><div class="task done" id="t-54" data-li="54" data-key="0_2" draggable="true" ondragstart="dStart(event,54,'0_2')" ondragover="dOver(event,54,'0_2')" ondragleave="dLeave(event)" ondrop="dDrop(event,54,'0_2')" ondragend="dEnd()"><div class="drag-h" title="Arrastrar">⋮</div><div class="cb-wrap"><input type="checkbox" class="cb" onchange="onCk(54,this.checked)"></div><div class="task-body"><div class="task-meta"><div class="prio me"></div><span class="type-tag tag-C">Componente</span></div><div class="task-text">Estado del asesor: "Tu asesor está disponible ahora mismo" (color llamativo + efecto de movimiento)</div></div></div><div class="task done" id="t-55" data-li="55" data-key="0_2" draggable="true" ondragstart="dStart(event,55,'0_2')" ondragover="dOver(event,55,'0_2')" ondragleave="dLeave(event)" ondrop="dDrop(event,55,'0_2')" ondragend="dEnd()"><div class="drag-h" title="Arrastrar">⋮</div><div class="cb-wrap"><input type="checkbox" class="cb" onchange="onCk(55,this.checked)"></div><div class="task-body"><div class="task-meta"><div class="prio me"></div><span class="type-tag tag-F">Flujo</span></div><div class="task-text">Si asesor no disponible: "Tu asesor estará disponible en 2h" → popup de captura (nombre, email, teléfono, hora preferible)</div></div></div><div class="task done" id="t-56" data-li="56" data-key="0_2" draggable="true" ondragstart="dStart(event,56,'0_2')" ondragover="dOver(event,56,'0_2')" ondragleave="dLeave(event)" ondrop="dDrop(event,56,'0_2')" ondragend="dEnd()"><div class="drag-h" title="Arrastrar">⋮</div><div class="cb-wrap"><input type="checkbox" class="cb" onchange="onCk(56,this.checked)"></div><div class="task-body"><div class="task-meta"><div class="prio lo"></div><span class="type-tag tag-C">Componente</span></div><div class="task-text">Botón "Agendar Videollamada" → popup con calendario integrado</div></div></div><div class="task done" id="t-57" data-li="57" data-key="0_2" draggable="true" ondragstart="dStart(event,57,'0_2')" ondragover="dOver(event,57,'0_2')" ondragleave="dLeave(event)" ondrop="dDrop(event,57,'0_2')" ondragend="dEnd()"><div class="drag-h" title="Arrastrar">⋮</div><div class="cb-wrap"><input type="checkbox" class="cb" onchange="onCk(57,this.checked)"></div><div class="task-body"><div class="task-meta"><div class="prio hi"></div><span class="type-tag tag-C">Componente</span></div><div class="task-text">Progress bar global de ventas: "22 DE 102 UNIDADES VENDIDAS" + aviso de escasez por tipología</div></div></div><div class="sg-hd">1.4 Botones de acción (dentro del popup)</div><div class="task done" id="t-62" data-li="62" data-key="0_3" draggable="true" ondragstart="dStart(event,62,'0_3')" ondragover="dOver(event,62,'0_3')" ondragleave="dLeave(event)" ondrop="dDrop(event,62,'0_3')" ondragend="dEnd()"><div class="drag-h" title="Arrastrar">⋮</div><div class="cb-wrap"><input type="checkbox" class="cb" onchange="onCk(62,this.checked)"></div><div class="task-body"><div class="task-meta"><div class="prio hi"></div><span class="type-tag tag-C">Componente</span></div><div class="task-text">Botón AGENDAR VIDEOLLAMADA (primario)</div></div></div><div class="task done" id="t-63" data-li="63" data-key="0_3" draggable="true" ondragstart="dStart(event,63,'0_3')" ondragover="dOver(event,63,'0_3')" ondragleave="dLeave(event)" ondrop="dDrop(event,63,'0_3')" ondragend="dEnd()"><div class="drag-h" title="Arrastrar">⋮</div><div class="cb-wrap"><input type="checkbox" class="cb" onchange="onCk(63,this.checked)"></div><div class="task-body"><div class="task-meta"><div class="prio hi"></div><span class="type-tag tag-C">Componente</span></div><div class="task-text">Botón CONTACTAR POR WHATSAPP → abre WhatsApp con texto pre-cargado con datos de la unidad</div></div></div><div class="task done" id="t-64" data-li="64" data-key="0_3" draggable="true" ondragstart="dStart(event,64,'0_3')" ondragover="dOver(event,64,'0_3')" ondragleave="dLeave(event)" ondrop="dDrop(event,64,'0_3')" ondragend="dEnd()"><div class="drag-h" title="Arrastrar">⋮</div><div class="cb-wrap"><input type="checkbox" class="cb" onchange="onCk(64,this.checked)"></div><div class="task-body"><div class="task-meta"><div class="prio me"></div><span class="type-tag tag-C">Componente</span></div><div class="task-text">Botón RESERVAR ONLINE (secundario) + subtexto "Reserva 100% reembolsable"</div></div></div><div class="task done" id="t-65" data-li="65" data-key="0_3" draggable="true" ondragstart="dStart(event,65,'0_3')" ondragover="dOver(event,65,'0_3')" ondragleave="dLeave(event)" ondrop="dDrop(event,65,'0_3')" ondragend="dEnd()"><div class="drag-h" title="Arrastrar">⋮</div><div class="cb-wrap"><input type="checkbox" class="cb" onchange="onCk(65,this.checked)"></div><div class="task-body"><div class="task-meta"><div class="prio me"></div><span class="type-tag tag-C">Componente</span></div><div class="task-text">Botón COMPARTIR / "Enviar a un socio / pareja" → adjunta ficha PDF en un clic</div></div></div><div class="task done" id="t-66" data-li="66" data-key="0_3" draggable="true" ondragstart="dStart(event,66,'0_3')" ondragover="dOver(event,66,'0_3')" ondragleave="dLeave(event)" ondrop="dDrop(event,66,'0_3')" ondragend="dEnd()"><div class="drag-h" title="Arrastrar">⋮</div><div class="cb-wrap"><input type="checkbox" class="cb" onchange="onCk(66,this.checked)"></div><div class="task-body"><div class="task-meta"><div class="prio me"></div><span class="type-tag tag-C">Componente</span></div><div class="task-text">Botón GUARDAR / "Agregar a la lista" → oferta de activar alertas de precio/disponibilidad</div></div></div><div class="task done" id="t-67" data-li="67" data-key="0_3" draggable="true" ondragstart="dStart(event,67,'0_3')" ondragover="dOver(event,67,'0_3')" ondragleave="dLeave(event)" ondrop="dDrop(event,67,'0_3')" ondragend="dEnd()"><div class="drag-h" title="Arrastrar">⋮</div><div class="cb-wrap"><input type="checkbox" class="cb" onchange="onCk(67,this.checked)"></div><div class="task-body"><div class="task-meta"><div class="prio lo"></div><span class="type-tag tag-C">Componente</span></div><div class="task-text">Enlace discreto de descarga de responsabilidad</div></div></div><div class="sg-hd">1.5 Flujos post-acción del popup</div><div class="task done" id="t-72" data-li="72" data-key="0_4" draggable="true" ondragstart="dStart(event,72,'0_4')" ondragover="dOver(event,72,'0_4')" ondragleave="dLeave(event)" ondrop="dDrop(event,72,'0_4')" ondragend="dEnd()"><div class="drag-h" title="Arrastrar">⋮</div><div class="cb-wrap"><input type="checkbox" class="cb" onchange="onCk(72,this.checked)"></div><div class="task-body"><div class="task-meta"><div class="prio hi"></div><span class="type-tag tag-F">Flujo</span></div><div class="task-text">Flujo "Reservar Online": popup de login/register → confirmación de unidad → pago $5,000 Stripe → redirección al Portal del Comprador</div></div></div><div class="task done" id="t-73" data-li="73" data-key="0_4" draggable="true" ondragstart="dStart(event,73,'0_4')" ondragover="dOver(event,73,'0_4')" ondragleave="dLeave(event)" ondrop="dDrop(event,73,'0_4')" ondragend="dEnd()"><div class="drag-h" title="Arrastrar">⋮</div><div class="cb-wrap"><input type="checkbox" class="cb" onchange="onCk(73,this.checked)"></div><div class="task-body"><div class="task-meta"><div class="prio me"></div><span class="type-tag tag-F">Flujo</span></div><div class="task-text">Flujo "Agendar Videollamada": popup con selector de fecha/hora (Google Calendar) → confirmación</div></div></div><div class="task done" id="t-74" data-li="74" data-key="0_4" draggable="true" ondragstart="dStart(event,74,'0_4')" ondragover="dOver(event,74,'0_4')" ondragleave="dLeave(event)" ondrop="dDrop(event,74,'0_4')" ondragend="dEnd()"><div class="drag-h" title="Arrastrar">⋮</div><div class="cb-wrap"><input type="checkbox" class="cb" onchange="onCk(74,this.checked)"></div><div class="task-body"><div class="task-meta"><div class="prio me"></div><span class="type-tag tag-F">Flujo</span></div><div class="task-text">Flujo "Guardar unidad": modal de confirmación → activación de alertas de precio o escasez</div></div></div></div></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+
+const TYPE_LABEL={P:'Pantalla',C:'Componente',F:'Flujo',L:'Lógica',I:'Integración'};
+const DATA=JSON.parse(document.getElementById('bdata').textContent);
+
+// ── Drag state
+let drag={li:null,key:null};
+
+// ── Render
+let filter='all';
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function sgk(pi,si){return pi+'_'+si;}
+
+function ordered(key,tasks){
+  try{
+    const ord=JSON.parse(localStorage.getItem('ord_'+key));
+    if(!ord)return[...tasks];
+    const map={};tasks.forEach(t=>map[t.li]=t);
+    const r=ord.map(li=>map[li]).filter(Boolean);
+    tasks.forEach(t=>{if(!r.includes(t))r.push(t);});
+    return r;
+  }catch(e){return[...tasks];}
+}
+
+function render(){
+  let html='';
+  DATA.phases.forEach((p,pi)=>{
+    if(filter!=='all'&&!p.title.includes(filter))return;
+    const all=p.sgs.flatMap(s=>s.tasks);
+    const dn=all.filter(t=>t.done).length;
+    const allDone=dn===all.length&&all.length>0;
+    html+='<div class="phase" id="ph-'+p.li+'">'
+      +'<div class="phase-hd" onclick="togglePhase(\'ph-'+p.li+'\')">'
+      +'<div class="phase-name">'+esc(p.title)+'</div>'
+      +'<span class="ph-badge'+(allDone?' done':'')+'">'+dn+'/'+all.length+'</span>'
+      +'<span class="chevron">&#9660;</span>'
+      +'</div><div class="phase-body">';
+    if(p.note)html+='<div class="phase-note">'+esc(p.note)+'</div>';
+    p.sgs.forEach((s,si)=>{
+      const key=sgk(pi,si);
+      if(s.title)html+='<div class="sg-hd">'+esc(s.title)+'</div>';
+      ordered(key,s.tasks).forEach(t=>{
+        const tlabel=TYPE_LABEL[t.type]||t.type;
+        html+='<div class="task'+(t.done?' done':'')+'"'
+          +' id="t-'+t.li+'" data-li="'+t.li+'" data-key="'+key+'"'
+          +' draggable="true"'
+          +' ondragstart="dStart(event,'+t.li+',\''+key+'\')"'
+          +' ondragover="dOver(event,'+t.li+',\''+key+'\')"'
+          +' ondragleave="dLeave(event)"'
+          +' ondrop="dDrop(event,'+t.li+',\''+key+'\')"'
+          +' ondragend="dEnd()">'
+          +'<div class="drag-h" title="Arrastrar">&#8942;</div>'
+          +'<div class="cb-wrap"><input type="checkbox" class="cb"'
+          +(t.done?' checked':'')+' onchange="onCk('+t.li+',this.checked)"></div>'
+          +'<div class="task-body">'
+          +'<div class="task-meta"><div class="prio '+t.prio+'"></div>'
+          +'<span class="type-tag tag-'+t.type+'">'+tlabel+'</span></div>'
+          +'<div class="task-text">'+esc(t.text)+'</div>'
+          +'</div></div>';
+      });
+    });
+    html+='</div></div>';
+  });
+  document.getElementById('content').innerHTML=html
+    ||'<div style="text-align:center;padding:40px;color:#a8a29e">Sin resultados.</div>';
+  updateProg();
+}
+
+function updateProg(){
+  const total=DATA.total||0;
+  const done=DATA.done||0;
+  const pct=total?Math.round(done/total*100):0;
+  document.getElementById('prog-fill').style.width=pct+'%';
+  document.getElementById('prog-stats').innerHTML=
+    '<span><strong>'+done+'</strong> completadas</span>'
+    +'<span><strong>'+(total-done)+'</strong> pendientes</span>'
+    +'<span><strong>'+pct+'%</strong></span>';
+  // Count unsaved
+  let n=0;
+  DATA.phases.forEach(p=>p.sgs.forEach(s=>s.tasks.forEach(t=>{if(t._dirty)n++;})));
+  document.getElementById('save-count').textContent=n;
+  document.getElementById('save-btn').disabled=n===0;
+}
+
+// ── Checkbox — updates DATA directly
+function onCk(li,checked){
+  let found=false;
+  DATA.phases.forEach(p=>p.sgs.forEach(s=>s.tasks.forEach(t=>{
+    if(t.li===li){
+      if(t.done!==checked){t.done=checked;t._dirty=true;}
+      else{delete t._dirty;}
+      found=true;
+    }
+  })));
+  // Recompute totals
+  DATA.done=DATA.phases.reduce((acc,p)=>acc+p.sgs.reduce((a2,s)=>a2+s.tasks.filter(t=>t.done).length,0),0);
+  const row=document.getElementById('t-'+li);
+  if(row)row.classList.toggle('done',checked);
+  updateProg();
+}
+
+// ── Drag & Drop
+function dStart(e,li,key){drag={li,key};e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',li);setTimeout(()=>{document.getElementById('t-'+li)?.classList.add('dragging');},0);}
+function clearInd(key){document.querySelectorAll('[data-key="'+key+'"]').forEach(el=>el.classList.remove('drag-over-top','drag-over-bottom'));}
+function dOver(e,li,key){e.preventDefault();if(drag.key!==key||drag.li===li)return;e.dataTransfer.dropEffect='move';clearInd(key);const rect=e.currentTarget.getBoundingClientRect();e.currentTarget.classList.add(e.clientY<rect.top+rect.height/2?'drag-over-top':'drag-over-bottom');}
+function dLeave(e){e.currentTarget.classList.remove('drag-over-top','drag-over-bottom');}
+function dDrop(e,targetLi,key){
+  e.preventDefault();
+  if(drag.key!==key||drag.li===targetLi){dEnd();return;}
+  let baseTasks=[];
+  const pi=parseInt(key.split('_')[0]),si=parseInt(key.split('_')[1]);
+  baseTasks=DATA.phases[pi]?.sgs[si]?.tasks||[];
+  let cur;
+  try{cur=JSON.parse(localStorage.getItem('ord_'+key))||baseTasks.map(t=>t.li);}
+  catch(e2){cur=baseTasks.map(t=>t.li);}
+  const fromIdx=cur.indexOf(drag.li);let toIdx=cur.indexOf(targetLi);
+  const rect=e.currentTarget.getBoundingClientRect();
+  if(e.clientY>=rect.top+rect.height/2)toIdx++;
+  if(fromIdx<toIdx)toIdx--;
+  cur.splice(fromIdx,1);cur.splice(toIdx,0,drag.li);
+  localStorage.setItem('ord_'+key,JSON.stringify(cur));
+  dEnd();render();
+}
+function dEnd(){document.querySelectorAll('.task').forEach(el=>el.classList.remove('dragging','drag-over-top','drag-over-bottom'));drag={li:null,key:null};}
+
+// ── Filtros
+function togglePhase(id){document.getElementById(id)?.classList.toggle('closed');}
+function setFilter(val,btn){filter=val;document.querySelectorAll('.fb').forEach(b=>b.classList.remove('on'));btn.classList.add('on');render();}
+
+// ── Toast
+let tt;
+function toast(m,type){const el=document.getElementById('toast');el.textContent=m;el.className='toast show'+(type?' '+type:'');clearTimeout(tt);tt=setTimeout(()=>el.classList.remove('show'),3000);}
+
+// ── GUARDAR — descarga nueva copia del HTML con estado actualizado
+function guardar(){
+  // Limpia flags _dirty
+  DATA.phases.forEach(p=>p.sgs.forEach(s=>s.tasks.forEach(t=>delete t._dirty)));
+
+  // Serializa DATA actualizado
+  const newJSON=JSON.stringify(DATA,null,0);
+
+  // Reconstruye el HTML completo reemplazando el bloque bdata
+  const fullHTML='<!DOCTYPE html>\n'+document.documentElement.outerHTML;
+  const updated=fullHTML.replace(
+    /(<script type="application\/json" id="bdata">)([\s\S]*?)(<\/script>)/,
+    '$1'+newJSON+'$3'
+  );
+
+  // Dispara descarga
+  const blob=new Blob([updated],{type:'text/html;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='backlog-diseño.html';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+
+  updateProg();
+  toast('✓ Descargado — reemplaza el archivo original','ok');
+}
+
+// ── Init
+render();
+
+</script>
+
+</body></html>

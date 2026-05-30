@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Makai — Unit Card States</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:         #0c0c0c;
+  --bg-card:    #161614;
+  --bg-card-2:  #1b1b19;
+  --green:      #4A5E3F;
+  --green-cta:  #526844;
+  --green-lite: rgba(74,94,63,0.18);
+  --green-txt:  #82b870;
+  --cream:      #F1EDE3;
+  --cream-dim:  #b8b0a4;
+  --text:       #e8e4dc;
+  --sub:        #8a8680;
+  --muted:      #4e4b48;
+  --border:     rgba(255,255,255,0.07);
+  --border-2:   rgba(255,255,255,0.04);
+  --orange:     #c97c40;
+  --orange-lite:rgba(201,124,64,0.14);
+  --red:        #b84040;
+  --red-lite:   rgba(184,64,64,0.14);
+  --blue:       #3a7abd;
+  --card-w:     268px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  font-family: 'Inter', sans-serif;
+  color: var(--text);
+  min-height: 100vh;
+  padding: 56px 48px 80px;
+}
+
+/* ─── CANVAS HEADER ─────────────────────────── */
+.page-header {
+  text-align: center;
+  margin-bottom: 56px;
+}
+.page-header .eyebrow {
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--sub);
+  margin-bottom: 10px;
+}
+.page-header h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 30px;
+  font-weight: 400;
+  color: var(--cream);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+}
+.page-header .rule {
+  width: 40px;
+  height: 1px;
+  background: var(--green);
+  margin: 14px auto 0;
+}
+
+/* ─── GRID ──────────────────────────────────── */
+.canvas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, var(--card-w));
+  gap: 32px 24px;
+  justify-content: center;
+  max-width: 1320px;
+  margin: 0 auto;
+}
+
+/* ─── STATE LABEL ───────────────────────────── */
+.state-wrap { display: flex; flex-direction: column; gap: 8px; }
+.state-label {
+  font-size: 9px;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding-left: 2px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.state-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* ─── CARD BASE ─────────────────────────────── */
+.card {
+  width: var(--card-w);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: transform .18s ease, box-shadow .18s ease;
+  cursor: pointer;
+  position: relative;
+}
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 48px rgba(0,0,0,.55);
+  border-color: rgba(255,255,255,0.11);
+}
+
+/* ─── IMAGE AREA ────────────────────────────── */
+.card-img {
+  position: relative;
+  height: 178px;
+  background: #111110;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.card-img svg { width: 100%; height: 100%; display: block; }
+
+/* Overlays */
+.overlay-sold {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,.75);
+  display: flex; align-items: center; justify-content: center;
+}
+.overlay-pending {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,.40);
+  backdrop-filter: blur(1px);
+}
+.overlay-2nd {
+  position: absolute; inset: 0;
+  background: linear-gradient(160deg, rgba(201,124,64,.08) 0%, transparent 60%);
+}
+
+/* SOLD stamp */
+.sold-stamp {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: 7px;
+  color: rgba(255,255,255,.88);
+  text-transform: uppercase;
+  border: 1.5px solid rgba(255,255,255,.35);
+  padding: 5px 16px;
+  transform: rotate(-9deg);
+  text-shadow: 0 2px 12px rgba(0,0,0,.5);
+}
+
+/* Wishlist btn */
+.btn-wish {
+  position: absolute;
+  top: 10px; left: 10px;
+  background: rgba(12,12,12,.72);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 20px;
+  padding: 4px 9px;
+  font-size: 9.5px;
+  font-weight: 500;
+  color: var(--cream-dim);
+  display: flex; align-items: center; gap: 4px;
+  cursor: pointer;
+  letter-spacing: .4px;
+  user-select: none;
+}
+.btn-wish.active {
+  background: rgba(74,94,63,.5);
+  border-color: rgba(130,184,112,.3);
+  color: #a8d494;
+}
+.wish-count {
+  font-size: 9px;
+  color: var(--sub);
+}
+
+/* Status badge (top-right) */
+.badge {
+  position: absolute;
+  top: 10px; right: 10px;
+  border-radius: 4px;
+  padding: 3px 7px;
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+.badge-pending  { background: rgba(180,130,50,.85); color: #fff; }
+.badge-sold     { background: rgba(184,64,64,.9);   color: #fff; }
+.badge-2nd      { background: var(--orange);         color: #fff; }
+.badge-hot      { background: rgba(184,64,64,.82);  color: #fff; }
+.badge-soon     { background: rgba(80,80,80,.88);   color: #ccc; }
+
+/* Discount strip */
+.discount-strip {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  padding: 7px 12px;
+  background: linear-gradient(transparent, rgba(0,0,0,.5));
+  display: flex; align-items: center; justify-content: center;
+}
+.discount-pill {
+  background: var(--green);
+  color: #fff;
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: .8px;
+  padding: 4px 11px;
+  border-radius: 4px;
+  display: inline-flex; align-items: center; gap: 5px;
+}
+
+/* ─── CARD CONTENT ──────────────────────────── */
+.card-body {
+  padding: 13px 14px 14px;
+}
+
+.unit-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 1px;
+}
+.unit-num {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 23px;
+  font-weight: 500;
+  color: var(--cream);
+  line-height: 1;
+  letter-spacing: .5px;
+}
+.unit-roi {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--green-txt);
+  letter-spacing: .3px;
+}
+
+.unit-desc {
+  font-size: 10px;
+  color: var(--sub);
+  letter-spacing: .2px;
+  margin-bottom: 9px;
+  line-height: 1.4;
+}
+
+/* Price */
+.price-row {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  margin-bottom: 10px;
+}
+.price {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--green-txt);
+  letter-spacing: -.5px;
+  line-height: 1;
+}
+.price-sub {
+  font-size: 10px;
+  color: var(--muted);
+}
+.price-struck {
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--muted);
+  text-decoration: line-through;
+  letter-spacing: -.5px;
+}
+
+/* Note strips */
+.note {
+  border-radius: 5px;
+  padding: 6px 9px;
+  font-size: 9.5px;
+  line-height: 1.45;
+  margin-bottom: 9px;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+.note-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; margin-top: 3px; }
+.note.orange  { background: var(--orange-lite); border: 1px solid rgba(201,124,64,.22); color: #c97c40; }
+.note.green   { background: var(--green-lite);  border: 1px solid rgba(74,94,63,.28);   color: var(--green-txt); }
+.note.gray    { background: rgba(255,255,255,.03); border: 1px solid var(--border); color: var(--sub); }
+.note.red     { background: var(--red-lite);    border: 1px solid rgba(184,64,64,.22); color: #d46060; }
+
+/* Timer */
+.timer-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  color: var(--orange);
+  margin-bottom: 9px;
+}
+.timer-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--orange);
+  flex-shrink: 0;
+  animation: blink 1.4s ease-in-out infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.25} }
+
+.timer-val {
+  font-weight: 600;
+  letter-spacing: .4px;
+}
+
+/* Social proof */
+.social {
+  font-size: 9.5px;
+  color: var(--sub);
+  margin-bottom: 9px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Metrics */
+.metrics {
+  display: flex;
+  border-top: 1px solid var(--border-2);
+  border-bottom: 1px solid var(--border-2);
+  padding: 7px 0;
+  margin-bottom: 11px;
+}
+.metric {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.metric + .metric { border-left: 1px solid var(--border-2); }
+.metric-val {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--cream-dim);
+  line-height: 1;
+}
+.metric-lbl {
+  font-size: 8px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+
+/* Buttons */
+.actions { display: flex; gap: 6px; }
+.btn {
+  flex: 1;
+  padding: 8px 6px;
+  border-radius: 6px;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: .7px;
+  text-transform: uppercase;
+  cursor: pointer;
+  text-align: center;
+  border: none;
+  outline: none;
+  font-family: 'Inter', sans-serif;
+  transition: background .15s, opacity .15s;
+}
+.btn-outline { background: transparent; border: 1px solid rgba(255,255,255,.12); color: var(--sub); }
+.btn-primary { background: var(--green-cta); color: #fff; }
+.btn-primary:hover { background: #5e7a51; }
+.btn-orange  { background: var(--orange); color: #fff; }
+.btn-ghost   { background: rgba(255,255,255,.04); border: 1px solid var(--border); color: var(--muted); }
+.btn-waitlist { background: transparent; border: 1px solid rgba(255,255,255,.1); color: var(--sub); }
+.btn-full    { flex: none; width: 100%; }
+
+/* Coming soon blur */
+.card.coming-soon .card-body { filter: blur(3.5px); pointer-events: none; }
+.coming-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 10;
+}
+.coming-pill {
+  background: rgba(12,12,12,.88);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 8px;
+  padding: 10px 20px;
+  text-align: center;
+}
+.coming-pill .cp-label {
+  font-size: 9px;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--sub);
+  margin-bottom: 4px;
+}
+.coming-pill .cp-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 18px;
+  color: var(--cream);
+  font-weight: 400;
+}
+</style>
+</head>
+<body>
+
+<header class="page-header">
+  <p class="eyebrow">Makai Residences — Cap Cana</p>
+  <h1>Unit Card · All States</h1>
+  <div class="rule"></div>
+</header>
+
+<div class="canvas">
+
+<!-- ════════════════════════════════════════
+     01 · AVAILABLE (DEFAULT)
+════════════════════════════════════════ -->
+<div class="state-wrap">
+  <p class="state-label">01 · Available</p>
+  <div class="card">
+    <div class="card-img">
+      <svg viewBox="0 0 268 178" xmlns="http://www.w3.org/2000/svg">
+        <rect width="268" height="178" fill="#111110"/>
+        <!-- Outer walls -->
+        <rect x="28" y="22" width="212" height="136" fill="none" stroke="#252520" stroke-width="2.5"/>
+        <!-- Rooms -->
+        <rect x="28" y="22" width="95" height="80" fill="none" stroke="#222" stroke-width="1.5"/>
+        <rect x="123" y="22" width="117" height="80" fill="none" stroke="#222" stroke-width="1.5"/>
+        <rect x="28" y="102" width="140" height="56" fill="none" stroke="#222" stroke-width="1.5"/>
+        <rect x="168" y="102" width="72" height="56" fill="none" stroke="#222" stroke-width="1.5"/>
+        <!-- Bed -->
+        <rect x="133" y="32" width="96" height="60" rx="2" fill="none" stroke="#1e1e1c" stroke-width="1.2"/>
+        <rect x="133" y="32" width="96" height="18" rx="2" fill="#1a1a18" stroke="none"/>
+        <!-- Table round -->
+        <circle cx="75" cy="62" r="22" fill="none" stroke="#1e1e1c" stroke-width="1.2"/>
+        <!-- Sofa -->
+        <rect x="38" y="112" width="58" height="36" rx="3" fill="none" stroke="#1e1e1c" stroke-width="1.2"/>
+        <!-- Bathroom fixture -->
+        <rect x="176" y="112" width="54" height="34" rx="2" fill="none" stroke="#1e1e1c" stroke-width="1.2"/>
+        <ellipse cx="203" cy="129" rx="16" ry="10" fill="none" stroke="#1e1e1c" stroke-width="1"/>
+        <!-- Door arc -->
+        <path d="M 43 102 A 15 15 0 0 0 28 87" fill="none" stroke="#222" stroke-width="1"/>
+        <!-- Compass -->
+        <text x="234" y="168" text-anchor="middle" fill="#292925" font-size="9" font-family="Inter" letter-spacing="1">N</text>
+        <line x1="234" y1="155" x2="234" y2="150" stroke="#292925" stroke-width="1"/>
+      </svg>
+      <div class="btn-wish">♡ Add to list <span class="wish-count">· 7</span></div>
+      <div class="discount-strip">
+        <span class="discount-pill">✦ Unlock $20,000 Discount</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="unit-row">
+        <span class="unit-num">111</span>
+        <span class="unit-roi">10.3% ROI</span>
+      </div>
+      <div class="unit-desc">1st Floor · 1 Bed + Family Rm · SE · Lake View</div>
+      <div class="price-row">
+        <span class="price">$431,000</span>
+        <span class="price-sub">$450/sqft</span>
+      </div>
+      <div class="metrics">
+        <div class="metric"><span class="metric-val">1</span><span class="metric-lbl">Bed</span></div>
+        <div class="metric"><span class="metric-val">2</span><span class="metric-lbl">Bath</span></div>
+        <div class="metric"><span class="metric-val">1</span><span class="metric-lbl">Park</span></div>
+        <div class="metric"><span class="metric-val">959</span><span class="metric-lbl">Int sqft</span></div>
+        <div class="metric"><span class="metric-val">207</span><span class="metric-lbl">Ext sqft</span></div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-outline">More Info</button>
+        <button class="btn btn-primary">Reserve from $5K</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     02 · AVAILABLE — HIGH DEMAND
+════════════════════════════════════════ -->
+<div class="state-wrap">
+  <p class="state-label">02 · Available — High Demand</p>
+  <div class="card">
+    <div class="card-img">
+      <svg viewBox="0 0 268 178" xmlns="http://www.w3.org/2000/svg">
+        <rect width="268" height="178" fill="#111110"/>
+        <rect x="28" y="22" width="212" height="136" fill="none" stroke="#252520" stroke-width="2.5"/>
+        <rect x="28" y="22" width="110" height="90" fill="none" stroke="#222" stroke-width="1.5"/>
+        <rect x="138" y="22" width="102" height="90" fill="none" stroke="#222" stroke-width="1.5"/>
+        <rect x="28" y="112" width="212" height="46" fill="none" stroke="#222" stroke-width="1.5"/>
+        <rect x="148" y="32" width="82" height="70" rx="2" fill="none" stroke="#1e1e1c" stroke-width="1.2"/>
+        <rect x="148" y="32" width="82" height="18" rx="2" fill="#1a1a18"/>
+        <circle cx="73" cy="67" r="24" fill="none" stroke="#1e1e1c" stroke-width="1.2"/>
+        <rect x="38" y="122" width="50" height="28" rx="2" fill="none" stroke="#1e1e1c" stroke-width="1.2"/>
+        <rect x="170" y="122" width="60" height="28" rx="2" fill="none" stroke="#1e1e1c" stroke-width="1.2"/>
+      </svg>
+      <div class="btn-wish">♡ Add to list <span class="wish-count">· 19</span></div>
+      <span class="badge badge-hot">🔥 High Demand</span>
+    </div>
+    <div class="card-body">
+      <div class="unit-row">
+        <span class="unit-num">204</span>
+        <span class="unit-roi">11.1% ROI</span>
+      </div>
+      <div class="unit-desc">2nd Floor · 2 Bed · NE · Ocean View</div>
+      <div class="price-row">
+        <span class="price">$498,000</span>
+        <span class="price-sub">$470/sqft</span>
+      </div>
+      <div class="social">
+        <span>👁</span> 23 people viewed this unit today
+      </div>
+      <div class="metrics">
+        <div class="metric"><span class="metric-val">2</span><span class="metric-lbl">Bed</span></div>
+        <div class="metric"><span class="metric-val">2</span><span class="metric-lbl">Bath</span></div>
+        <div class="metric"><span class="metric-val">1</span><span class="metric-lbl">Park</span></div>
+        <div class="metric"><span class="metric-val">1,059</span><span class="metric-lbl">Int sqft</span></div>
+        <div class="metric"><span class="metric-val">244</span><span class="metric-lbl">Ext sqft</span></div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-outline">More Info</button>
+        <button class="btn btn-primary">Reserve from $5K</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     03 · PENDING — TIMER ACTIVE
+════════════════════════════════════════ -->
+<div class="state-wrap">
+  <p class="state-label">03 · Pending — Reserved</p>
+  <div class="card">
+    <div class="card-img">
+      <svg viewBox="0 0 268 178" xmlns="http://www.w3.org/2000/svg">
+        <rect width="268" height="178" fill="#111110"/>
+        <rect x="28" y="22" width="212" height="136" fill="none" stroke="#252520" stroke-width="2.5"/>
+        <rect x="28" y="22" width="90" height="85" fill="none" stroke="#222" stroke-width="1.5"/>
+        <rect x="118" y="22" width="122" height="85" fill="none" stroke="#222" stroke-width="1.5"/>
+        <rect x="28" y="107" width="212" height="51" fill="none" stroke="#222" stroke-width="1.5"/>
+        <rect x="128" y="32" width="102" height="65" rx="2" fill="none" stroke="#1e1e1c" stroke-width="1.2"/>
+        <rect x="128" y="32" width="102" height="17" rx="2" fill="#1a1a18"/>
+        <circle cx="73" cy="64" r="22" fill="none" stroke="#1e1e1c" stroke-width="1.2"/>
+        <rect x="40" y="117" width="48" height="30" rx="2" fill="none" stroke="#1e1e1c" stroke-width="1.2"/>
+        <rect x="165" y="117" width="66" height="30" rx="2" fill="none" stroke="#1e1e1c" stroke-width="1.2"/>
+      </svg>
+      <div class="overlay-pending"></div>
+      <div class="btn-wish">♡ Add to list <span class="wish-count">· 11</span></div>
+      <span class="badge badge-pending">Pending</span>
+    </div>
+    <div class="card-body">
+      <div class="unit-row">
+        <span class="unit-num">318</span>
+        <span style="font-size:10px;color:var(--sub)">3rd Floor</span>
+      </div>
+      <div class="unit-desc">3rd Floor · 1 Bed · SW · Pool View</div>
+      <div class="timer-row">
+        <span class="timer-dot"></span>
+        <span>Reserved for</span>
+        <span class="timer-val">41:22:08</span>
+        <span style="color:var(--muted)">remaining</span>
+      </div>
+      <div class="metrics">
+        <div class="metric"><span class="metric-val">1</span><span class="metric-lbl">Bed</span></div>
+        <div class="metric"><span class="metric-val">1</span><span class="metric-lbl">Bath</span></div>
+        <div class="metric"><span class="metric-val">1</span><span class="metric-lbl">Park</span></div>
+        <div class="metric"><span class="metric-val">820</span><span class="metric-lbl">Int sqft</span></div>
+        <div class="metric"><span class="metric-val">180</span><span class="metric-lbl">Ext sqft</span></div>
+      </div>
+      <div class="note gray">
+        <span class="note-dot" style="background:var(--sub)"></span>
+        <span>This unit is currently being reserved. Get notified if it becomes available.</span>
+      </div>
+      <div class="actions">
+        <button class="btn btn-ghost btn-full">🔔 Notify me if released</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     04 · SOLD
+════════════════════════════════════════ -->
+<div class="state-wrap">
+  <p class="state-label">04 · Sold</p>
+  <div class="card">
+    <div class="card-img">
+      <svg viewBox="0 0 268 178" xmlns="http://www.w3.org/2000/svg">
+        <rect width="268" height="178" fill="#111110"/>
+        <rect x="28" y="22" width="212" height="136" fill="none" stroke="#1e1e1c" stroke-width="2.5"/>
+        <rect x="28" y="22" width="95" height="80" fill="none" stroke="#1a1a18" stroke-width="1.5"/>
+        <rect x="123" y="22" width="117" height="80" fill="none" stroke="#1a1a18" stroke-width="1.5"/>
+        <rect x="28" y="102" width="140" height="56" fill="none" stroke="#1a1a18" stroke-width="1.5"/>
+        <rect x="168" y="102" width="72" height="56" fill="none" stroke="#1a1a18" stroke-width="1.5"/>
+        <rect x="133" y="32" width="96" height="60" rx="2" fill="none" stroke="#171715" stroke-width="1.2"/>
+        <circle cx="75" cy="62" r="22" fill="none" stroke="#171715" stroke-width="1.2"/>
+        <rect x="38" y="112" width="58" height="36" rx="3" fill="none" stroke="#171715" stroke-width="1.2"/>
+        <rect x="176" y="112" width="54" height="34" rx="2" fill="none" stroke="#171715" stroke-width="1.2"/>
+      </svg>
+      <div class="overlay-sold">
+        <div class="sold-stamp">Sold</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="unit-row">
+        <span class="unit-num" style="color:var(--sub)">412</span>
+      </div>
+      <div class="unit-desc">4th Floor · 2 Bed · NW · Garden View</div>
+      <div class="price-row">
+        <span class="price-struck">$465,000</span>
+      </div>
+      <div class="note red">
+        <span class="note-dot" style="background:var(--red)"></span>
+        <span>This unit has been sold. Explore available units below.</span>
+      </div>
+      <div class="metrics" style="opacity:.4">
+        <div class="metric"><span class="metric-val">2</span><span class="metric-lbl">Bed</span></div>
+        <div class="metric"><span class="metric-val">2</span><span class="metric-lbl">Bath</span></div>
+        <div class="metric"><span class="metric-val">1</span><span class="metric-lbl">Park</span></div>
+        <div class="metric"><span class="metric-val">988</span><span class="metric-lbl">Int sqft</span></div>
+        <div class="metric"><span class="metric-val">220</span><span class="metric-lbl">Ext sqft</span></div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-waitlist btn-full">View Similar Units</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     05 · 2ND CHANCE — RELEASED
+════════════════════════════════════════ -->
+<div class="state-wrap">
+  <p class="state-label">05 · 2nd Chance — Released</p>
+  <div class="card" style="border-color:rgba(201,124,64,.22)">
+    <div class="card-img">
+      <svg viewBox="0 0 268 178" xmlns="http://www.w3.org/2000/svg">
+        <rect width="268" height="178" fill="#111110"/>
+        <rect x="28" y="22" width="212" height="136" fill="none" stroke="#252520" stroke-width="2.5"/>
+        <rect x="28" y="22" width="105" height="88" fill="none" stroke="#222" stroke-width="1.5"/>
+        <rect x="133" y="22" width="107" height="88" fill="none" stroke="#222" stroke-width="1.5"/>
+        <rect x="28" y="110" width="212" height="48" fill="none" stroke="#222" stroke-width="1.5"/>
+        <rect x="143" y="32" width="87" height="68" rx="2" fill="none" stroke="#1e1e1c" stroke-width="1.2"/>
+        <rect x="143" y="32" width="87" height="17" rx="2" fill="#1a1a18"/>
+        <circle cx="75" cy="66" r="22" fill="none" stroke="#1e1e1c" stroke-width="1.2"/>
+        <rect x="38" y="120" width="50" height="28" rx="2" fill="none" stroke="#1e1e1c" stroke-width="1.2"/>
+        <rect x="160" y="120" width="68" height="28" rx="2" fill="none" stroke="#1e1e1c" stroke-width="1.2"/>
+      </svg>
+      <div class="overlay-2nd"></div>
+      <div class="btn-wish active">♥ Saved <span class="wish-count">· 14</span></div>
+      <span class="badge badge-2nd">2nd Chance</span>
+    </div>
+    <div class="card-body">
+      <div class="unit-row">
+        <span class="unit-num">318</span>
+        <span class="unit-roi">10.8% ROI</span>
+      </div>
+      <div class="unit-desc">3rd Floor · 1 Bed · SW · Pool View</div>
+      <div class="price-row">
+        <span class="price">$431,000</span>
+        <span class="price-sub">$450/sqft</span>
+      </div>
+      <div class="note orange">
+        <span class="note-dot" style="background:var(--orange)"></span>
+        <span>This unit was released 3 days ago — a rare second opportunity.</span>
+      </div>
+      <div class="metrics">
+        <div class="metric"><span class="metric-val">1</span><span class="metric-lbl">Bed</span></div>
+        <div class="metric"><span class="metric-val">2</span><span class="metric-lbl">Bath</span></div>
+        <div class="metric"><span class="metric-val">1</span><span class="metric-lbl">Park</span></div>
+        <div class="metric"><span class="metric-val">959</span><span class="metric-lbl">Int sqft</span></div>
+        <div class="metric"><span class="metric-val">207</span><span class="metric-lbl">Ext sqft</span></div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-outline">More Info</button>
+        <button class="btn btn-orange">Reserve from $5K</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     06 · NOT READY / COMING SOON
+════════════════════════════════════════ -->
+<div class="state-wrap">
+  <p class="state-label">06 · Not Ready — Coming Soon</p>
+  <div class="card coming-soon">
+    <div class="card-img">
+      <svg viewBox="0 0 268 178" xmlns="http://www.w3.org/2000/svg">
+        <rect width="268" height="178" fill="#111110"/>
+        <rect x="28" y="22" width="212" height="136" fill="none" stroke="#1d1d1b" stroke-width="2.5"/>
+        <rect x="28" y="22" width="95" height="80" fill="none" stroke="#1a1a18" stroke-width="1.5"/>
+        <rect x="123" y="22" width="117" height="80" fill="none" stroke="#1a1a18" stroke-width="1.5"/>
+        <rect x="28" y="102" width="140" height="56" fill="none" stroke="#1a1a18" stroke-width="1.5"/>
+        <rect x="168" y="102" width="72" height="56" fill="none" stroke="#1a1a18" stroke-width="1.5"/>
+        <rect x="133" y="32" width="96" height="60" rx="2" fill="none" stroke="#161614" stroke-width="1.2"/>
+        <circle cx="75" cy="62" r="22" fill="none" stroke="#161614" stroke-width="1.2"/>
+      </svg>
+      <span class="badge badge-soon" style="top:10px;right:10px">Not Ready</span>
+    </div>
+    <div class="card-body">
+      <div class="unit-row">
+        <span class="unit-num">507</span>
+      </div>
+      <div class="unit-desc">5th Floor · 2 Bed · NE · Ocean View</div>
+      <div class="price-row">
+        <span class="price">$511,000</span>
+        <span class="price-sub">$482/sqft</span>
+      </div>
+      <div class="metrics">
+        <div class="metric"><span class="metric-val">2</span><span class="metric-lbl">Bed</span></div>
+        <div class="metric"><span class="metric-val">2</span><span class="metric-lbl">Bath</span></div>
+        <div class="metric"><span class="metric-val">1</span><span class="metric-lbl">Park</span></div>
+        <div class="metric"><span class="metric-val">1,059</span><span class="metric-lbl">Int sqft</span></div>
+        <div class="metric"><span class="metric-val">244</span><span class="metric-lbl">Ext sqft</span></div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-ghost btn-full">Get Notified</button>
+      </div>
+    </div>
+    <!-- blur overlay -->
+    <div class="coming-overlay">
+      <div class="coming-pill">
+        <div class="cp-label">Coming Soon</div>
+        <div class="cp-title">Unit 507</div>
+      </div>
+      <button class="btn btn-ghost" style="font-size:9.5px;padding:7px 20px;backdrop-filter:blur(8px);background:rgba(12,12,12,.7)">🔔 Get Notified</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- /canvas -->
+
+<script>
+// Live timer
+function tick() {
+  const el = document.querySelector('.timer-val');
+  if (!el) return;
+  let [h,m,s] = el.textContent.split(':').map(Number);
+  s--;
+  if (s < 0) { s = 59; m--; }
+  if (m < 0) { m = 59; h--; }
+  if (h < 0) { h = 0; m = 0; s = 0; }
+  el.textContent = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+setInterval(tick, 1000);
+</script>
+</body>
+</html>

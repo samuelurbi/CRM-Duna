@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Makai · Mi Perfil</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0c0c0b; --surface: #161614; --surface-2: #1e1e1b;
+  --border: rgba(255,255,255,.08); --green: #82b870; --green-dim: #4A5E3F;
+  --amber: #c97c40; --text: #F1EDE3; --muted: #7a7670; --red: #c0433a;
+}
+body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; -webkit-font-smoothing: antialiased; }
+
+.sidebar { width: 220px; min-height: 100vh; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; position: fixed; left: 0; top: 0; bottom: 0; }
+.sidebar-logo { padding: 24px 20px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+.sidebar-logo-mark { width: 28px; height: 28px; background: var(--green-dim); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--green); }
+.sidebar-logo-name { font-size: 13px; font-weight: 700; letter-spacing: .1em; }
+.sidebar-logo-sub { font-size: 9px; color: var(--muted); letter-spacing: .06em; }
+.nav { padding: 16px 10px; flex: 1; }
+.nav-label { font-size: 8.5px; font-weight: 600; color: var(--muted); letter-spacing: .12em; text-transform: uppercase; padding: 0 10px; margin-bottom: 6px; margin-top: 16px; }
+.nav-label:first-child { margin-top: 0; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 6px; font-size: 13px; color: var(--muted); cursor: pointer; text-decoration: none; transition: background .15s, color .15s; margin-bottom: 1px; }
+.nav-item:hover { background: rgba(255,255,255,.05); color: var(--text); }
+.nav-item.active { background: rgba(130,184,112,.1); color: var(--green); }
+.nav-item svg { width: 15px; height: 15px; flex-shrink: 0; }
+.nav-item .badge { margin-left: auto; background: var(--amber); color: #fff; font-size: 9px; font-weight: 700; border-radius: 10px; padding: 1px 6px; }
+.sidebar-user { padding: 14px 16px; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+.sidebar-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--green-dim); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--green); flex-shrink: 0; }
+.sidebar-user-name { font-size: 12px; font-weight: 500; }
+.sidebar-user-role { font-size: 10px; color: var(--muted); }
+.main { margin-left: 220px; flex: 1; }
+.topbar { height: 56px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 32px; position: sticky; top: 0; z-index: 10; }
+.topbar-title { font-size: 14px; font-weight: 600; }
+
+/* profile layout */
+.profile-shell { display: flex; min-height: calc(100vh - 56px); }
+.profile-nav { width: 200px; flex-shrink: 0; border-right: 1px solid var(--border); padding: 24px 0; }
+.profile-nav-item { display: flex; align-items: center; gap: 9px; padding: 9px 20px; font-size: 13px; color: var(--muted); cursor: pointer; transition: color .15s, background .15s; }
+.profile-nav-item:hover { color: var(--text); background: rgba(255,255,255,.03); }
+.profile-nav-item.active { color: var(--text); background: rgba(255,255,255,.05); font-weight: 500; }
+.profile-nav-item svg { width: 14px; height: 14px; flex-shrink: 0; }
+.profile-nav-sep { height: 1px; background: var(--border); margin: 12px 0; }
+.profile-content { flex: 1; padding: 36px 40px; max-width: 680px; }
+.section { display: none; }
+.section.active { display: block; }
+.section-title { font-size: 18px; font-weight: 600; letter-spacing: -.02em; margin-bottom: 4px; }
+.section-sub { font-size: 12px; color: var(--muted); margin-bottom: 32px; }
+
+/* avatar block */
+.avatar-block { display: flex; align-items: center; gap: 20px; padding: 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 28px; }
+.big-avatar { width: 64px; height: 64px; border-radius: 50%; background: var(--green-dim); display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 700; color: var(--green); flex-shrink: 0; cursor: pointer; position: relative; }
+.big-avatar-overlay { position: absolute; inset: 0; border-radius: 50%; background: rgba(0,0,0,.5); display: none; align-items: center; justify-content: center; }
+.big-avatar:hover .big-avatar-overlay { display: flex; }
+.avatar-block-info h3 { font-size: 15px; font-weight: 600; margin-bottom: 2px; }
+.avatar-block-info p { font-size: 12px; color: var(--muted); }
+.btn-xs { padding: 6px 12px; border-radius: 6px; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: transparent; color: var(--muted); transition: all .15s; margin-top: 8px; display: inline-block; }
+.btn-xs:hover { border-color: rgba(255,255,255,.18); color: var(--text); }
+
+/* form */
+.form-group { margin-bottom: 20px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.form-label { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 7px; display: block; }
+.form-input {
+  width: 100%; background: var(--surface); border: 1px solid var(--border);
+  color: var(--text); font-family: 'Inter', sans-serif; font-size: 13px;
+  padding: 10px 12px; border-radius: 8px; outline: none;
+  transition: border-color .15s;
+}
+.form-input:focus { border-color: rgba(130,184,112,.4); }
+.form-input:disabled { opacity: .5; cursor: not-allowed; }
+.form-select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%237a7670' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px; }
+.form-hint { font-size: 10.5px; color: var(--muted); margin-top: 5px; }
+.form-divider { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+.form-section-title { font-size: 12px; font-weight: 600; color: var(--text); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 16px; }
+.form-actions { display: flex; gap: 10px; margin-top: 28px; }
+.btn { padding: 9px 18px; border-radius: 7px; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: all .15s; }
+.btn-primary { background: var(--green-dim); color: var(--green); }
+.btn-primary:hover { background: #3d5034; }
+.btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--muted); }
+.btn-ghost:hover { border-color: rgba(255,255,255,.18); color: var(--text); }
+.btn-danger { background: rgba(192,67,58,.1); border: 1px solid rgba(192,67,58,.2); color: var(--red); }
+.btn-danger:hover { background: rgba(192,67,58,.18); }
+
+/* toggle */
+.toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--border); }
+.toggle-row:last-child { border-bottom: none; }
+.toggle-info h4 { font-size: 13px; font-weight: 500; margin-bottom: 2px; }
+.toggle-info p { font-size: 11px; color: var(--muted); }
+.toggle { position: relative; width: 38px; height: 22px; }
+.toggle input { opacity: 0; width: 0; height: 0; }
+.toggle-slider { position: absolute; inset: 0; background: var(--surface-2); border: 1px solid var(--border); border-radius: 11px; cursor: pointer; transition: background .2s; }
+.toggle-slider::before { content: ''; position: absolute; width: 16px; height: 16px; left: 2px; top: 2px; background: var(--muted); border-radius: 50%; transition: transform .2s, background .2s; }
+.toggle input:checked + .toggle-slider { background: rgba(130,184,112,.2); border-color: rgba(130,184,112,.4); }
+.toggle input:checked + .toggle-slider::before { transform: translateX(16px); background: var(--green); }
+
+/* security */
+.security-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; }
+.security-row-icon { width: 36px; height: 36px; border-radius: 8px; background: var(--surface-2); display: flex; align-items: center; justify-content: center; color: var(--muted); flex-shrink: 0; margin-right: 12px; }
+.security-row-icon svg { width: 16px; height: 16px; }
+.security-row-info { flex: 1; }
+.security-row-name { font-size: 13px; font-weight: 500; margin-bottom: 1px; }
+.security-row-meta { font-size: 11px; color: var(--muted); }
+.status-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; margin-right: 5px; }
+.status-dot.on { background: var(--green); }
+.status-dot.off { background: var(--muted); }
+
+/* toast */
+.toast { position: fixed; bottom: 24px; right: 24px; z-index: 100; background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; display: flex; align-items: center; gap: 10px; font-size: 13px; min-width: 240px; transform: translateY(8px); opacity: 0; transition: transform .2s, opacity .2s; pointer-events: none; }
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast svg { width: 16px; height: 16px; color: var(--green); flex-shrink: 0; }
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="sidebar-logo-mark">M</div>
+    <div><div class="sidebar-logo-name">MAKAI</div><div class="sidebar-logo-sub">Portal del Comprador</div></div>
+  </div>
+  <nav class="nav">
+    <div class="nav-label">Mi Cuenta</div>
+    <a class="nav-item" href="01-saved-properties.html">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 3.5A1.5 1.5 0 013.5 2h9A1.5 1.5 0 0114 3.5v11l-6-3-6 3V3.5z"/></svg>
+      Propiedades Guardadas
+    </a>
+    <a class="nav-item" href="05-proposals-contracts.html">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 2H3a1 1 0 00-1 1v11l3-2 3 2 3-2 3 2V3a1 1 0 00-1-1z"/><path d="M5 6h6M5 9h4"/></svg>
+      Propuestas &amp; Contratos <span class="badge">1</span>
+    </a>
+    <a class="nav-item" href="02-documents.html">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 2l4 4-7 7H3v-4l7-7z"/><path d="M8.5 3.5l4 4"/></svg>
+      Firmar Documentos
+    </a>
+    <a class="nav-item" href="03-schedule-video-call.html">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="4" width="10" height="8" rx="1.5"/><path d="M11 7l4-2v6l-4-2"/></svg>
+      Agendar Videollamada
+    </a>
+    <a class="nav-item" href="06-calendar-events.html">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="12" height="11" rx="1.5"/><path d="M5 2v2M11 2v2M2 7h12"/></svg>
+      Calendario &amp; Citas
+    </a>
+    <div class="nav-label">Configuración</div>
+    <a class="nav-item active" href="04-user-profile.html">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="5" r="3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>
+      Mi Perfil
+    </a>
+  </nav>
+  <div class="sidebar-user">
+    <div class="sidebar-avatar">GG</div>
+    <div class="sidebar-user-info"><div class="sidebar-user-name">Giuseppe Gangemi</div><div class="sidebar-user-role">Comprador</div></div>
+  </div>
+</aside>
+
+<main class="main">
+  <header class="topbar">
+    <span class="topbar-title">Mi Perfil</span>
+    <div style="display:flex;gap:16px;align-items:center;">
+      <div style="width:32px;height:32px;border-radius:6px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      </div>
+      <div class="sidebar-avatar">GG</div>
+    </div>
+  </header>
+
+  <div class="profile-shell">
+    <!-- Left nav -->
+    <div class="profile-nav">
+      <div class="profile-nav-item active" onclick="showSection('personal', this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Información personal
+      </div>
+      <div class="profile-nav-item" onclick="showSection('security', this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        Seguridad
+      </div>
+      <div class="profile-nav-item" onclick="showSection('notifications', this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        Notificaciones
+      </div>
+      <div class="profile-nav-item" onclick="showSection('preferences', this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Preferencias
+      </div>
+      <div class="profile-nav-sep"></div>
+      <div class="profile-nav-item" style="color:var(--red);" onclick="logout()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Cerrar sesión
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="profile-content">
+
+      <!-- PERSONAL -->
+      <div class="section active" id="section-personal">
+        <div class="section-title">Información personal</div>
+        <div class="section-sub">Datos de tu cuenta en el portal de Makai Residences.</div>
+        <div class="avatar-block">
+          <div class="big-avatar">
+            GG
+            <div class="big-avatar-overlay">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            </div>
+          </div>
+          <div class="avatar-block-info">
+            <h3>Giuseppe Gangemi</h3>
+            <p>comprador@email.com</p>
+            <button class="btn-xs" onclick="toast('Próximamente: carga de foto')">Cambiar foto</button>
+          </div>
+        </div>
+
+        <div class="form-row form-group">
+          <div>
+            <label class="form-label">Nombre</label>
+            <input type="text" class="form-input" value="Giuseppe">
+          </div>
+          <div>
+            <label class="form-label">Apellido</label>
+            <input type="text" class="form-input" value="Gangemi">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Correo electrónico</label>
+          <input type="email" class="form-input" value="giuseppe.gangemi@email.com">
+          <div class="form-hint">Verificado · usado para notificaciones y acceso</div>
+        </div>
+        <div class="form-row form-group">
+          <div>
+            <label class="form-label">Teléfono</label>
+            <input type="tel" class="form-input" value="+39 333 123 4567">
+          </div>
+          <div>
+            <label class="form-label">País de residencia</label>
+            <select class="form-input form-select">
+              <option>Italia</option>
+              <option>España</option>
+              <option>Estados Unidos</option>
+              <option>República Dominicana</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Número de pasaporte / identificación</label>
+          <input type="text" class="form-input" value="XX123456" placeholder="Requerido para documentos legales">
+          <div class="form-hint">Usado únicamente para generación de contratos. No se comparte con terceros.</div>
+        </div>
+        <hr class="form-divider">
+        <div class="form-section-title">Datos de inversión</div>
+        <div class="form-row form-group">
+          <div>
+            <label class="form-label">Perfil de inversión</label>
+            <select class="form-input form-select">
+              <option>Renta vacacional (Airbnb)</option>
+              <option>Residencia principal</option>
+              <option>Inversión a largo plazo</option>
+              <option>Segunda residencia</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Presupuesto aproximado</label>
+            <select class="form-input form-select">
+              <option>$300K - $500K USD</option>
+              <option>$500K - $800K USD</option>
+              <option>$800K - $1.2M USD</option>
+              <option>+$1.2M USD</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-primary" onclick="saveSection()">Guardar cambios</button>
+          <button class="btn btn-ghost" onclick="toast('Cambios descartados')">Cancelar</button>
+        </div>
+      </div>
+
+      <!-- SECURITY -->
+      <div class="section" id="section-security">
+        <div class="section-title">Seguridad</div>
+        <div class="section-sub">Gestiona tu contraseña y acceso a la cuenta.</div>
+
+        <div class="security-row" style="margin-bottom:24px;">
+          <div class="security-row-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </div>
+          <div class="security-row-info">
+            <div class="security-row-name">Contraseña</div>
+            <div class="security-row-meta">Última actualización: hace 45 días</div>
+          </div>
+          <button class="btn btn-ghost" onclick="togglePasswordForm()">Cambiar</button>
+        </div>
+
+        <div id="password-form" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:24px;">
+          <div class="form-group">
+            <label class="form-label">Contraseña actual</label>
+            <input type="password" class="form-input" placeholder="••••••••">
+          </div>
+          <div class="form-row form-group">
+            <div>
+              <label class="form-label">Nueva contraseña</label>
+              <input type="password" class="form-input" placeholder="Min. 8 caracteres">
+            </div>
+            <div>
+              <label class="form-label">Confirmar nueva</label>
+              <input type="password" class="form-input" placeholder="••••••••">
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-primary" onclick="saveSection()">Actualizar contraseña</button>
+            <button class="btn btn-ghost" onclick="togglePasswordForm()">Cancelar</button>
+          </div>
+        </div>
+
+        <div class="form-section-title">Autenticación de dos factores</div>
+        <div class="security-row">
+          <div class="security-row-icon" style="background:rgba(130,184,112,.1);color:var(--green);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <div class="security-row-info">
+            <div class="security-row-name"><span class="status-dot on"></span>Autenticador (TOTP)</div>
+            <div class="security-row-meta">Activado · Google Authenticator / Authy</div>
+          </div>
+          <button class="btn btn-ghost" onclick="toast('Redirigiendo a configuración 2FA…')">Configurar</button>
+        </div>
+        <div class="security-row" style="margin-bottom:24px;">
+          <div class="security-row-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+          </div>
+          <div class="security-row-info">
+            <div class="security-row-name"><span class="status-dot off"></span>SMS al teléfono</div>
+            <div class="security-row-meta">No configurado</div>
+          </div>
+          <button class="btn btn-ghost" onclick="toast('Activar verificación por SMS')">Activar</button>
+        </div>
+
+        <hr class="form-divider">
+        <div class="form-section-title" style="color:var(--red);">Zona de peligro</div>
+        <div style="background:rgba(192,67,58,.05);border:1px solid rgba(192,67,58,.15);border-radius:10px;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;">
+          <div>
+            <div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:2px;">Eliminar cuenta</div>
+            <div style="font-size:11px;color:var(--muted);">Esta acción es permanente e irreversible.</div>
+          </div>
+          <button class="btn btn-danger" onclick="toast('Contacta a soporte para eliminar tu cuenta')">Eliminar cuenta</button>
+        </div>
+      </div>
+
+      <!-- NOTIFICATIONS -->
+      <div class="section" id="section-notifications">
+        <div class="section-title">Notificaciones</div>
+        <div class="section-sub">Elige qué actualizaciones deseas recibir.</div>
+
+        <div class="form-section-title">Email</div>
+        <div style="margin-bottom:24px;">
+          <div class="toggle-row">
+            <div class="toggle-info"><h4>Documentos pendientes</h4><p>Cuando hay un documento que requiere tu firma</p></div>
+            <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-info"><h4>Nuevas propuestas</h4><p>Cuando tu asesor envía una oferta o presupuesto</p></div>
+            <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-info"><h4>Recordatorio de videollamada</h4><p>24 h antes de tu cita programada</p></div>
+            <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-info"><h4>Actualizaciones del proyecto</h4><p>Avances de construcción, fechas, noticias</p></div>
+            <label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-info"><h4>Promociones</h4><p>Unidades nuevas, descuentos especiales</p></div>
+            <label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label>
+          </div>
+        </div>
+
+        <div class="form-section-title">WhatsApp</div>
+        <div>
+          <div class="toggle-row">
+            <div class="toggle-info"><h4>Confirmación de cita</h4><p>Resumen inmediato al agendar una videollamada</p></div>
+            <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-info"><h4>Recordatorio 1 h antes</h4><p>Aviso con el enlace de la videollamada</p></div>
+            <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-primary" onclick="saveSection()">Guardar preferencias</button>
+        </div>
+      </div>
+
+      <!-- PREFERENCES -->
+      <div class="section" id="section-preferences">
+        <div class="section-title">Preferencias</div>
+        <div class="section-sub">Personaliza cómo se ve y funciona el portal.</div>
+
+        <div class="form-group">
+          <label class="form-label">Idioma</label>
+          <select class="form-input form-select" style="max-width:240px;">
+            <option>Español</option>
+            <option>English</option>
+            <option>Italiano</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Moneda de referencia</label>
+          <select class="form-input form-select" style="max-width:240px;">
+            <option>USD · Dólar americano</option>
+            <option>EUR · Euro</option>
+            <option>DOP · Peso dominicano</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Zona horaria</label>
+          <select class="form-input form-select" style="max-width:320px;">
+            <option>America/Santo_Domingo (UTC-4)</option>
+            <option>Europe/Rome (UTC+2)</option>
+            <option>America/New_York (UTC-5)</option>
+          </select>
+          <div class="form-hint">Usada para mostrar horarios de videollamadas correctamente</div>
+        </div>
+        <hr class="form-divider">
+        <div class="form-section-title">Portal</div>
+        <div>
+          <div class="toggle-row">
+            <div class="toggle-info"><h4>Vista compacta de propiedades</h4><p>Mostrar lista en lugar de grilla por defecto</p></div>
+            <label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-info"><h4>Mostrar precios en m²</h4><p>Mostrar precio por metro cuadrado junto al precio total</p></div>
+            <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-primary" onclick="saveSection()">Guardar preferencias</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<div class="toast" id="toast-el">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+  <span id="toast-text">Guardado</span>
+</div>
+
+<script>
+function showSection(name, el) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.profile-nav-item').forEach(i => i.classList.remove('active'));
+  document.getElementById('section-' + name).classList.add('active');
+  el.classList.add('active');
+}
+
+function saveSection() {
+  toast('Cambios guardados correctamente');
+}
+
+let toastTimer;
+function toast(msg) {
+  const el = document.getElementById('toast-el');
+  document.getElementById('toast-text').textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+function togglePasswordForm() {
+  const f = document.getElementById('password-form');
+  f.style.display = f.style.display === 'none' ? 'block' : 'none';
+}
+
+function logout() {
+  if (confirm('¿Cerrar sesión?')) toast('Cerrando sesión…');
+}
+</script>
+</body>
+</html>

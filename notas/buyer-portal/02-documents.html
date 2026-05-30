@@ -1,0 +1,1391 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Makai · Documentos</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0c0c0b; --surface: #161614; --surface-2: #1e1e1b;
+  --border: rgba(255,255,255,.08);
+  --green: #82b870; --green-dim: #4A5E3F;
+  --amber: #c97c40; --text: #F1EDE3; --muted: #7a7670; --red: #c0433a;
+}
+body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; -webkit-font-smoothing: antialiased; }
+
+/* ── SIDEBAR ── */
+.sidebar { width: 220px; min-height: 100vh; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; position: fixed; left: 0; top: 0; bottom: 0; z-index: 10; }
+.sidebar-logo { padding: 24px 20px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+.sidebar-logo-mark { width: 28px; height: 28px; background: var(--green-dim); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--green); }
+.sidebar-logo-name { font-size: 13px; font-weight: 700; letter-spacing: .1em; color: var(--text); }
+.sidebar-logo-sub { font-size: 9px; color: var(--muted); letter-spacing: .06em; }
+.nav { padding: 16px 10px; flex: 1; }
+.nav-label { font-size: 8.5px; font-weight: 600; color: var(--muted); letter-spacing: .12em; text-transform: uppercase; padding: 0 10px; margin-bottom: 6px; margin-top: 16px; }
+.nav-label:first-child { margin-top: 0; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 6px; font-size: 13px; color: var(--muted); cursor: pointer; text-decoration: none; transition: background .15s, color .15s; margin-bottom: 1px; }
+.nav-item:hover { background: rgba(255,255,255,.05); color: var(--text); }
+.nav-item.active { background: rgba(130,184,112,.1); color: var(--green); }
+.nav-item svg { width: 15px; height: 15px; flex-shrink: 0; }
+.nav-item .badge { margin-left: auto; background: var(--amber); color: #fff; font-size: 9px; font-weight: 700; border-radius: 10px; padding: 1px 6px; }
+.sidebar-user { padding: 14px 16px; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+.sidebar-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--green-dim); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: var(--green); flex-shrink: 0; }
+.sidebar-user-info { flex: 1; min-width: 0; }
+.sidebar-user-name { font-size: 12px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sidebar-user-role { font-size: 10px; color: var(--muted); }
+
+/* ── MAIN ── */
+.main { margin-left: 220px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+.topbar { padding: 18px 32px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 16px; background: var(--bg); position: sticky; top: 0; z-index: 9; }
+.topbar-title { font-size: 15px; font-weight: 600; color: var(--text); }
+.topbar-sub { font-size: 12px; color: var(--muted); margin-left: auto; }
+
+/* ── DOCUMENT LIST ── */
+.list-area { padding: 28px 32px; max-width: 900px; }
+
+/* Toolbar */
+.list-toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+.list-filter-tabs { display: flex; gap: 3px; }
+.list-tab { padding: 5px 13px; border-radius: 6px; font-size: 12px; font-weight: 500; color: var(--muted); cursor: default; border: 1px solid transparent; user-select: none; }
+.list-tab.active { background: var(--surface); border-color: var(--border); color: var(--text); }
+.list-status-info { margin-left: auto; font-size: 12px; }
+.list-group-label { display: flex; align-items: center; gap: 8px; font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .12em; margin-bottom: 10px; }
+.list-group-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+
+/* Shared helpers */
+.doc-version { display: inline-flex; align-items: center; font-size: 9px; font-weight: 700; color: var(--muted); background: var(--surface-2); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; }
+.doc-type-dot { border-radius: 50%; flex-shrink: 0; }
+.status-pill { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; padding: 3px 9px; border-radius: 10px; white-space: nowrap; }
+.status-pill.pending { background: rgba(201,124,64,.14); color: var(--amber); }
+.status-pill.signed { background: rgba(130,184,112,.12); color: var(--green); }
+.status-pill.approved { background: rgba(130,184,112,.12); color: var(--green); }
+.status-pill.rejected { background: rgba(201,124,64,.1); color: var(--amber); }
+.status-pill.closed { background: rgba(122,118,112,.1); color: var(--muted); }
+
+/* Doc item — unified card */
+.doc-item { display: flex; align-items: center; gap: 16px; padding: 15px 18px 15px 0; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 7px; cursor: pointer; transition: background .12s, border-color .15s; position: relative; overflow: hidden; }
+.doc-item:hover { border-color: rgba(255,255,255,.15); }
+.doc-item.is-pending { background: rgba(201,124,64,.025); }
+.doc-item.is-pending:hover { background: rgba(201,124,64,.04); border-color: rgba(201,124,64,.25); }
+.doc-item.is-done:hover { background: rgba(255,255,255,.02); }
+
+/* Left accent strip */
+.doc-accent { width: 3px; align-self: stretch; flex-shrink: 0; border-radius: 0 2px 2px 0; min-height: 42px; }
+
+/* Type icon badge */
+.doc-icon-wrap { width: 38px; height: 38px; border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+/* Content */
+.doc-content { flex: 1; min-width: 0; }
+.doc-item-title { font-size: 14px; font-weight: 600; color: var(--text); letter-spacing: -.01em; display: flex; align-items: center; gap: 8px; margin-bottom: 5px; flex-wrap: wrap; line-height: 1.3; }
+.doc-item-meta { font-size: 11px; color: var(--muted); display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+.doc-meta-sep { opacity: .35; }
+.doc-expiry-inline { color: var(--amber); font-weight: 500; display: inline-flex; align-items: center; gap: 3px; }
+
+/* Right cluster */
+.doc-right { display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
+.doc-amount-col { text-align: right; }
+.doc-amount-val { font-size: 15px; font-weight: 700; color: var(--text); letter-spacing: -.02em; line-height: 1.2; }
+.doc-amount-lbl { font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+/* CTAs */
+.btn-review { display: inline-flex; align-items: center; gap: 7px; padding: 8px 16px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; font-family: 'Inter', sans-serif; transition: all .15s; white-space: nowrap; }
+.btn-review.primary { background: var(--amber); color: #fff; }
+.btn-review.primary:hover { background: #d88d4e; }
+.btn-review.secondary { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+.btn-review.secondary:hover { color: var(--text); border-color: rgba(255,255,255,.18); }
+
+/* ══════════════════════════════════════
+   DOCUMENT MODAL
+══════════════════════════════════════ */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.7); z-index: 100; display: none; align-items: center; justify-content: center; padding: 32px; }
+.modal-overlay.open { display: flex; }
+.modal-shell { position: relative; width: 100%; max-width: 1200px; height: 100%; max-height: 840px; }
+.modal-inner { display: flex; width: 100%; height: 100%; border-radius: 16px; overflow: hidden; box-shadow: 0 24px 80px rgba(0,0,0,.7); border: 1px solid rgba(255,255,255,.08); }
+.modal-close-x { position: absolute; top: 12px; right: 12px; z-index: 10; width: 30px; height: 30px; border-radius: 50%; background: rgba(14,14,13,.8); border: 1px solid rgba(255,255,255,.14); color: rgba(255,255,255,.5); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .15s; font-family: 'Inter', sans-serif; }
+.modal-close-x:hover { background: rgba(30,30,27,.95); border-color: rgba(255,255,255,.28); color: #fff; }
+
+/* PDF Viewer */
+.pdf-viewer { flex: 0 0 62%; background: #111110; display: flex; flex-direction: column; overflow: hidden; }
+.pdf-topbar { background: #0e0e0d; border-bottom: 1px solid rgba(255,255,255,.06); padding: 10px 20px; display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
+.pdf-back { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); cursor: pointer; padding: 5px 10px; border-radius: 6px; background: transparent; border: 1px solid rgba(255,255,255,.08); font-family: 'Inter', sans-serif; transition: all .15s; flex-shrink: 0; }
+.pdf-back:hover { color: var(--text); border-color: rgba(255,255,255,.18); }
+.pdf-doc-name { font-size: 12px; font-weight: 600; color: var(--text); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pdf-meta { font-size: 11px; color: var(--muted); flex-shrink: 0; display: flex; align-items: center; gap: 12px; }
+.pdf-dl { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--muted); cursor: pointer; padding: 4px 8px; border-radius: 5px; transition: all .15s; border: 1px solid transparent; }
+.pdf-dl:hover { color: var(--text); border-color: var(--border); }
+
+.pdf-scroll { flex: 1; overflow-y: auto; padding: 32px; display: flex; flex-direction: column; align-items: center; gap: 20px; }
+.pdf-scroll::-webkit-scrollbar { width: 4px; }
+.pdf-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 2px; }
+
+/* PDF Page */
+.pdf-page { background: #fff; width: 100%; max-width: 620px; padding: 60px 58px; box-shadow: 0 6px 32px rgba(0,0,0,.5); color: #111; font-family: 'Times New Roman', serif; font-size: 11px; line-height: 1.75; position: relative; }
+.pdf-lh { text-align: center; margin-bottom: 30px; padding-bottom: 18px; border-bottom: 2px solid #1a1a1a; }
+.pdf-lh-logo { font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 800; letter-spacing: .25em; color: #1a1a1a; margin-bottom: 3px; }
+.pdf-lh-sub { font-family: 'Inter', sans-serif; font-size: 8.5px; letter-spacing: .18em; color: #666; text-transform: uppercase; margin-bottom: 16px; }
+.pdf-doc-title { font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #111; margin-bottom: 4px; }
+.pdf-doc-ref { font-family: 'Inter', sans-serif; font-size: 9px; color: #888; letter-spacing: .06em; }
+.pdf-section { font-family: 'Inter', sans-serif; font-size: 9.5px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: #333; margin: 20px 0 8px; padding-top: 12px; border-top: 1px solid #e0e0e0; }
+.pdf-p { margin-bottom: 10px; color: #222; text-align: justify; }
+.pdf-clause { margin-bottom: 8px; color: #222; }
+.pdf-clause strong { font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 700; }
+.pdf-table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 10px; }
+.pdf-table th { background: #f5f5f4; font-family: 'Inter', sans-serif; font-weight: 700; padding: 7px 10px; border: 1px solid #ddd; text-align: left; font-size: 9px; text-transform: uppercase; letter-spacing: .06em; color: #444; }
+.pdf-table td { padding: 6px 10px; border: 1px solid #eee; color: #222; }
+.pdf-table tr:nth-child(even) td { background: #fafaf9; }
+.pdf-table .total td { font-family: 'Inter', sans-serif; font-weight: 700; background: #f0f0ee; }
+.pdf-page-num { position: absolute; bottom: 22px; right: 58px; font-family: 'Inter', sans-serif; font-size: 9px; color: #aaa; }
+.pdf-sig-zone { margin-top: 36px; padding: 20px; border: 1.5px dashed rgba(201,124,64,.6); background: rgba(201,124,64,.03); border-radius: 4px; }
+.pdf-sig-label { font-family: 'Inter', sans-serif; font-size: 8.5px; font-weight: 700; color: #c97c40; text-transform: uppercase; letter-spacing: .14em; margin-bottom: 14px; }
+.pdf-sig-lines { display: flex; gap: 32px; }
+.pdf-sig-field { flex: 1; }
+.pdf-sig-line { border-bottom: 1px solid #999; margin-bottom: 5px; height: 40px; display: flex; align-items: flex-end; padding-bottom: 4px; }
+.pdf-sig-line img { max-height: 36px; max-width: 100%; }
+.pdf-sig-line-typed { font-family: 'Georgia', serif; font-style: italic; font-size: 20px; color: #111; }
+.pdf-sig-field-label { font-family: 'Inter', sans-serif; font-size: 8px; color: #888; }
+.pdf-sig-date { font-family: 'Inter', sans-serif; font-size: 8.5px; color: #555; margin-top: 3px; }
+.pdf-sig-zone.done { border-color: rgba(130,184,112,.5); background: rgba(130,184,112,.03); }
+.pdf-sig-zone.done .pdf-sig-label { color: #82b870; }
+
+/* ── ACTION PANEL ── */
+.action-panel { flex: 1; background: var(--surface); border-left: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
+.ap-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.ap-type { font-size: 9px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .12em; display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+.ap-title { font-size: 16px; font-weight: 700; color: var(--text); letter-spacing: -.01em; line-height: 1.3; margin-bottom: 5px; }
+.ap-meta { font-size: 11px; color: var(--muted); }
+.ap-expiry { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--amber); margin-top: 6px; }
+
+/* Steps */
+.steps { display: flex; align-items: center; padding: 14px 24px; border-bottom: 1px solid var(--border); flex-shrink: 0; gap: 0; }
+.step { display: flex; align-items: center; gap: 6px; flex: 1; }
+.step-circle { width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: var(--muted); flex-shrink: 0; transition: all .2s; }
+.step-circle.active { border-color: var(--amber); color: var(--amber); }
+.step-circle.done { border-color: var(--green); background: var(--green); color: #0c0c0b; }
+.step-label { font-size: 11px; color: var(--muted); font-weight: 500; transition: color .2s; }
+.step-label.active { color: var(--text); }
+.step-label.done { color: var(--green); }
+.step-connector { flex: 1; height: 1px; background: var(--border); margin: 0 8px; }
+
+/* Action panel body */
+.ap-body { flex: 1; overflow-y: auto; }
+.ap-body::-webkit-scrollbar { width: 4px; }
+.ap-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+.ap-section { padding: 18px 24px; border-bottom: 1px solid var(--border); }
+.ap-section:last-child { border-bottom: none; }
+.ap-section-title { font-size: 9px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .12em; margin-bottom: 10px; }
+.broker-note { font-size: 12px; color: var(--text); line-height: 1.65; background: var(--surface-2); border-left: 2px solid var(--amber); border-radius: 0 6px 6px 0; padding: 12px 14px; }
+.broker-author { font-size: 10px; color: var(--muted); margin-bottom: 6px; }
+
+/* Review state footer */
+.ap-footer { padding: 16px 24px; border-top: 1px solid var(--border); flex-shrink: 0; }
+.btn-group { display: flex; gap: 8px; }
+.btn-primary { flex: 1; display: flex; align-items: center; justify-content: center; gap: 7px; padding: 11px 20px; background: var(--amber); color: #fff; border: none; border-radius: 9px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; transition: background .15s; }
+.btn-primary:hover { background: #d88d4e; }
+.btn-primary.green { background: var(--green); color: #0c0c0b; }
+.btn-primary.green:hover { background: #96cc83; }
+.btn-secondary { flex: 1; display: flex; align-items: center; justify-content: center; gap: 7px; padding: 11px 20px; background: transparent; color: var(--muted); border: 1px solid var(--border); border-radius: 9px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; transition: all .15s; }
+.btn-secondary:hover { color: var(--text); border-color: rgba(255,255,255,.2); }
+.btn-danger { flex: 1; display: flex; align-items: center; justify-content: center; gap: 7px; padding: 11px 20px; background: rgba(192,67,58,.1); color: var(--red); border: 1px solid rgba(192,67,58,.2); border-radius: 9px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; transition: all .15s; }
+.btn-danger:hover { background: rgba(192,67,58,.2); }
+
+/* Signature pad (in action panel) */
+.sig-tabs { display: flex; gap: 4px; margin-bottom: 12px; }
+.sig-tab { flex: 1; text-align: center; padding: 7px; border-radius: 7px; font-size: 12px; font-weight: 500; color: var(--muted); cursor: pointer; border: 1px solid transparent; transition: all .15s; }
+.sig-tab.active { background: var(--surface-2); border-color: var(--border); color: var(--text); }
+.sig-canvas-wrap { background: #fff; border-radius: 8px; position: relative; overflow: hidden; touch-action: none; }
+.sig-canvas { display: block; width: 100%; height: 130px; }
+.sig-placeholder { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #bbb; pointer-events: none; font-family: 'Inter', sans-serif; transition: opacity .2s; }
+.sig-clear { font-size: 11px; color: var(--muted); cursor: pointer; text-align: right; margin-top: 6px; }
+.sig-clear:hover { color: var(--text); }
+.sig-name-input { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px 13px; color: var(--text); font-family: 'Inter', sans-serif; font-size: 13px; outline: none; transition: border-color .15s; margin-bottom: 10px; }
+.sig-name-input:focus { border-color: rgba(130,184,112,.4); }
+.sig-name-preview { background: #fff; border-radius: 7px; padding: 14px; text-align: center; font-size: 26px; color: #111; font-style: italic; min-height: 62px; display: flex; align-items: center; justify-content: center; font-family: 'Georgia', serif; }
+
+/* Reject state */
+.reject-textarea { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 11px 13px; color: var(--text); font-family: 'Inter', sans-serif; font-size: 12px; resize: none; min-height: 90px; outline: none; transition: border-color .15s; }
+.reject-textarea:focus { border-color: rgba(201,124,64,.4); }
+.reject-textarea::placeholder { color: var(--muted); }
+
+/* Done / Waiting / Readonly states */
+.state-banner { padding: 20px; border-radius: 10px; display: flex; gap: 14px; align-items: flex-start; }
+.state-banner.success { background: rgba(130,184,112,.08); border: 1px solid rgba(130,184,112,.18); }
+.state-banner.waiting { background: rgba(201,124,64,.07); border: 1px solid rgba(201,124,64,.18); }
+.state-banner.readonly { background: rgba(122,118,112,.06); border: 1px solid var(--border); }
+.state-icon { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.state-icon.green { background: rgba(130,184,112,.15); }
+.state-icon.amber { background: rgba(201,124,64,.15); }
+.state-icon.muted { background: rgba(122,118,112,.12); }
+.state-title { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+.state-title.green { color: var(--green); }
+.state-title.amber { color: var(--amber); }
+.state-title.muted { color: var(--muted); }
+.state-sub { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+/* Sig record in readonly */
+.sig-record { display: flex; align-items: center; gap: 12px; background: var(--surface-2); border: 1px solid rgba(130,184,112,.2); border-radius: 8px; padding: 12px 14px; margin-top: 12px; }
+.sig-record-img { background: #fff; border-radius: 5px; padding: 4px 10px; display: flex; align-items: center; min-width: 80px; justify-content: center; }
+.sig-record-info { font-size: 11px; color: var(--muted); }
+.sig-record-info strong { font-size: 12px; color: var(--text); display: block; margin-bottom: 2px; }
+
+/* History in action panel */
+.hist-event { display: flex; gap: 10px; padding-bottom: 14px; position: relative; }
+.hist-event:not(:last-child)::before { content: ''; position: absolute; left: 11px; top: 24px; bottom: 0; width: 1px; background: var(--border); }
+.hist-dot { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.hist-dot.sent { background: rgba(122,118,112,.12); }
+.hist-dot.signed { background: rgba(130,184,112,.15); }
+.hist-dot.rejected { background: rgba(192,67,58,.12); }
+.hist-dot.counter { background: rgba(201,124,64,.12); }
+.hist-dot.approved { background: rgba(130,184,112,.15); }
+.hist-body {}
+.hist-actor { font-size: 12px; font-weight: 600; color: var(--text); }
+.hist-date { font-size: 10px; color: var(--muted); margin-bottom: 4px; }
+.hist-text { font-size: 11px; color: var(--muted); background: var(--surface-2); border-radius: 6px; padding: 7px 10px; line-height: 1.5; }
+.hist-ver-link { display: inline-flex; align-items: center; gap: 5px; margin-top: 7px; font-size: 11px; color: var(--muted); cursor: pointer; padding: 4px 9px; border-radius: 5px; border: 1px solid var(--border); background: transparent; font-family: 'Inter', sans-serif; transition: all .15s; }
+.hist-ver-link:hover { color: var(--text); border-color: rgba(255,255,255,.2); background: rgba(255,255,255,.04); }
+.prev-ver-banner { display: flex; align-items: center; gap: 8px; background: rgba(201,124,64,.07); border: 1px solid rgba(201,124,64,.2); border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; font-size: 11px; color: var(--amber); line-height: 1.4; }
+
+/* ── PRINT / PDF EXPORT ── */
+@media print {
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  body { background: #fff !important; margin: 0; }
+  .sidebar, .main, .pdf-topbar, .action-panel, .toast-wrap, .modal-close-x,
+  .steps, .ap-header, .ap-body, .ap-footer { display: none !important; }
+  .modal-overlay { position: static !important; background: none !important;
+    padding: 0 !important; display: block !important; z-index: auto !important; }
+  .modal-shell { max-width: 100% !important; height: auto !important; }
+  .modal-inner { display: block !important; border: none !important;
+    box-shadow: none !important; border-radius: 0 !important; height: auto !important; }
+  .pdf-viewer { display: block !important; overflow: visible !important; height: auto !important; }
+  .pdf-scroll { padding: 0 !important; overflow: visible !important;
+    background: #fff !important; display: block !important; }
+  .pdf-page { box-shadow: none !important; max-width: 100% !important;
+    padding: 48px 52px !important; page-break-after: always; break-after: page;
+    margin: 0 !important; }
+  .pdf-page:last-child { page-break-after: auto; break-after: auto; }
+}
+
+/* ── TOAST ── */
+.toast-wrap { position: fixed; bottom: 24px; right: 24px; z-index: 300; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+.toast { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 11px 16px; font-size: 13px; color: var(--text); display: flex; align-items: center; gap: 9px; box-shadow: 0 8px 28px rgba(0,0,0,.5); opacity: 0; transform: translateY(6px); transition: all .22s ease; pointer-events: auto; min-width: 220px; }
+.toast.show { opacity: 1; transform: translateY(0); }
+.toast-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.toast-dot.green { background: var(--green); }
+.toast-dot.amber { background: var(--amber); }
+.toast-dot.red { background: var(--red); }
+</style>
+</head>
+<body>
+
+<!-- ── SIDEBAR ── -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="sidebar-logo-mark">M</div>
+    <div>
+      <div class="sidebar-logo-name">MAKAI</div>
+      <div class="sidebar-logo-sub">RESIDENCES · CAP CANA</div>
+    </div>
+  </div>
+  <nav class="nav">
+    <div class="nav-label">Mi Cuenta</div>
+    <a href="01-saved-properties.html" class="nav-item">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 3.5A1.5 1.5 0 013.5 2h9A1.5 1.5 0 0114 3.5v11l-6-3-6 3V3.5z"/></svg>
+      Propiedades Guardadas
+    </a>
+    <a href="05-proposals-contracts.html" class="nav-item">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 2H3a1 1 0 00-1 1v11l3-2 3 2 3-2 3 2V3a1 1 0 00-1-1z"/><path d="M5 6h6M5 9h4"/></svg>
+      Propuestas &amp; Contratos
+      <span class="badge">1</span>
+    </a>
+    <a href="02-documents.html" class="nav-item active">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 2l4 4-7 7H3v-4l7-7z"/><path d="M8.5 3.5l4 4"/></svg>
+      Firmar Documentos
+      <span class="badge" id="nav-badge">2</span>
+    </a>
+    <a href="03-schedule-video-call.html" class="nav-item">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="4" width="10" height="8" rx="1.5"/><path d="M11 7l4-2v6l-4-2"/></svg>
+      Agendar Videollamada
+    </a>
+    <a href="06-calendar-events.html" class="nav-item">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="12" height="11" rx="1.5"/><path d="M5 2v2M11 2v2M2 7h12"/></svg>
+      Calendario &amp; Citas
+    </a>
+    <div class="nav-label">Configuración</div>
+    <a href="04-user-profile.html" class="nav-item">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="5" r="3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>
+      Mi Perfil
+    </a>
+  </nav>
+  <div class="sidebar-user">
+    <div class="sidebar-avatar">GG</div>
+    <div class="sidebar-user-info">
+      <div class="sidebar-user-name">Giuseppe Gangemi</div>
+      <div class="sidebar-user-role">Comprador</div>
+    </div>
+  </div>
+</aside>
+
+<!-- ── MAIN ── -->
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-title">Documentos</div>
+    <div class="topbar-sub" id="topbar-sub"></div>
+  </div>
+  <div class="list-area" id="list-area">
+    <!-- Injected by JS -->
+  </div>
+</main>
+
+<!-- ══════════════════════════════════════
+     DOCUMENT MODAL
+══════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal-shell">
+    <button class="modal-close-x" onclick="closeModal()">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 2l8 8M10 2l-8 8"/></svg>
+    </button>
+  <div class="modal-inner">
+
+    <!-- PDF Viewer -->
+    <div class="pdf-viewer">
+      <div class="pdf-topbar">
+        <div class="pdf-doc-name" id="pdf-doc-name"></div>
+        <div class="pdf-meta">
+          <span id="pdf-page-count"></span>
+          <div class="pdf-dl" onclick="handleDownload()" title="Descargar PDF">
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3v8M5 8l3 3 3-3"/><path d="M3 13h10"/></svg>
+            Descargar
+          </div>
+        </div>
+      </div>
+      <div class="pdf-scroll" id="pdf-scroll">
+        <!-- PDF pages injected by JS -->
+      </div>
+    </div>
+
+    <!-- Action Panel -->
+    <div class="action-panel">
+      <div class="ap-header" id="ap-header">
+        <!-- Injected by JS -->
+      </div>
+      <div class="steps" id="ap-steps">
+        <!-- Injected by JS -->
+      </div>
+      <div class="ap-body" id="ap-body">
+        <!-- Injected by JS -->
+      </div>
+      <div class="ap-footer" id="ap-footer">
+        <!-- Injected by JS -->
+      </div>
+    </div>
+
+  </div>
+  </div>
+</div>
+
+<!-- ── TOAST ── -->
+<div class="toast-wrap" id="toasts"></div>
+
+<script>
+/* ──────────────────────────────────────────
+   DATA
+────────────────────────────────────────── */
+const NOW_STR = '23 may 2026';
+
+const items = [
+  {
+    id: 'c1',
+    type: 'contrato',
+    typeLabel: 'Contrato',
+    typeColor: 'var(--amber)',
+    title: 'Contrato de Promesa de Compraventa',
+    version: 1,
+    status: 'pending',
+    amount: '$385,000',
+    amountSub: 'Precio total del inmueble',
+    sentBy: 'Alejandro Morales',
+    sentDate: '19 may 2026',
+    expiresDate: '26 may 2026',
+    daysLeft: 7,
+    brokerNote: 'Giuseppe, adjunto el contrato de promesa de compraventa para el Apartamento 4B, Torre B. Recoge todos los términos acordados: precio final, plan de pagos y fecha estimada de entrega. Por favor revísalo con calma y firma cuando estés listo.',
+    history: [
+      { type: 'sent', actor: 'Alejandro Morales', date: '19 may 2026 · 10:22 AM', text: 'Contrato enviado para revisión y firma.' },
+    ],
+    sigData: null, sigDate: null,
+  },
+  {
+    id: 'p2',
+    type: 'presupuesto',
+    typeLabel: 'Presupuesto',
+    typeColor: 'var(--green)',
+    title: 'Propuesta de Personalización de Acabados',
+    version: 2,
+    status: 'pending',
+    amount: '$24,800',
+    amountSub: 'Paquete premium · v2',
+    sentBy: 'Alejandro Morales',
+    sentDate: '8 may 2026',
+    expiresDate: null,
+    daysLeft: null,
+    brokerNote: 'He ajustado el presupuesto según tu feedback. Esta versión v2 elimina el paquete de iluminación automatizada y aplica el descuento especial de temporada para mantenernos dentro de lo acordado.',
+    history: [
+      { type: 'sent', actor: 'Alejandro Morales', date: '29 abr 2026 · 9:05 AM', text: 'Propuesta inicial enviada — v1 · $31,500.', linkedVersion: 1 },
+      { type: 'rejected', actor: 'Giuseppe Gangemi', date: '30 abr 2026 · 4:22 PM', text: 'El precio está fuera de mi presupuesto. ¿Podemos ajustar la selección de acabados?' },
+      { type: 'counter', actor: 'Alejandro Morales', date: '8 may 2026 · 3:15 PM', text: 'Contraoferta enviada — v2 · $24,800.' },
+    ],
+    sigData: null, sigDate: null,
+    previousVersions: [{
+      version: 1,
+      sentDate: '29 abr 2026',
+      amount: '$31,500',
+      brokerNote: 'Propuesta inicial de personalización con el catálogo completo de acabados premium. Incluye iluminación automatizada Lutron y todos los upgrades disponibles para la unidad.',
+      summary: [
+        { label: 'Piso mármol travertino (85 m²)', value: '$12,750' },
+        { label: 'Revestimiento de madera (22 m²)', value: '$6,600' },
+        { label: 'Cocina italiana Scavolini', value: '$5,450' },
+        { label: 'Iluminación automatizada Lutron', value: '$6,700' },
+        { label: 'Total personalización', value: '$31,500', total: true },
+      ],
+    }],
+  },
+  {
+    id: 'pp1',
+    type: 'plan_pago',
+    typeLabel: 'Plan de Pagos',
+    typeColor: 'var(--muted)',
+    title: 'Plan de Pagos — 24 Meses',
+    version: 1,
+    status: 'signed',
+    amount: '$14,604/mes',
+    amountSub: '24 cuotas mensuales',
+    sentBy: 'Alejandro Morales',
+    sentDate: '12 may 2026',
+    expiresDate: null,
+    daysLeft: null,
+    brokerNote: 'Plan de pagos según lo acordado. La primera cuota comienza 30 días después de la firma del contrato.',
+    history: [
+      { type: 'sent', actor: 'Alejandro Morales', date: '12 may 2026 · 11:00 AM', text: 'Plan de pagos enviado para firma.' },
+      { type: 'signed', actor: 'Giuseppe Gangemi', date: '13 may 2026 · 9:45 AM', text: 'Firmado digitalmente.' },
+    ],
+    sigData: 'typed:G. Gangemi', sigDate: '13 may 2026 · 9:45 AM',
+  },
+  {
+    id: 'ky1',
+    type: 'documento',
+    typeLabel: 'Documento',
+    typeColor: 'var(--muted)',
+    title: 'Formulario KYC — Verificación de Identidad',
+    version: 1,
+    status: 'signed',
+    amount: null,
+    amountSub: null,
+    sentBy: 'Alejandro Morales',
+    sentDate: '10 may 2026',
+    expiresDate: null,
+    daysLeft: null,
+    brokerNote: 'Formulario requerido por regulación para proceder con la compraventa. Confirma tu identidad y país de residencia fiscal.',
+    history: [
+      { type: 'sent', actor: 'Alejandro Morales', date: '10 may 2026 · 8:30 AM', text: 'Documento enviado para firma.' },
+      { type: 'signed', actor: 'Giuseppe Gangemi', date: '10 may 2026 · 10:15 AM', text: 'Firmado digitalmente.' },
+    ],
+    sigData: 'typed:Giuseppe Gangemi', sigDate: '10 may 2026 · 10:15 AM',
+  },
+];
+
+/* ──────────────────────────────────────────
+   STATE
+────────────────────────────────────────── */
+let activeId = null;
+let panelState = 'review'; // 'review' | 'sign' | 'reject' | 'done' | 'waiting' | 'readonly' | 'prev-version'
+let sigMode = 'draw';
+let drawHasContent = false;
+let previewVersion = null; // { item, prevData } when viewing a prior version
+
+/* ──────────────────────────────────────────
+   HELPERS
+────────────────────────────────────────── */
+const statusLabel = { pending:'Pendiente firma', signed:'Firmado', approved:'Aprobado', rejected:'Esperando contraoferta', closed:'Cerrado' };
+
+function pendingCount() { return items.filter(i => i.status === 'pending' || i.status === 'rejected').length; }
+
+function updateBadge() {
+  const n = items.filter(i => i.status === 'pending').length;
+  const badge = document.getElementById('nav-badge');
+  if (badge) { badge.textContent = n; badge.style.display = n > 0 ? '' : 'none'; }
+  const total = items.length;
+  const pending = items.filter(i => i.status === 'pending').length;
+  document.getElementById('topbar-sub').textContent =
+    `${total} documentos · ${pending} pendiente${pending !== 1 ? 's' : ''} de firma`;
+}
+
+/* ──────────────────────────────────────────
+   RENDER LIST
+────────────────────────────────────────── */
+function docTypeIcon(item) {
+  const svgs = {
+    contrato: `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 2H4a1 1 0 00-1 1v10a1 1 0 001 1h8a1 1 0 001-1V5l-3-3z"/><path d="M10 2v3h3"/><path d="M5 8h6M5 11h4"/></svg>`,
+    presupuesto: `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="12" height="10" rx="1.5"/><path d="M5 7.5h6M5 10.5h3.5"/></svg>`,
+    plan_pago: `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 5v3.5l2 1.5"/></svg>`,
+    documento: `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 2H3a1 1 0 00-1 1v10a1 1 0 001 1h10a1 1 0 001-1V3a1 1 0 00-1-1z"/><path d="M5 6h6M5 9h4"/></svg>`,
+  };
+  return svgs[item.type] || svgs.documento;
+}
+
+function renderList() {
+  const active = items.filter(i => i.status === 'pending' || i.status === 'rejected');
+  const done   = items.filter(i => !['pending','rejected'].includes(i.status));
+  const nPending = items.filter(i => i.status === 'pending').length;
+  const area = document.getElementById('list-area');
+
+  const accentColor = s => ({
+    pending: 'var(--amber)',
+    rejected: 'rgba(201,124,64,.35)',
+    signed: 'var(--green)',
+    approved: 'var(--green)',
+    closed: 'var(--muted)',
+  }[s] || 'var(--border)');
+
+  const iconBg = t => ({
+    contrato: 'rgba(201,124,64,.1)',
+    presupuesto: 'rgba(130,184,112,.1)',
+    plan_pago: 'rgba(122,118,112,.1)',
+    documento: 'rgba(122,118,112,.1)',
+  }[t] || 'rgba(122,118,112,.1)');
+
+  function itemHTML(item) {
+    const isPending = item.status === 'pending';
+    const isWaiting = item.status === 'rejected';
+    const isDone    = !isPending && !isWaiting;
+    return `
+    <div class="doc-item ${isDone ? 'is-done' : 'is-pending'}" onclick="openModal('${item.id}')">
+      <div class="doc-accent" style="background:${accentColor(item.status)};"></div>
+      <div class="doc-icon-wrap" style="background:${iconBg(item.type)};color:${item.typeColor};">
+        ${docTypeIcon(item)}
+      </div>
+      <div class="doc-content">
+        <div class="doc-item-title">
+          ${item.title}
+          ${item.version > 1 ? `<span class="doc-version">v${item.version}</span>` : ''}
+          ${isWaiting ? `<span class="status-pill rejected">Esperando contraoferta</span>` : ''}
+        </div>
+        <div class="doc-item-meta">
+          <span style="width:6px;height:6px;border-radius:50%;background:${item.typeColor};display:inline-block;flex-shrink:0;"></span>
+          <span>${item.typeLabel}</span>
+          <span class="doc-meta-sep">·</span>
+          <span>${item.sentBy}</span>
+          <span class="doc-meta-sep">·</span>
+          <span>${item.sentDate}</span>
+          ${item.expiresDate ? `<span class="doc-meta-sep">·</span>
+            <span class="doc-expiry-inline">
+              <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="8" cy="8" r="6"/><path d="M8 5v3.5l2 1.5"/></svg>
+              Vence ${item.expiresDate}
+            </span>` : ''}
+        </div>
+      </div>
+      <div class="doc-right">
+        ${item.amount ? `<div class="doc-amount-col">
+          <div class="doc-amount-val">${item.amount}</div>
+          ${item.amountSub ? `<div class="doc-amount-lbl">${item.amountSub}</div>` : ''}
+        </div>` : ''}
+        ${isDone ? `<span class="status-pill ${item.status}">${statusLabel[item.status] || item.status}</span>` : ''}
+        ${isPending
+          ? `<button class="btn-review primary" onclick="event.stopPropagation();openModal('${item.id}')">
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 2l4 4-7 7H3v-4l7-7z"/></svg>
+              Revisar y firmar
+            </button>`
+          : `<button class="btn-review secondary" onclick="event.stopPropagation();openModal('${item.id}')">Ver</button>`}
+      </div>
+    </div>`;
+  }
+
+  let html = `
+    <div class="list-toolbar">
+      <div class="list-filter-tabs">
+        <div class="list-tab active">Todos <span style="opacity:.4;margin-left:3px;">${items.length}</span></div>
+        <div class="list-tab">Pendientes <span style="opacity:.4;margin-left:3px;">${active.length}</span></div>
+        <div class="list-tab">Completados <span style="opacity:.4;margin-left:3px;">${done.length}</span></div>
+      </div>
+      <div class="list-status-info">
+        ${nPending > 0
+          ? `<span style="color:var(--amber);font-weight:500;">${nPending} pendiente${nPending > 1 ? 's' : ''} de firma</span>`
+          : `<span style="color:var(--green);font-weight:500;">Todo al día</span>`}
+      </div>
+    </div>`;
+
+  if (active.length) {
+    html += `<div class="list-group-label">
+      <span class="list-group-dot" style="background:var(--amber);"></span>
+      Requiere tu atención
+    </div>`;
+    html += active.map(itemHTML).join('');
+  }
+
+  if (done.length) {
+    html += `<div class="list-group-label" style="${active.length ? 'margin-top:28px;' : ''}">
+      <span class="list-group-dot" style="background:var(--green);"></span>
+      Completados
+    </div>`;
+    html += done.map(itemHTML).join('');
+  }
+
+  area.innerHTML = html;
+}
+
+/* ──────────────────────────────────────────
+   MODAL OPEN / CLOSE
+────────────────────────────────────────── */
+function openModal(id) {
+  activeId = id;
+  const item = items.find(i => i.id === id);
+  panelState = (item.status === 'pending') ? 'review'
+    : (item.status === 'rejected') ? 'waiting'
+    : 'readonly';
+
+  document.getElementById('pdf-doc-name').textContent = item.title;
+  document.getElementById('pdf-scroll').innerHTML = getPDFPages(item);
+  document.getElementById('pdf-page-count').textContent =
+    `${document.querySelectorAll('.pdf-page').length} página${document.querySelectorAll('.pdf-page').length > 1 ? 's' : ''}`;
+
+  renderActionPanel();
+  document.getElementById('modal-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+  activeId = null;
+}
+
+function handleDownload() {
+  const item = items.find(i => i.id === activeId);
+  if (!item) return;
+  const prev = document.title;
+  document.title = `${item.title}${item.version > 1 ? ` v${item.version}` : ''} — Makai Residences`;
+  window.print();
+  document.title = prev;
+}
+
+/* ──────────────────────────────────────────
+   ACTION PANEL STATE MACHINE
+────────────────────────────────────────── */
+function renderActionPanel() {
+  const item = items.find(i => i.id === activeId);
+  if (!item) return;
+
+  // Header
+  document.getElementById('ap-header').innerHTML = `
+    <div class="ap-type">
+      <span style="width:7px;height:7px;border-radius:50%;background:${item.typeColor};display:inline-block;"></span>
+      ${item.typeLabel}${item.version > 1 ? ` · v${item.version}` : ''}
+    </div>
+    <div class="ap-title">${item.title}</div>
+    <div class="ap-meta">${item.sentBy} · ${item.sentDate}</div>
+    ${item.expiresDate && item.status === 'pending' ? `
+      <div class="ap-expiry">
+        <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="8" cy="8" r="6"/><path d="M8 5v3.5l2 1.5"/></svg>
+        Vence el ${item.expiresDate} · ${item.daysLeft} días
+      </div>` : ''}
+  `;
+
+  // Steps (only for active pending items)
+  const showSteps = ['review','sign','done'].includes(panelState);
+  const stepsEl = document.getElementById('ap-steps');
+  stepsEl.style.display = showSteps ? 'flex' : 'none';
+  if (showSteps) {
+    const s1 = panelState === 'review' ? 'active' : 'done';
+    const s2 = panelState === 'sign' ? 'active' : panelState === 'done' ? 'done' : '';
+    const s3 = panelState === 'done' ? 'done' : '';
+    stepsEl.innerHTML = `
+      <div class="step">
+        <div class="step-circle ${s1}">${s1==='done' ? '✓' : '1'}</div>
+        <div class="step-label ${s1}">Revisar</div>
+      </div>
+      <div class="step-connector"></div>
+      <div class="step">
+        <div class="step-circle ${s2}">${s2==='done' ? '✓' : '2'}</div>
+        <div class="step-label ${s2}">Firmar</div>
+      </div>
+      <div class="step-connector"></div>
+      <div class="step">
+        <div class="step-circle ${s3}">${s3==='done' ? '✓' : '3'}</div>
+        <div class="step-label ${s3}">Listo</div>
+      </div>
+    `;
+  }
+
+  // Body + Footer per state
+  const body = document.getElementById('ap-body');
+  const footer = document.getElementById('ap-footer');
+
+  if (panelState === 'review') {
+    body.innerHTML = `
+      <div class="ap-section">
+        <div class="ap-section-title">Mensaje de tu asesor</div>
+        <div class="broker-note">
+          <div class="broker-author">${item.sentBy} · ${item.sentDate}</div>
+          ${item.brokerNote}
+        </div>
+      </div>
+      ${item.history.length > 1 ? `
+      <div class="ap-section">
+        <div class="ap-section-title">Historial</div>
+        <div>${renderHistoryHTML(item.history, item.id)}</div>
+      </div>` : ''}
+    `;
+    footer.innerHTML = `
+      <div class="btn-group">
+        <button class="btn-secondary" onclick="goToReject()" style="flex:0 0 auto;padding:11px 16px;color:var(--red);border-color:rgba(192,67,58,.22);">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4L4 12M4 4l8 8"/></svg>
+          Rechazar
+        </button>
+        <button class="btn-primary" onclick="goToSign()">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 2l4 4-7 7H3v-4l7-7z"/></svg>
+          Firmar documento
+        </button>
+      </div>
+    `;
+  }
+
+  else if (panelState === 'sign') {
+    sigMode = 'draw';
+    drawHasContent = false;
+    body.innerHTML = `
+      <div class="ap-section">
+        <div class="ap-section-title">Tu firma</div>
+        <div class="sig-tabs">
+          <div class="sig-tab active" onclick="switchSigTab('draw',this)">Dibujar</div>
+          <div class="sig-tab" onclick="switchSigTab('type',this)">Escribir</div>
+        </div>
+        <div id="sig-draw-wrap">
+          <div class="sig-canvas-wrap" id="sig-canvas-wrap">
+            <canvas id="sig-canvas" class="sig-canvas" width="500" height="130"></canvas>
+            <div class="sig-placeholder" id="sig-placeholder">Firma aquí con el cursor o el dedo</div>
+          </div>
+          <div class="sig-clear" onclick="clearSig()">Borrar firma</div>
+        </div>
+        <div id="sig-type-wrap" style="display:none;">
+          <input class="sig-name-input" id="sig-name-input" type="text" placeholder="Escribe tu nombre completo" oninput="onTypeInput(this.value)" maxlength="50">
+          <div class="sig-name-preview" id="sig-name-preview"></div>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:12px;line-height:1.5;">
+          Al confirmar tu firma aceptas que has revisado el documento completo y que tu firma digital tiene validez legal equivalente a la firma manuscrita.
+        </div>
+      </div>
+    `;
+    footer.innerHTML = `
+      <div class="btn-group">
+        <button class="btn-secondary" onclick="backToReview()" style="flex:0 0 auto;padding:11px 14px;">← Volver</button>
+        <button class="btn-primary" id="btn-confirm-sign" onclick="confirmSign()" style="opacity:.35;pointer-events:none;">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8l4 4 6-7"/></svg>
+          Confirmar firma
+        </button>
+      </div>
+    `;
+    // Init canvas after render
+    requestAnimationFrame(initCanvas);
+  }
+
+  else if (panelState === 'reject') {
+    body.innerHTML = `
+      <div class="ap-section">
+        <div class="ap-section-title">Motivo del rechazo</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.5;">
+          El agente recibirá tu feedback y podrá enviarte una versión revisada. El documento quedará en espera hasta que responda.
+        </div>
+        <textarea class="reject-textarea" id="reject-comment" placeholder="Explica el motivo o solicita cambios específicos (opcional)..."></textarea>
+      </div>
+    `;
+    footer.innerHTML = `
+      <div class="btn-group">
+        <button class="btn-secondary" onclick="backToReview()" style="flex:0 0 auto;padding:11px 14px;">← Volver</button>
+        <button class="btn-danger" onclick="confirmReject()">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4L4 12M4 4l8 8"/></svg>
+          Confirmar rechazo
+        </button>
+      </div>
+    `;
+  }
+
+  else if (panelState === 'done') {
+    body.innerHTML = `
+      <div class="ap-section">
+        <div class="state-banner success">
+          <div class="state-icon green">
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="#82b870" stroke-width="2.5"><path d="M4 10l4 4 8-8"/></svg>
+          </div>
+          <div>
+            <div class="state-title green">Documento firmado</div>
+            <div class="state-sub">Tu firma fue registrada. El agente recibirá una notificación.</div>
+          </div>
+        </div>
+        ${items.find(i => i.id === activeId)?.sigData ? renderSigRecord(items.find(i => i.id === activeId)) : ''}
+      </div>
+    `;
+    footer.innerHTML = `
+      <div class="btn-group">
+        <button class="btn-secondary" onclick="handleDownload()" style="flex:0 0 auto;padding:11px 16px;gap:6px;">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3v8M5 8l3 3 3-3"/><path d="M3 13h10"/></svg>
+          Descargar
+        </button>
+        <button class="btn-primary green" onclick="closeModal()">
+          Cerrar
+        </button>
+      </div>
+    `;
+  }
+
+  else if (panelState === 'waiting') {
+    body.innerHTML = `
+      <div class="ap-section">
+        <div class="state-banner waiting">
+          <div class="state-icon amber">
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="#c97c40" stroke-width="2"><circle cx="10" cy="10" r="8"/><path d="M10 6v4.5l3 2"/></svg>
+          </div>
+          <div>
+            <div class="state-title amber">Esperando contraoferta</div>
+            <div class="state-sub">Tu rechazo fue enviado. ${items.find(i=>i.id===activeId)?.sentBy.split(' ')[0]} revisará tu feedback y enviará una versión revisada.</div>
+          </div>
+        </div>
+      </div>
+      <div class="ap-section">
+        <div class="ap-section-title">Historial</div>
+        ${renderHistoryHTML(items.find(i=>i.id===activeId)?.history || [], activeId)}
+      </div>
+    `;
+    footer.innerHTML = `<button class="btn-secondary" onclick="closeModal()" style="width:100%;">Cerrar</button>`;
+  }
+
+  else if (panelState === 'readonly') {
+    const item = items.find(i => i.id === activeId);
+    body.innerHTML = `
+      <div class="ap-section">
+        <div class="state-banner success">
+          <div class="state-icon green">
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="#82b870" stroke-width="2.5"><path d="M4 10l4 4 8-8"/></svg>
+          </div>
+          <div>
+            <div class="state-title green">Firmado</div>
+            <div class="state-sub">${item.sigDate}</div>
+          </div>
+        </div>
+        ${item.sigData ? renderSigRecord(item) : ''}
+      </div>
+      <div class="ap-section">
+        <div class="ap-section-title">Historial</div>
+        ${renderHistoryHTML(item.history, item.id)}
+      </div>
+    `;
+    footer.innerHTML = `
+      <div class="btn-group">
+        <button class="btn-secondary" onclick="handleDownload()" style="flex:0 0 auto;padding:11px 16px;gap:6px;">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3v8M5 8l3 3 3-3"/><path d="M3 13h10"/></svg>
+          Descargar
+        </button>
+        <button class="btn-secondary" onclick="closeModal()">Cerrar</button>
+      </div>`;
+  }
+
+  else if (panelState === 'prev-version') {
+    const { item: pvItem, prevData } = previewVersion;
+    stepsEl.style.display = 'none';
+    body.innerHTML = `
+      <div class="ap-section">
+        <div class="prev-ver-banner">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" style="flex-shrink:0;"><circle cx="8" cy="8" r="6"/><path d="M8 5v3.5l2 1.5"/></svg>
+          <div>
+            <strong>Versión anterior — v${prevData.version}</strong><br>
+            Enviada el ${prevData.sentDate} · ${prevData.amount}. Esta propuesta fue rechazada.
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--muted);line-height:1.6;padding-top:4px;">
+          Estás comparando con la versión ${prevData.version}. La versión actual (v${pvItem.version}) sigue pendiente de tu firma.
+        </div>
+      </div>
+    `;
+    footer.innerHTML = `
+      <button class="btn-secondary" onclick="backFromPrevVersion()" style="width:100%;gap:7px;">
+        <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 2L4 6l4 4"/></svg>
+        Volver a v${pvItem.version}
+      </button>
+    `;
+  }
+}
+
+function renderSigRecord(item) {
+  if (!item.sigData) return '';
+  const isTyped = item.sigData.startsWith('typed:');
+  const sigContent = isTyped
+    ? `<span style="font-family:Georgia,serif;font-style:italic;font-size:20px;color:#111;padding:0 4px;">${item.sigData.replace('typed:','')}</span>`
+    : `<img src="${item.sigData}" style="max-height:40px;max-width:160px;" alt="Firma">`;
+  return `
+    <div class="sig-record">
+      <div class="sig-record-img">${sigContent}</div>
+      <div class="sig-record-info">
+        <strong>Giuseppe Gangemi</strong>
+        ${item.sigDate}
+      </div>
+    </div>`;
+}
+
+function histIcon(type) {
+  const icons = {
+    sent: `<svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="#7a7670" stroke-width="1.8"><path d="M2 8l12-6-6 12-2-6-4 0z"/></svg>`,
+    signed: `<svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="#82b870" stroke-width="2"><path d="M3 8l4 4 6-7"/></svg>`,
+    approved: `<svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="#82b870" stroke-width="2"><path d="M3 8l4 4 6-7"/></svg>`,
+    rejected: `<svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="#c0433a" stroke-width="2"><path d="M12 4L4 12M4 4l8 8"/></svg>`,
+    counter: `<svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="#c97c40" stroke-width="1.8"><path d="M2 8l12-6-6 12-2-6-4 0z"/></svg>`,
+  };
+  return icons[type] || icons.sent;
+}
+
+/* ──────────────────────────────────────────
+   HISTORY RENDERER (shared)
+────────────────────────────────────────── */
+function renderHistoryHTML(history, itemId) {
+  return history.map(h => {
+    const verBtn = h.linkedVersion
+      ? `<div style="margin-top:8px;"><button class="hist-ver-link" onclick="viewPrevVersion('${itemId}', ${h.linkedVersion})">
+          <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 8h10M9 5l3 3-3 3"/></svg>
+          Ver v${h.linkedVersion}
+        </button></div>`
+      : '';
+    return `
+      <div class="hist-event">
+        <div class="hist-dot ${h.type}">${histIcon(h.type)}</div>
+        <div class="hist-body">
+          <div class="hist-actor">${h.actor}</div>
+          <div class="hist-date">${h.date}</div>
+          ${h.text ? `<div class="hist-text">${h.text}${verBtn}</div>` : ''}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+/* ──────────────────────────────────────────
+   PREVIOUS VERSION VIEWER
+────────────────────────────────────────── */
+function viewPrevVersion(itemId, versionNum) {
+  const item = items.find(i => i.id === itemId);
+  if (!item || !item.previousVersions) return;
+  const prevData = item.previousVersions.find(v => v.version === versionNum);
+  if (!prevData) return;
+
+  previewVersion = { item, prevData };
+  panelState = 'prev-version';
+
+  document.getElementById('pdf-doc-name').textContent = `${item.title} — v${versionNum} (versión anterior)`;
+  document.getElementById('pdf-scroll').innerHTML = getPrevVersionPDF(item, prevData);
+  document.getElementById('pdf-page-count').textContent = '1 página';
+
+  renderActionPanel();
+}
+
+function backFromPrevVersion() {
+  if (!previewVersion) return;
+  const { item } = previewVersion;
+  previewVersion = null;
+  panelState = item.status === 'pending' ? 'review'
+    : item.status === 'rejected' ? 'waiting'
+    : 'readonly';
+
+  document.getElementById('pdf-doc-name').textContent = item.title;
+  document.getElementById('pdf-scroll').innerHTML = getPDFPages(item);
+  const pages = document.querySelectorAll('.pdf-page');
+  document.getElementById('pdf-page-count').textContent =
+    `${pages.length} página${pages.length !== 1 ? 's' : ''}`;
+
+  renderActionPanel();
+}
+
+function getPrevVersionPDF(item, prevData) {
+  if (item.type === 'presupuesto') return prevPresupuestoPDF(item, prevData);
+  return `
+  <div class="pdf-page">
+    <div class="pdf-lh">
+      <div class="pdf-lh-logo">MAKAI RESIDENCES</div>
+      <div class="pdf-doc-title">${item.title} — v${prevData.version}</div>
+      <div class="pdf-doc-ref">${prevData.sentDate}</div>
+    </div>
+    <div class="pdf-p">Versión ${prevData.version} del documento.</div>
+  </div>`;
+}
+
+function prevPresupuestoPDF(item, prevData) {
+  const rows = prevData.summary.map(r =>
+    r.total
+      ? `<tr class="total"><td colspan="3">${r.label}</td><td>${r.value}</td></tr>`
+      : `<tr><td colspan="3">${r.label}</td><td>${r.value}</td></tr>`
+  ).join('');
+
+  return `
+  <div class="pdf-page">
+    <div class="pdf-lh">
+      <div class="pdf-lh-logo">MAKAI RESIDENCES</div>
+      <div class="pdf-lh-sub">Cap Cana · Punta Cana · República Dominicana</div>
+      <div class="pdf-doc-title">Propuesta de Personalización de Acabados</div>
+      <div class="pdf-doc-ref">Ref: MK-2026-ACABADOS-002 (v1) &nbsp;·&nbsp; ${prevData.sentDate}</div>
+    </div>
+    <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(201,124,64,.1);border:1px solid rgba(201,124,64,.25);border-radius:5px;padding:4px 10px;font-family:'Inter',sans-serif;font-size:9px;font-weight:700;color:#c97c40;letter-spacing:.06em;text-transform:uppercase;margin-bottom:16px;">
+      Versión 1 — Propuesta inicial (reemplazada por v2)
+    </div>
+    <div class="pdf-section">Datos de la Unidad</div>
+    <table class="pdf-table">
+      <tr><th>Campo</th><th>Detalle</th></tr>
+      <tr><td>Unidad</td><td>Apartamento 4-B, Torre B</td></tr>
+      <tr><td>Área</td><td>142 m²</td></tr>
+      <tr><td>Comprador</td><td>Giuseppe Antonio Gangemi Rizzo</td></tr>
+      <tr><td>Asesor</td><td>Alejandro Morales · Makai Residences</td></tr>
+    </table>
+    <div class="pdf-section">Selección de Acabados — Paquete Premium v1</div>
+    <table class="pdf-table">
+      <tr><th colspan="3">Elemento</th><th>Precio USD</th></tr>
+      ${rows}
+    </table>
+    <div class="pdf-section">Nota del Asesor</div>
+    <div class="pdf-p">${prevData.brokerNote}</div>
+    <div class="pdf-sig-zone" style="margin-top:24px;">
+      <div class="pdf-sig-label">Propuesta no firmada — Versión anterior</div>
+      <div style="font-family:'Inter',sans-serif;font-size:9px;color:#888;margin-top:8px;">Esta propuesta fue rechazada y reemplazada por la versión 2 el 8 de mayo de 2026.</div>
+    </div>
+    <div class="pdf-page-num">Página 1 de 1</div>
+  </div>`;
+}
+
+/* ──────────────────────────────────────────
+   PANEL NAVIGATION
+────────────────────────────────────────── */
+function goToSign() { panelState = 'sign'; renderActionPanel(); }
+function goToReject() { panelState = 'reject'; renderActionPanel(); }
+function backToReview() { panelState = 'review'; renderActionPanel(); }
+
+function confirmSign() {
+  const item = items.find(i => i.id === activeId);
+  if (!item) return;
+
+  let sigData = null;
+  if (sigMode === 'draw') {
+    const canvas = document.getElementById('sig-canvas');
+    sigData = canvas ? canvas.toDataURL('image/png') : null;
+  } else {
+    const val = document.getElementById('sig-name-input')?.value.trim();
+    sigData = val ? `typed:${val}` : null;
+  }
+
+  item.status = 'signed';
+  item.sigData = sigData;
+  item.sigDate = `${NOW_STR} · Ahora`;
+  item.history.push({ type: 'signed', actor: 'Giuseppe Gangemi', date: `${NOW_STR} · Ahora`, text: 'Firmado y aprobado digitalmente.' });
+
+  panelState = 'done';
+  updateBadge();
+  renderList();
+  renderActionPanel();
+  showToast('Documento firmado correctamente.', 'green');
+}
+
+function confirmReject() {
+  const item = items.find(i => i.id === activeId);
+  if (!item) return;
+  const comment = document.getElementById('reject-comment')?.value.trim() || '';
+  item.status = 'rejected';
+  item.history.push({ type: 'rejected', actor: 'Giuseppe Gangemi', date: `${NOW_STR} · Ahora`, text: comment || 'Documento rechazado. Se solicitó revisión.' });
+
+  panelState = 'waiting';
+  updateBadge();
+  renderList();
+  renderActionPanel();
+  showToast('Rechazo enviado. El agente preparará una revisión.', 'amber');
+}
+
+/* ──────────────────────────────────────────
+   SIGNATURE CANVAS
+────────────────────────────────────────── */
+function initCanvas() {
+  const canvas = document.getElementById('sig-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  let drawing = false;
+
+  function getPos(e) {
+    const rect = canvas.getBoundingClientRect();
+    const sx = canvas.width / rect.width, sy = canvas.height / rect.height;
+    const src = e.touches ? e.touches[0] : e;
+    return { x: (src.clientX - rect.left) * sx, y: (src.clientY - rect.top) * sy };
+  }
+  function startDraw(e) { e.preventDefault(); drawing = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); }
+  function draw(e) {
+    if (!drawing) return; e.preventDefault();
+    const p = getPos(e);
+    ctx.lineTo(p.x, p.y); ctx.strokeStyle = '#111'; ctx.lineWidth = 2.5; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.stroke();
+    drawHasContent = true;
+    const ph = document.getElementById('sig-placeholder');
+    if (ph) ph.style.opacity = '0';
+    checkSignReady();
+  }
+  function endDraw() { drawing = false; }
+  canvas.addEventListener('mousedown', startDraw);
+  canvas.addEventListener('mousemove', draw);
+  canvas.addEventListener('mouseup', endDraw);
+  canvas.addEventListener('mouseleave', endDraw);
+  canvas.addEventListener('touchstart', startDraw, { passive: false });
+  canvas.addEventListener('touchmove', draw, { passive: false });
+  canvas.addEventListener('touchend', endDraw);
+}
+
+function clearSig() {
+  const canvas = document.getElementById('sig-canvas');
+  if (canvas) canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+  drawHasContent = false;
+  const ph = document.getElementById('sig-placeholder');
+  if (ph) ph.style.opacity = '1';
+  checkSignReady();
+}
+
+function switchSigTab(mode, el) {
+  sigMode = mode;
+  document.querySelectorAll('.sig-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  const drawWrap = document.getElementById('sig-draw-wrap');
+  const typeWrap = document.getElementById('sig-type-wrap');
+  if (drawWrap) drawWrap.style.display = mode === 'draw' ? 'block' : 'none';
+  if (typeWrap) typeWrap.style.display = mode === 'type' ? 'block' : 'none';
+  checkSignReady();
+}
+
+function onTypeInput(val) {
+  const preview = document.getElementById('sig-name-preview');
+  if (preview) preview.textContent = val;
+  checkSignReady();
+}
+
+function checkSignReady() {
+  const btn = document.getElementById('btn-confirm-sign');
+  if (!btn) return;
+  const ready = sigMode === 'draw' ? drawHasContent
+    : (document.getElementById('sig-name-input')?.value.trim().length > 0);
+  btn.style.opacity = ready ? '1' : '.35';
+  btn.style.pointerEvents = ready ? 'all' : 'none';
+}
+
+/* ──────────────────────────────────────────
+   PDF GENERATORS
+────────────────────────────────────────── */
+function getPDFPages(item) {
+  if (item.type === 'contrato') return contractPDF(item);
+  if (item.type === 'presupuesto') return presupuestoPDF(item);
+  if (item.type === 'plan_pago') return planPagoPDF(item);
+  return documentoPDF(item);
+}
+
+function sigZoneHtml(item) {
+  const done = item.status === 'signed' || item.status === 'approved';
+  if (done && item.sigData) {
+    const isTyped = item.sigData.startsWith('typed:');
+    const sigContent = isTyped
+      ? `<span class="pdf-sig-line-typed">${item.sigData.replace('typed:','')}</span>`
+      : `<img src="${item.sigData}" alt="Firma">`;
+    return `
+      <div class="pdf-sig-zone done">
+        <div class="pdf-sig-label">✓ Documento firmado digitalmente</div>
+        <div class="pdf-sig-lines">
+          <div class="pdf-sig-field">
+            <div class="pdf-sig-line">${sigContent}</div>
+            <div class="pdf-sig-field-label">Firma del Comprador</div>
+            <div class="pdf-sig-date">${item.sigDate}</div>
+          </div>
+          <div class="pdf-sig-field">
+            <div class="pdf-sig-line"></div>
+            <div class="pdf-sig-field-label">Firma del Vendedor</div>
+            <div class="pdf-sig-date">Alejandro Morales · Makai Dev. S.R.L.</div>
+          </div>
+        </div>
+      </div>`;
+  }
+  return `
+    <div class="pdf-sig-zone">
+      <div class="pdf-sig-label">Espacio de Firma</div>
+      <div class="pdf-sig-lines">
+        <div class="pdf-sig-field">
+          <div class="pdf-sig-line"></div>
+          <div class="pdf-sig-field-label">Firma del Comprador</div>
+          <div class="pdf-sig-field-label" style="margin-top:2px;color:#aaa;">Giuseppe Antonio Gangemi Rizzo</div>
+        </div>
+        <div class="pdf-sig-field">
+          <div class="pdf-sig-line"></div>
+          <div class="pdf-sig-field-label">Firma del Vendedor</div>
+          <div class="pdf-sig-field-label" style="margin-top:2px;color:#aaa;">Makai Development, S.R.L.</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function contractPDF(item) {
+  return `
+  <div class="pdf-page">
+    <div class="pdf-lh">
+      <div class="pdf-lh-logo">MAKAI RESIDENCES</div>
+      <div class="pdf-lh-sub">Cap Cana · Punta Cana · República Dominicana</div>
+      <div class="pdf-doc-title">Contrato de Promesa de Compraventa</div>
+      <div class="pdf-doc-ref">Referencia: MK-2026-APT4B-001 &nbsp;·&nbsp; Fecha: ${item.sentDate}</div>
+    </div>
+    <div class="pdf-section">Partes Contratantes</div>
+    <div class="pdf-clause"><strong>VENDEDOR:</strong> MAKAI DEVELOPMENT, S.R.L., sociedad comercial constituida conforme a las leyes de la República Dominicana, RNC No. 101-45892-7, con domicilio social en Cap Cana, Punta Cana, provincia La Altagracia, en este acto representada por su Presidente, el Sr. Carlos Eduardo Pimentel Álvarez, mayor de edad, dominicano, portador de la cédula de identidad No. 001-1234567-8.</div>
+    <div class="pdf-clause"><strong>COMPRADOR:</strong> Giuseppe Antonio Gangemi Rizzo, mayor de edad, de nacionalidad italiana, portador del pasaporte No. YA7234102, con domicilio en Via della Moscova 40, 20121 Milano, Italia. En lo adelante "el Comprador".</div>
+    <div class="pdf-section">Antecedentes</div>
+    <div class="pdf-p">El Vendedor es propietario y promotor del proyecto inmobiliario denominado MAKAI RESIDENCES, ubicado en el complejo turístico Cap Cana, provincia La Altagracia, República Dominicana, debidamente registrado ante la Dirección Nacional de Mensura Catastral bajo el No. de Matrícula 9800145623.</div>
+    <div class="pdf-p">El Comprador ha manifestado su interés en adquirir una unidad dentro del referido proyecto, bajo los términos y condiciones que se detallan en el presente instrumento.</div>
+    <div class="pdf-page-num">Página 1 de 3</div>
+  </div>
+  <div class="pdf-page">
+    <div class="pdf-section">I. Objeto del Contrato</div>
+    <div class="pdf-clause"><strong>1.1</strong> El Vendedor se compromete a construir y entregar al Comprador, y este último se compromete a adquirir, el siguiente inmueble: Apartamento No. 4-B, ubicado en el cuarto (4.°) nivel de la Torre "B" del proyecto MAKAI RESIDENCES, con una superficie aproximada de ciento cuarenta y dos (142) metros cuadrados de construcción, incluyendo dos (2) habitaciones, dos y medio (2½) baños, sala-comedor integrada, cocina abierta y terraza privada con vistas al campo de golf.</div>
+    <div class="pdf-clause"><strong>1.2</strong> La unidad incluye el derecho de uso exclusivo sobre el Espacio de Parqueo No. P-08 (dos plazas cubiertas) y la Bodega No. B-12 ubicada en el nivel −1, sin costo adicional al precio pactado.</div>
+    <div class="pdf-section">II. Precio y Condiciones de Pago</div>
+    <table class="pdf-table">
+      <tr><th>Concepto</th><th>Monto (USD)</th></tr>
+      <tr><td>Precio base del inmueble (142 m²)</td><td>$365,000</td></tr>
+      <tr><td>Bodega B-12 (nivel −1)</td><td>$8,000</td></tr>
+      <tr><td>Plazas de parqueo P-08 (×2)</td><td>$12,000</td></tr>
+      <tr class="total"><td>PRECIO TOTAL DE VENTA</td><td>$385,000</td></tr>
+    </table>
+    <div class="pdf-clause"><strong>2.1 Plan de pagos:</strong></div>
+    <table class="pdf-table">
+      <tr><th>Cuota</th><th>Monto</th><th>Vencimiento</th></tr>
+      <tr><td>Reserva inicial (10 %)</td><td>$38,500</td><td>Al momento de la firma</td></tr>
+      <tr><td>24 cuotas mensuales</td><td>$14,604 c/u</td><td>Meses 1–24</td></tr>
+      <tr><td>Saldo al escriturar</td><td>$0</td><td>Entrega Q4 2027</td></tr>
+    </table>
+    <div class="pdf-section">III. Entrega y Condiciones</div>
+    <div class="pdf-clause"><strong>3.1</strong> La entrega del inmueble está proyectada para el cuarto trimestre del año 2027, sin perjuicio de la prórroga máxima de noventa (90) días calendario contemplada en el Art. 58 del Reglamento General de Condominios.</div>
+    <div class="pdf-clause"><strong>3.2</strong> El incumplimiento en el pago de dos (2) o más cuotas mensuales consecutivas facultará al Vendedor a resolver el presente contrato de pleno derecho, reteniendo el veinte por ciento (20 %) de los montos abonados como penalización por daños y perjuicios.</div>
+    <div class="pdf-page-num">Página 2 de 3</div>
+  </div>
+  <div class="pdf-page">
+    <div class="pdf-section">IV. Disposiciones Generales</div>
+    <div class="pdf-clause"><strong>4.1</strong> Cualquier modificación a los acabados estándar incluidos en el presente contrato deberá ser acordada por escrito y con un mínimo de noventa (90) días de anticipación a la fecha proyectada de entrega.</div>
+    <div class="pdf-clause"><strong>4.2</strong> Las partes acuerdan que cualquier controversia derivada del presente instrumento será sometida a la jurisdicción de los tribunales competentes de la Provincia de La Altagracia, República Dominicana, con renuncia expresa a cualquier otro fuero que pudiera corresponderles.</div>
+    <div class="pdf-clause"><strong>4.3</strong> El presente contrato entra en vigor en la fecha de su firma por ambas partes y estará sujeto a las leyes de la República Dominicana.</div>
+    <div style="margin-top:24px;font-size:10px;color:#666;">En fe de lo cual las partes firman el presente documento en dos (2) originales de igual valor y efecto, en la ciudad de Cap Cana, República Dominicana, a los ${item.sentDate}.</div>
+    ${sigZoneHtml(item)}
+    <div class="pdf-page-num">Página 3 de 3</div>
+  </div>`;
+}
+
+function presupuestoPDF(item) {
+  return `
+  <div class="pdf-page">
+    <div class="pdf-lh">
+      <div class="pdf-lh-logo">MAKAI RESIDENCES</div>
+      <div class="pdf-lh-sub">Cap Cana · Punta Cana · República Dominicana</div>
+      <div class="pdf-doc-title">Propuesta de Personalización de Acabados</div>
+      <div class="pdf-doc-ref">Ref: MK-2026-ACABADOS-002 (v2) &nbsp;·&nbsp; ${item.sentDate}</div>
+    </div>
+    <div class="pdf-section">Datos de la Unidad</div>
+    <table class="pdf-table">
+      <tr><th>Campo</th><th>Detalle</th></tr>
+      <tr><td>Unidad</td><td>Apartamento 4-B, Torre B</td></tr>
+      <tr><td>Área</td><td>142 m²</td></tr>
+      <tr><td>Comprador</td><td>Giuseppe Antonio Gangemi Rizzo</td></tr>
+      <tr><td>Asesor</td><td>Alejandro Morales · Makai Residences</td></tr>
+    </table>
+    <div class="pdf-section">Selección de Acabados — Paquete Premium v2</div>
+    <table class="pdf-table">
+      <tr><th>Elemento</th><th>Especificación</th><th>Área / Cant.</th><th>Precio USD</th></tr>
+      <tr><td>Piso mármol travertino</td><td>Romano Classic, 60×60 cm, pulido</td><td>85 m²</td><td>$12,750</td></tr>
+      <tr><td>Revestimiento de madera</td><td>Nogal americano, tablón 20 cm</td><td>22 m²</td><td>$6,600</td></tr>
+      <tr><td>Cocina italiana</td><td>Scavolini Liberamente, isla + alacena</td><td>1 u.</td><td>$5,450</td></tr>
+      <tr class="total"><td colspan="3">TOTAL PERSONALIZACIÓN v2</td><td>$24,800</td></tr>
+    </table>
+    <div class="pdf-section">Notas del Asesor</div>
+    <div class="pdf-p">Esta versión 2 elimina el paquete de iluminación automatizada Lutron (incluido en la propuesta v1 por $6,700) y aplica el descuento especial del mes de mayo para clientes que confirman antes del 31/05/2026. El precio de v2 representa un ahorro de $6,700 respecto a la propuesta inicial.</div>
+    ${sigZoneHtml(item)}
+    <div class="pdf-page-num">Página 1 de 1</div>
+  </div>`;
+}
+
+function planPagoPDF(item) {
+  return `
+  <div class="pdf-page">
+    <div class="pdf-lh">
+      <div class="pdf-lh-logo">MAKAI RESIDENCES</div>
+      <div class="pdf-lh-sub">Cap Cana · Punta Cana · República Dominicana</div>
+      <div class="pdf-doc-title">Plan de Pagos — Apartamento 4-B</div>
+      <div class="pdf-doc-ref">Ref: MK-2026-PAGOS-001 &nbsp;·&nbsp; ${item.sentDate}</div>
+    </div>
+    <div class="pdf-section">Resumen Financiero</div>
+    <table class="pdf-table">
+      <tr><th>Concepto</th><th>Monto (USD)</th></tr>
+      <tr><td>Precio total de venta</td><td>$385,000</td></tr>
+      <tr><td>Reserva inicial (10 %)</td><td>$38,500</td></tr>
+      <tr><td>Saldo a financiar en cuotas</td><td>$346,500</td></tr>
+      <tr><td>Número de cuotas mensuales</td><td>24</td></tr>
+      <tr class="total"><td>Cuota mensual</td><td>$14,604.17</td></tr>
+    </table>
+    <div class="pdf-section">Calendario de Pagos (primeros 12 meses)</div>
+    <table class="pdf-table">
+      <tr><th>Cuota</th><th>Vencimiento</th><th>Monto</th><th>Saldo</th></tr>
+      ${Array.from({length:12},(_,i)=>{
+        const saldo = 346500 - (i+1)*14604.17;
+        return `<tr><td>${i+1}</td><td>Jun ${2026+Math.floor((i+1)/12)} (mes ${i+1})</td><td>$14,604</td><td>$${Math.max(0,saldo).toLocaleString('en-US',{maximumFractionDigits:0})}</td></tr>`;
+      }).join('')}
+    </table>
+    <div class="pdf-p" style="margin-top:12px;font-size:9.5px;color:#666;">(*) La primera cuota vence 30 días después de la fecha de firma del Contrato de Promesa de Compraventa. Los cuotas 13–24 no se muestran en este resumen.</div>
+    ${sigZoneHtml(item)}
+    <div class="pdf-page-num">Página 1 de 1</div>
+  </div>`;
+}
+
+function documentoPDF(item) {
+  return `
+  <div class="pdf-page">
+    <div class="pdf-lh">
+      <div class="pdf-lh-logo">MAKAI RESIDENCES</div>
+      <div class="pdf-lh-sub">Cap Cana · Punta Cana · República Dominicana</div>
+      <div class="pdf-doc-title">Formulario KYC / AML — Verificación de Identidad</div>
+      <div class="pdf-doc-ref">Ref: MK-2026-KYC-001 &nbsp;·&nbsp; ${item.sentDate}</div>
+    </div>
+    <div class="pdf-section">Datos del Cliente</div>
+    <table class="pdf-table">
+      <tr><th>Campo</th><th>Información</th></tr>
+      <tr><td>Nombre completo</td><td>Giuseppe Antonio Gangemi Rizzo</td></tr>
+      <tr><td>Fecha de nacimiento</td><td>14 de marzo de 1993</td></tr>
+      <tr><td>Nacionalidad</td><td>Italiana</td></tr>
+      <tr><td>Documento de identidad</td><td>Pasaporte No. YA7234102</td></tr>
+      <tr><td>País de emisión</td><td>Italia</td></tr>
+      <tr><td>Fecha de vencimiento</td><td>13 de marzo de 2031</td></tr>
+      <tr><td>País de residencia fiscal</td><td>Italia</td></tr>
+      <tr><td>Domicilio</td><td>Via della Moscova 40, 20121 Milano, Italia</td></tr>
+    </table>
+    <div class="pdf-section">Declaraciones del Firmante</div>
+    <div class="pdf-clause"><strong>1.</strong> Declaro que la información de identidad proporcionada en el presente formulario es verídica, actual y completa, conforme a mi documento de identidad oficial vigente.</div>
+    <div class="pdf-clause"><strong>2.</strong> Declaro que los fondos utilizados en la presente transacción inmobiliaria provienen de fuentes lícitas y declaradas ante las autoridades fiscales correspondientes.</div>
+    <div class="pdf-clause"><strong>3.</strong> Autorizo a MAKAI DEVELOPMENT, S.R.L. a verificar los datos aquí consignados con las autoridades competentes de la República Dominicana, en cumplimiento de la Ley No. 155-17 sobre Lavado de Activos y Financiamiento del Terrorismo y sus reglamentos de aplicación.</div>
+    <div class="pdf-clause"><strong>4.</strong> Entiendo que la falsedad en las declaraciones aquí contenidas puede derivar en la resolución inmediata del contrato de compraventa y en acciones legales por parte del vendedor.</div>
+    ${sigZoneHtml(item)}
+    <div class="pdf-page-num">Página 1 de 1</div>
+  </div>`;
+}
+
+/* ──────────────────────────────────────────
+   TOAST
+────────────────────────────────────────── */
+function showToast(msg, color) {
+  const wrap = document.getElementById('toasts');
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.innerHTML = `<span class="toast-dot ${color}"></span>${msg}`;
+  wrap.appendChild(t);
+  requestAnimationFrame(() => requestAnimationFrame(() => t.classList.add('show')));
+  setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 3800);
+}
+
+/* ──────────────────────────────────────────
+   INIT
+────────────────────────────────────────── */
+renderList();
+updateBadge();
+</script>
+</body>
+</html>

@@ -1,0 +1,1481 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Duna CRM — Panel Administrador</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sidebar-w:   224px;
+  --header-h:    52px;
+  --bg:          #0c0c0b;
+  --bg-side:     #090909;
+  --bg-surface:  #101010;
+  --bg-card:     #161614;
+  --bg-card2:    #1a1a18;
+  --bg-row:      #131312;
+  --bg-row-h:    #1b1b19;
+  --green:       #4A5E3F;
+  --green-cta:   #526844;
+  --green-txt:   #82b870;
+  --green-lite:  rgba(74,94,63,.16);
+  --green-glow:  rgba(82,104,68,.12);
+  --cream:       #F1EDE3;
+  --cream-dim:   #b8b0a4;
+  --text:        #e2ddd5;
+  --sub:         #7a7670;
+  --muted:       #3e3c38;
+  --border:      rgba(255,255,255,.06);
+  --border2:     rgba(255,255,255,.04);
+  --orange:      #c97c40;
+  --orange-lite: rgba(201,124,64,.12);
+  --red:         #b84040;
+  --red-lite:    rgba(184,64,64,.12);
+  --blue:        #3a7abd;
+  --blue-lite:   rgba(58,122,189,.12);
+  --yellow-lite: rgba(200,160,50,.12);
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overflow:hidden;}
+
+body {
+  display: flex;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  color: var(--text);
+  background: var(--bg);
+}
+
+/* ═══════════════════════════════════════
+   SIDEBAR
+═══════════════════════════════════════ */
+.sidebar {
+  width: var(--sidebar-w);
+  height: 100vh;
+  background: var(--bg-side);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.sidebar::-webkit-scrollbar{width:3px;}
+.sidebar::-webkit-scrollbar-thumb{background:var(--muted);border-radius:2px;}
+
+/* Logo */
+.sidebar-logo {
+  padding: 20px 18px 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.logo-mark {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 2px;
+}
+.logo-icon {
+  width: 28px; height: 28px;
+  background: var(--green);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  flex-shrink: 0;
+}
+.logo-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--cream);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  line-height: 1;
+}
+.logo-sub {
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--sub);
+  padding-left: 38px;
+}
+
+/* Nav groups */
+.nav-group { padding: 10px 0; border-bottom: 1px solid var(--border2); }
+.nav-group:last-of-type { border-bottom: none; flex: 1; }
+.nav-group-label {
+  font-size: 8.5px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 6px 18px 4px;
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 18px;
+  cursor: pointer;
+  transition: background .1s;
+  position: relative;
+  text-decoration: none;
+  color: var(--sub);
+}
+.nav-item:hover { background: rgba(255,255,255,.03); color: var(--cream-dim); }
+.nav-item.active {
+  background: var(--green-glow);
+  color: var(--green-txt);
+}
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 4px; bottom: 4px;
+  width: 2px;
+  background: var(--green-txt);
+  border-radius: 0 2px 2px 0;
+}
+.nav-icon {
+  font-size: 13px;
+  width: 16px;
+  text-align: center;
+  flex-shrink: 0;
+  opacity: .8;
+}
+.nav-label { font-size: 12px; font-weight: 400; flex: 1; }
+.nav-badge {
+  font-size: 9px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 10px;
+  min-width: 20px;
+  text-align: center;
+}
+.badge-orange { background: rgba(201,124,64,.2); color: var(--orange); }
+.badge-red    { background: var(--red-lite); color: #d06060; }
+.badge-green  { background: var(--green-lite); color: var(--green-txt); }
+.badge-gray   { background: rgba(255,255,255,.07); color: var(--sub); }
+
+/* Sidebar user */
+.sidebar-user {
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.sidebar-user:hover { background: rgba(255,255,255,.03); }
+.user-avatar {
+  width: 30px; height: 30px;
+  background: var(--green);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  flex-shrink: 0;
+}
+.user-info { flex: 1; min-width: 0; }
+.user-name { font-size: 12px; font-weight: 500; color: var(--cream-dim); }
+.user-role { font-size: 9.5px; color: var(--sub); }
+.user-dot {
+  width: 7px; height: 7px;
+  background: var(--green-txt);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════
+   MAIN AREA
+═══════════════════════════════════════ */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* HEADER */
+.header {
+  height: var(--header-h);
+  background: var(--bg-side);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  gap: 16px;
+  flex-shrink: 0;
+}
+.header-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 18px;
+  font-weight: 400;
+  color: var(--cream);
+  letter-spacing: 1px;
+  margin-right: 4px;
+}
+.header-breadcrumb {
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: .5px;
+}
+.header-search {
+  flex: 0 0 220px;
+  position: relative;
+  margin-left: auto;
+}
+.header-search input {
+  width: 100%;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 12px 6px 30px;
+  font-size: 11.5px;
+  font-family: 'Inter', sans-serif;
+  color: var(--text);
+  outline: none;
+}
+.header-search input::placeholder { color: var(--sub); }
+.search-ico {
+  position: absolute;
+  left: 10px; top: 50%;
+  transform: translateY(-50%);
+  font-size: 12px;
+  color: var(--sub);
+}
+.header-actions { display: flex; align-items: center; gap: 8px; }
+.hdr-btn {
+  width: 32px; height: 32px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+  cursor: pointer;
+  color: var(--sub);
+  position: relative;
+}
+.hdr-btn:hover { border-color: rgba(255,255,255,.1); color: var(--cream-dim); }
+.notif-dot {
+  position: absolute;
+  top: 4px; right: 4px;
+  width: 7px; height: 7px;
+  background: var(--red);
+  border-radius: 50%;
+  border: 1.5px solid var(--bg-side);
+}
+.hdr-avatar {
+  width: 32px; height: 32px;
+  background: var(--green);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  font-family: 'Cormorant Garamond', serif;
+}
+
+/* ═══════════════════════════════════════
+   CONTENT AREA
+═══════════════════════════════════════ */
+.content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 20px 24px 40px;
+  background: var(--bg-surface);
+}
+.content::-webkit-scrollbar{width:4px;}
+.content::-webkit-scrollbar-thumb{background:var(--muted);border-radius:2px;}
+
+/* Alert banner */
+.alert-banner {
+  background: rgba(184,64,64,.1);
+  border: 1px solid rgba(184,64,64,.22);
+  border-radius: 8px;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.alert-dot { width: 8px; height: 8px; background: var(--red); border-radius: 50%; flex-shrink: 0; animation: pulse 2s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.6;transform:scale(.85)} }
+.alert-text { font-size: 12px; color: #d06060; flex: 1; }
+.alert-text strong { font-weight: 600; }
+.alert-action { font-size: 11px; font-weight: 600; color: #d06060; text-decoration: underline; cursor: pointer; white-space: nowrap; }
+
+/* Page title row */
+.page-title-row {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.page-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--cream);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+.page-date {
+  font-size: 10px;
+  color: var(--sub);
+  letter-spacing: .5px;
+}
+
+/* KPI CARDS */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.kpi-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 14px 16px;
+  position: relative;
+  overflow: hidden;
+}
+.kpi-card::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  border-radius: 9px 9px 0 0;
+}
+.kpi-card.k-green::after  { background: var(--green-txt); }
+.kpi-card.k-orange::after { background: var(--orange); }
+.kpi-card.k-red::after    { background: var(--red); }
+.kpi-card.k-blue::after   { background: var(--blue); }
+
+.kpi-label {
+  font-size: 9.5px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--sub);
+  margin-bottom: 8px;
+}
+.kpi-value {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 34px;
+  font-weight: 500;
+  line-height: 1;
+  margin-bottom: 5px;
+}
+.k-green  .kpi-value { color: var(--green-txt); }
+.k-orange .kpi-value { color: var(--orange); }
+.k-red    .kpi-value { color: #c06060; }
+.k-blue   .kpi-value { color: var(--blue); }
+
+.kpi-sub {
+  font-size: 10px;
+  color: var(--sub);
+}
+.kpi-sub strong { color: var(--cream-dim); font-weight: 500; }
+.kpi-icon {
+  position: absolute;
+  top: 12px; right: 14px;
+  font-size: 20px;
+  opacity: .12;
+}
+
+/* MAIN GRID */
+.main-grid {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+.main-grid-bottom {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+/* PANELS */
+.panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  overflow: hidden;
+}
+.panel-header {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  gap: 10px;
+}
+.panel-title {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--cream-dim);
+  letter-spacing: .3px;
+  flex: 1;
+}
+.panel-action {
+  font-size: 10px;
+  color: var(--sub);
+  cursor: pointer;
+  text-decoration: none;
+}
+.panel-action:hover { color: var(--cream-dim); }
+.panel-badge {
+  font-size: 9px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 10px;
+  background: var(--red-lite);
+  color: #c06060;
+}
+.panel-badge.orange { background: var(--orange-lite); color: var(--orange); }
+
+/* PROJECTS TABLE */
+.proj-table { width: 100%; border-collapse: collapse; }
+.proj-table th {
+  padding: 9px 14px;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--sub);
+  text-align: left;
+  background: rgba(0,0,0,.2);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+.proj-table td {
+  padding: 11px 14px;
+  font-size: 12px;
+  border-bottom: 1px solid var(--border2);
+  vertical-align: middle;
+}
+.proj-table tr:last-child td { border-bottom: none; }
+.proj-table tbody tr { transition: background .1s; cursor: pointer; }
+.proj-table tbody tr:hover td { background: var(--bg-row-h); }
+
+.proj-name {
+  font-weight: 500;
+  color: var(--cream-dim);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.proj-location { font-size: 10px; color: var(--sub); font-weight: 400; }
+
+.prog-wrap { display: flex; align-items: center; gap: 8px; }
+.prog-bar {
+  flex: 1;
+  height: 4px;
+  background: var(--muted);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.prog-fill { height: 100%; border-radius: 2px; background: var(--green-txt); }
+.prog-val { font-size: 10px; color: var(--sub); white-space: nowrap; }
+
+.num-cell { font-size: 13px; font-weight: 500; color: var(--cream-dim); }
+.num-sub  { font-size: 9.5px; color: var(--sub); }
+.price-cell { font-size: 13px; font-weight: 600; color: var(--green-txt); }
+.tag-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 9px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 4px;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+}
+.tag-active { background: var(--green-lite); color: var(--green-txt); }
+.tag-prep   { background: var(--yellow-lite); color: #c8a052; }
+.act-link { font-size: 11px; color: var(--sub); cursor: pointer; text-decoration: none; }
+.act-link:hover { color: var(--cream-dim); }
+
+/* EXPEDIENTES recientes */
+.exp-list { padding: 4px 0; }
+.exp-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 16px;
+  border-bottom: 1px solid var(--border2);
+  cursor: pointer;
+  transition: background .1s;
+}
+.exp-item:last-child { border-bottom: none; }
+.exp-item:hover { background: var(--bg-row-h); }
+.exp-avatar {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: var(--bg-card2);
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--cream-dim);
+  flex-shrink: 0;
+  font-family: 'Cormorant Garamond', serif;
+}
+.exp-info { flex: 1; min-width: 0; }
+.exp-name { font-size: 12px; font-weight: 500; color: var(--cream-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.exp-meta { font-size: 10px; color: var(--sub); margin-top: 1px; }
+.exp-status {
+  font-size: 9px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 4px;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.s-pending { background: var(--yellow-lite); color: #c8a052; }
+.s-review  { background: var(--blue-lite); color: #5a9ad4; }
+.s-ok      { background: var(--green-lite); color: var(--green-txt); }
+.s-alert   { background: var(--red-lite); color: #c06060; }
+
+/* APPROVALS */
+.appr-list { padding: 0; }
+.appr-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border2);
+  transition: background .1s;
+}
+.appr-item:last-child { border-bottom: none; }
+.appr-item:hover { background: var(--bg-row-h); }
+.appr-info { flex: 1; min-width: 0; }
+.appr-name { font-size: 12px; font-weight: 500; color: var(--cream-dim); }
+.appr-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 3px;
+  flex-wrap: wrap;
+}
+.appr-type {
+  font-size: 9px;
+  font-weight: 600;
+  padding: 1.5px 6px;
+  border-radius: 3px;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+}
+.t-discount   { background: var(--yellow-lite); color: #c8a052; }
+.t-cancel     { background: var(--red-lite); color: #c06060; }
+.t-refund     { background: var(--blue-lite); color: #5a9ad4; }
+.t-exception  { background: var(--orange-lite); color: var(--orange); }
+.appr-amount { font-size: 11px; font-weight: 600; color: var(--cream-dim); }
+.appr-agent  { font-size: 10px; color: var(--sub); }
+.appr-days   { font-size: 10px; color: var(--orange); font-weight: 500; white-space: nowrap; }
+.appr-actions { display: flex; gap: 5px; flex-shrink: 0; }
+.btn-approve {
+  padding: 5px 12px;
+  background: var(--green-cta);
+  border: none;
+  border-radius: 5px;
+  font-size: 9.5px;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  letter-spacing: .4px;
+}
+.btn-approve:hover { background: #5e7a51; }
+.btn-reject {
+  width: 28px; height: 28px;
+  background: transparent;
+  border: 1px solid var(--muted);
+  border-radius: 5px;
+  font-size: 13px;
+  color: var(--sub);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.btn-reject:hover { border-color: var(--red); color: #c06060; }
+
+/* TASKS */
+.task-list { padding: 0; }
+.task-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 9px 16px;
+  border-bottom: 1px solid var(--border2);
+  cursor: pointer;
+  transition: background .1s;
+}
+.task-item:last-child { border-bottom: none; }
+.task-item:hover { background: var(--bg-row-h); }
+.task-chk {
+  width: 14px; height: 14px;
+  border-radius: 3px;
+  border: 1.5px solid var(--muted);
+  flex-shrink: 0;
+  margin-top: 1px;
+  cursor: pointer;
+}
+.task-chk.done { background: var(--green-cta); border-color: var(--green-cta); }
+.task-info { flex: 1; min-width: 0; }
+.task-label { font-size: 12px; color: var(--cream-dim); line-height: 1.35; }
+.task-label.done-text { text-decoration: line-through; color: var(--sub); }
+.task-meta { display: flex; align-items: center; gap: 6px; margin-top: 3px; }
+.task-assignee { font-size: 10px; color: var(--sub); }
+.task-due {
+  font-size: 9.5px;
+  font-weight: 500;
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+.due-overdue { background: var(--red-lite); color: #c06060; }
+.due-today   { background: var(--orange-lite); color: var(--orange); }
+.due-ok      { background: rgba(255,255,255,.05); color: var(--sub); }
+
+/* BOTTOM GRID */
+.bottom-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 340px;
+  gap: 14px;
+}
+
+/* ANALYTICS */
+.analytics-panel .panel-body { padding: 14px 16px; }
+.analytics-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.analytic-item { }
+.analytic-label { font-size: 9.5px; letter-spacing: 1px; text-transform: uppercase; color: var(--sub); margin-bottom: 3px; }
+.analytic-value { font-family: 'Cormorant Garamond', serif; font-size: 24px; font-weight: 500; color: var(--cream); line-height: 1; }
+.analytic-change { font-size: 9.5px; color: var(--green-txt); margin-top: 2px; }
+.analytic-change.down { color: var(--red); }
+
+/* Funnel */
+.funnel { display: flex; flex-direction: column; gap: 5px; }
+.funnel-row { display: flex; align-items: center; gap: 8px; }
+.funnel-label { font-size: 10px; color: var(--sub); width: 70px; text-align: right; flex-shrink: 0; }
+.funnel-bar-wrap { flex: 1; height: 20px; background: rgba(255,255,255,.04); border-radius: 4px; overflow: hidden; position: relative; }
+.funnel-bar { height: 100%; border-radius: 4px; display: flex; align-items: center; padding-left: 8px; }
+.funnel-bar-val { font-size: 10px; font-weight: 600; color: rgba(255,255,255,.8); }
+.funnel-pct { font-size: 10px; color: var(--sub); width: 36px; text-align: right; flex-shrink: 0; }
+
+/* SALES CHART */
+.chart-panel .panel-body { padding: 14px 16px; }
+.chart-wrap { display: flex; align-items: flex-end; gap: 4px; height: 80px; }
+.chart-bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.chart-bar {
+  width: 100%;
+  border-radius: 3px 3px 0 0;
+  background: var(--green);
+  transition: background .15s;
+  cursor: pointer;
+  position: relative;
+}
+.chart-bar:hover { background: var(--green-txt); }
+.chart-bar.highlight { background: var(--green-txt); }
+.chart-label { font-size: 8.5px; color: var(--muted); letter-spacing: .5px; }
+.chart-val { font-size: 9px; color: var(--sub); }
+.chart-summary {
+  display: flex;
+  gap: 16px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border2);
+}
+.cs-item { }
+.cs-label { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: var(--sub); margin-bottom: 2px; }
+.cs-value { font-size: 14px; font-weight: 600; color: var(--cream-dim); }
+.cs-value.green { color: var(--green-txt); }
+
+/* ACTIVITY */
+.activity-list { padding: 0; }
+.act-item {
+  display: flex;
+  gap: 10px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--border2);
+}
+.act-item:last-child { border-bottom: none; }
+.act-dot-col { display: flex; flex-direction: column; align-items: center; gap: 0; padding-top: 3px; }
+.act-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.act-line { width: 1px; flex: 1; background: var(--border2); margin-top: 4px; }
+.act-info { flex: 1; min-width: 0; padding-bottom: 8px; }
+.act-text { font-size: 11.5px; color: var(--sub); line-height: 1.4; }
+.act-text strong { color: var(--cream-dim); font-weight: 500; }
+.act-time { font-size: 9.5px; color: var(--muted); margin-top: 2px; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ SIDEBAR ═══════════════ -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">
+      <div class="logo-icon">D</div>
+      <span class="logo-name">Duna</span>
+    </div>
+    <div class="logo-sub">CRM · Administrador</div>
+  </div>
+
+  <nav>
+    <div class="nav-group">
+      <div class="nav-item active">
+        <span class="nav-icon">⊞</span>
+        <span class="nav-label">Dashboard</span>
+      </div>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-label">Gestión</div>
+      <div class="nav-item">
+        <span class="nav-icon">📁</span>
+        <span class="nav-label">Expedientes</span>
+        <span class="nav-badge badge-orange">41</span>
+      </div>
+      <div class="nav-item">
+        <span class="nav-icon">📄</span>
+        <span class="nav-label">Documentos</span>
+        <span class="nav-badge badge-orange">5</span>
+      </div>
+      <div class="nav-item">
+        <span class="nav-icon">📝</span>
+        <span class="nav-label">Reservas y Contratos</span>
+        <span class="nav-badge badge-gray">3</span>
+      </div>
+      <div class="nav-item">
+        <span class="nav-icon">💳</span>
+        <span class="nav-label">Transacciones</span>
+      </div>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-label">Proyectos</div>
+      <div class="nav-item">
+        <span class="nav-icon">🏗</span>
+        <span class="nav-label">Proyectos</span>
+      </div>
+      <div class="nav-item">
+        <span class="nav-icon">🏠</span>
+        <span class="nav-label">Unidades</span>
+      </div>
+      <div class="nav-item">
+        <span class="nav-icon">📊</span>
+        <span class="nav-label">Avance de Obra</span>
+      </div>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-label">Comunicación</div>
+      <div class="nav-item">
+        <span class="nav-icon">✉</span>
+        <span class="nav-label">Plantillas y Automát.</span>
+      </div>
+      <div class="nav-item">
+        <span class="nav-icon">📢</span>
+        <span class="nav-label">Anuncios</span>
+      </div>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-label">Equipo</div>
+      <div class="nav-item">
+        <span class="nav-icon">👥</span>
+        <span class="nav-label">Usuarios</span>
+      </div>
+      <div class="nav-item">
+        <span class="nav-icon">🤝</span>
+        <span class="nav-label">Brokers y Externos</span>
+      </div>
+      <div class="nav-item">
+        <span class="nav-icon">✅</span>
+        <span class="nav-label">Aprobaciones</span>
+        <span class="nav-badge badge-red">7</span>
+      </div>
+      <div class="nav-item">
+        <span class="nav-icon">🗒</span>
+        <span class="nav-label">Tareas</span>
+        <span class="nav-badge badge-red">12</span>
+      </div>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-label">Sistema</div>
+      <div class="nav-item">
+        <span class="nav-icon">⚙</span>
+        <span class="nav-label">Configuración</span>
+      </div>
+    </div>
+  </nav>
+
+  <div class="sidebar-user">
+    <div class="user-avatar">A</div>
+    <div class="user-info">
+      <div class="user-name">Admin Duna</div>
+      <div class="user-role">Administrador global</div>
+    </div>
+    <div class="user-dot"></div>
+  </div>
+</aside>
+
+<!-- ═══════════════ MAIN ═══════════════ -->
+<div class="main">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div>
+      <div class="header-title">Dashboard</div>
+      <div class="header-breadcrumb">Vista global · todos los proyectos</div>
+    </div>
+    <div class="header-search">
+      <span class="search-ico">⌕</span>
+      <input type="text" placeholder="Buscar cliente, expediente, unidad…">
+    </div>
+    <div class="header-actions">
+      <div class="hdr-btn">🔔<span class="notif-dot"></span></div>
+      <div class="hdr-btn">⊞</div>
+      <div class="hdr-avatar">A</div>
+    </div>
+  </header>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- Alert -->
+    <div class="alert-banner">
+      <div class="alert-dot"></div>
+      <div class="alert-text"><strong>33 alertas activas</strong> — 7 aprobaciones urgentes · 12 tareas vencidas · 5 documentos sin gestionar. Requieren atención inmediata.</div>
+      <span class="alert-action">Ver todas →</span>
+    </div>
+
+    <!-- Page title -->
+    <div class="page-title-row">
+      <h1 class="page-title">Panel de Control</h1>
+      <span class="page-date">Miércoles, 06 de Mayo de 2026</span>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpi-grid">
+      <div class="kpi-card k-green">
+        <div class="kpi-icon">📁</div>
+        <div class="kpi-label">Expedientes activos</div>
+        <div class="kpi-value">41</div>
+        <div class="kpi-sub"><strong>8</strong> incompletos · <strong>3</strong> sin asesor</div>
+      </div>
+      <div class="kpi-card k-orange">
+        <div class="kpi-icon">📄</div>
+        <div class="kpi-label">Documentos pendientes</div>
+        <div class="kpi-value">5</div>
+        <div class="kpi-sub"><strong>3</strong> sin revisar · <strong>2</strong> por firmar</div>
+      </div>
+      <div class="kpi-card k-red">
+        <div class="kpi-icon">✅</div>
+        <div class="kpi-label">Aprobaciones en cola</div>
+        <div class="kpi-value">7</div>
+        <div class="kpi-sub"><strong>3</strong> alta prioridad · vencen hoy</div>
+      </div>
+      <div class="kpi-card k-blue">
+        <div class="kpi-icon">🗒</div>
+        <div class="kpi-label">Tareas vencidas</div>
+        <div class="kpi-value">12</div>
+        <div class="kpi-sub"><strong>4</strong> escaladas hoy · sin resolver</div>
+      </div>
+    </div>
+
+    <!-- Main grid: projects + expedientes -->
+    <div class="main-grid">
+
+      <!-- Projects table -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Proyectos activos</span>
+          <a class="panel-action">Ver todos →</a>
+        </div>
+        <table class="proj-table">
+          <thead>
+            <tr>
+              <th>Proyecto</th>
+              <th>Estado</th>
+              <th>Total</th>
+              <th>Vendidas</th>
+              <th>Disponibles</th>
+              <th>Avance</th>
+              <th>Valor total</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <div class="proj-name">
+                  Makai Residences
+                  <span class="proj-location">Cap Cana · Punta Cana</span>
+                </div>
+              </td>
+              <td><span class="tag-cell tag-active">Activo</span></td>
+              <td><span class="num-cell">102</span></td>
+              <td>
+                <span class="num-cell">22</span>
+                <div class="num-sub">21.6%</div>
+              </td>
+              <td><span class="num-cell">80</span></td>
+              <td>
+                <div class="prog-wrap">
+                  <div class="prog-bar"><div class="prog-fill" style="width:18%"></div></div>
+                  <span class="prog-val">18%</span>
+                </div>
+              </td>
+              <td><span class="price-cell">$41.99M</span></td>
+              <td><a class="act-link">Ver →</a></td>
+            </tr>
+            <tr>
+              <td>
+                <div class="proj-name">
+                  Naviva Residences
+                  <span class="proj-location">Cap Cana · Punta Cana</span>
+                </div>
+              </td>
+              <td><span class="tag-cell tag-prep">En prep.</span></td>
+              <td><span class="num-cell">—</span></td>
+              <td><span class="num-cell">—</span></td>
+              <td><span class="num-cell">—</span></td>
+              <td>
+                <div class="prog-wrap">
+                  <div class="prog-bar"><div class="prog-fill" style="width:0%;background:var(--muted)"></div></div>
+                  <span class="prog-val" style="color:var(--muted)">—</span>
+                </div>
+              </td>
+              <td><span style="color:var(--muted);font-size:12px">TBD</span></td>
+              <td><a class="act-link">Ver →</a></td>
+            </tr>
+            <tr>
+              <td>
+                <div class="proj-name">
+                  LIV at Cap Cana
+                  <span class="proj-location">Cap Cana · Punta Cana</span>
+                </div>
+              </td>
+              <td><span class="tag-cell tag-prep">En prep.</span></td>
+              <td><span class="num-cell">—</span></td>
+              <td><span class="num-cell">—</span></td>
+              <td><span class="num-cell">—</span></td>
+              <td>
+                <div class="prog-wrap">
+                  <div class="prog-bar"><div class="prog-fill" style="width:0%;background:var(--muted)"></div></div>
+                  <span class="prog-val" style="color:var(--muted)">—</span>
+                </div>
+              </td>
+              <td><span style="color:var(--muted);font-size:12px">TBD</span></td>
+              <td><a class="act-link">Ver →</a></td>
+            </tr>
+            <tr>
+              <td>
+                <div class="proj-name">
+                  Album Corpore
+                  <span class="proj-location">Santo Domingo</span>
+                </div>
+              </td>
+              <td><span class="tag-cell tag-prep">En prep.</span></td>
+              <td><span class="num-cell">—</span></td>
+              <td><span class="num-cell">—</span></td>
+              <td><span class="num-cell">—</span></td>
+              <td>
+                <div class="prog-wrap">
+                  <div class="prog-bar"><div class="prog-fill" style="width:0%;background:var(--muted)"></div></div>
+                  <span class="prog-val" style="color:var(--muted)">—</span>
+                </div>
+              </td>
+              <td><span style="color:var(--muted);font-size:12px">TBD</span></td>
+              <td><a class="act-link">Ver →</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Expedientes recientes -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Expedientes recientes</span>
+          <a class="panel-action">Ver todos →</a>
+        </div>
+        <div class="exp-list">
+          <div class="exp-item">
+            <div class="exp-avatar">RS</div>
+            <div class="exp-info">
+              <div class="exp-name">Robert Sánchez</div>
+              <div class="exp-meta">Makai #38 · Carlos M.</div>
+            </div>
+            <span class="exp-status s-review">En revisión</span>
+          </div>
+          <div class="exp-item">
+            <div class="exp-avatar">GG</div>
+            <div class="exp-info">
+              <div class="exp-name">Giuseppe Gangemi</div>
+              <div class="exp-meta">Makai #56 · Ana T.</div>
+            </div>
+            <span class="exp-status s-pending">Pendiente</span>
+          </div>
+          <div class="exp-item">
+            <div class="exp-avatar">ML</div>
+            <div class="exp-info">
+              <div class="exp-name">Maria Laurent</div>
+              <div class="exp-meta">Makai #111 · Carlos M.</div>
+            </div>
+            <span class="exp-status s-ok">Validado</span>
+          </div>
+          <div class="exp-item">
+            <div class="exp-avatar">HS</div>
+            <div class="exp-info">
+              <div class="exp-name">Henrique Segala</div>
+              <div class="exp-meta">Makai #204 · Diana R.</div>
+            </div>
+            <span class="exp-status s-alert">Acción req.</span>
+          </div>
+          <div class="exp-item">
+            <div class="exp-avatar">PK</div>
+            <div class="exp-info">
+              <div class="exp-name">Peter Kleier</div>
+              <div class="exp-meta">Makai #318 · Ana T.</div>
+            </div>
+            <span class="exp-status s-pending">Pendiente</span>
+          </div>
+          <div class="exp-item">
+            <div class="exp-avatar">JG</div>
+            <div class="exp-info">
+              <div class="exp-name">Julian Glimko</div>
+              <div class="exp-meta">Makai #412 · Carlos M.</div>
+            </div>
+            <span class="exp-status s-ok">Validado</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom grid: approvals + tasks -->
+    <div class="main-grid-bottom">
+
+      <!-- Aprobaciones urgentes -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Aprobaciones urgentes</span>
+          <span class="panel-badge">7 en cola</span>
+          <a class="panel-action" style="margin-left:8px">Ver todas →</a>
+        </div>
+        <div class="appr-list">
+          <div class="appr-item">
+            <div class="appr-info">
+              <div class="appr-name">Robert Sánchez</div>
+              <div class="appr-meta">
+                <span class="appr-type t-discount">Descuento</span>
+                <span class="appr-amount">$20,000</span>
+                <span class="appr-agent">· Carlos M.</span>
+              </div>
+            </div>
+            <span class="appr-days">2 días</span>
+            <div class="appr-actions">
+              <button class="btn-approve">Aprobar</button>
+              <button class="btn-reject">✕</button>
+            </div>
+          </div>
+          <div class="appr-item">
+            <div class="appr-info">
+              <div class="appr-name">Maria Laurent</div>
+              <div class="appr-meta">
+                <span class="appr-type t-cancel">Cancelación</span>
+                <span class="appr-amount">$431,000</span>
+                <span class="appr-agent">· Diana R.</span>
+              </div>
+            </div>
+            <span class="appr-days">Hoy</span>
+            <div class="appr-actions">
+              <button class="btn-approve">Aprobar</button>
+              <button class="btn-reject">✕</button>
+            </div>
+          </div>
+          <div class="appr-item">
+            <div class="appr-info">
+              <div class="appr-name">Henrique Segala</div>
+              <div class="appr-meta">
+                <span class="appr-type t-refund">Devolución</span>
+                <span class="appr-amount">$5,000</span>
+                <span class="appr-agent">· Ana T.</span>
+              </div>
+            </div>
+            <span class="appr-days">Hoy</span>
+            <div class="appr-actions">
+              <button class="btn-approve">Aprobar</button>
+              <button class="btn-reject">✕</button>
+            </div>
+          </div>
+          <div class="appr-item">
+            <div class="appr-info">
+              <div class="appr-name">Giuseppe Gangemi</div>
+              <div class="appr-meta">
+                <span class="appr-type t-exception">Excepción</span>
+                <span class="appr-amount">Plan de pago</span>
+                <span class="appr-agent">· Carlos M.</span>
+              </div>
+            </div>
+            <span class="appr-days">4 días</span>
+            <div class="appr-actions">
+              <button class="btn-approve">Aprobar</button>
+              <button class="btn-reject">✕</button>
+            </div>
+          </div>
+          <div class="appr-item">
+            <div class="appr-info">
+              <div class="appr-name">Peter Kleier</div>
+              <div class="appr-meta">
+                <span class="appr-type t-discount">Descuento</span>
+                <span class="appr-amount">$15,000</span>
+                <span class="appr-agent">· Diana R.</span>
+              </div>
+            </div>
+            <span class="appr-days">5 días</span>
+            <div class="appr-actions">
+              <button class="btn-approve">Aprobar</button>
+              <button class="btn-reject">✕</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tareas del día -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Tareas del día</span>
+          <span class="panel-badge orange">12 pendientes</span>
+          <a class="panel-action" style="margin-left:8px">Ver todas →</a>
+        </div>
+        <div class="task-list">
+          <div class="task-item">
+            <div class="task-chk"></div>
+            <div class="task-info">
+              <div class="task-label">Revisar KYC de Henrique Segala — faltan 2 documentos</div>
+              <div class="task-meta">
+                <span class="task-assignee">→ Carlos M.</span>
+                <span class="task-due due-overdue">Vencida</span>
+              </div>
+            </div>
+          </div>
+          <div class="task-item">
+            <div class="task-chk"></div>
+            <div class="task-info">
+              <div class="task-label">Enviar plan de pagos firmado a Maria Laurent</div>
+              <div class="task-meta">
+                <span class="task-assignee">→ Diana R.</span>
+                <span class="task-due due-today">Hoy</span>
+              </div>
+            </div>
+          </div>
+          <div class="task-item">
+            <div class="task-chk done"></div>
+            <div class="task-info">
+              <div class="task-label done-text">Confirmar reserva Unidad #111 — Robert S.</div>
+              <div class="task-meta">
+                <span class="task-assignee">→ Ana T.</span>
+                <span class="task-due due-ok">Completada</span>
+              </div>
+            </div>
+          </div>
+          <div class="task-item">
+            <div class="task-chk"></div>
+            <div class="task-info">
+              <div class="task-label">Subir fotos avance de obra Mayo 2026</div>
+              <div class="task-meta">
+                <span class="task-assignee">→ Admin</span>
+                <span class="task-due due-today">Hoy</span>
+              </div>
+            </div>
+          </div>
+          <div class="task-item">
+            <div class="task-chk"></div>
+            <div class="task-info">
+              <div class="task-label">Aprobar acuerdo de comisión — Sunset Real Estate</div>
+              <div class="task-meta">
+                <span class="task-assignee">→ Admin</span>
+                <span class="task-due due-overdue">Vencida ayer</span>
+              </div>
+            </div>
+          </div>
+          <div class="task-item">
+            <div class="task-chk"></div>
+            <div class="task-info">
+              <div class="task-label">Lead sin contactar 48h — Julian Glimko</div>
+              <div class="task-meta">
+                <span class="task-assignee">→ Carlos M.</span>
+                <span class="task-due due-overdue">Vencida</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom strip: analytics + chart + activity -->
+    <div class="bottom-grid">
+
+      <!-- Analytics -->
+      <div class="panel analytics-panel">
+        <div class="panel-header">
+          <span class="panel-title">Analytics — últimos 14 días</span>
+          <span style="font-size:9.5px;color:var(--sub)">Makai Residences</span>
+        </div>
+        <div class="panel-body">
+          <div class="analytics-grid">
+            <div class="analytic-item">
+              <div class="analytic-label">Visitantes</div>
+              <div class="analytic-value">740</div>
+              <div class="analytic-change">↑ 12% vs anterior</div>
+            </div>
+            <div class="analytic-item">
+              <div class="analytic-label">Bounce rate</div>
+              <div class="analytic-value">57%</div>
+              <div class="analytic-change down">↑ 3% vs anterior</div>
+            </div>
+            <div class="analytic-item">
+              <div class="analytic-label">Avg. session</div>
+              <div class="analytic-value">2m53s</div>
+              <div class="analytic-change">↑ 8% vs anterior</div>
+            </div>
+            <div class="analytic-item">
+              <div class="analytic-label">Conversión</div>
+              <div class="analytic-value">10%</div>
+              <div class="analytic-change">→ Sin cambio</div>
+            </div>
+          </div>
+          <!-- Funnel -->
+          <div style="font-size:9.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--sub);margin-bottom:8px">Funnel · 14 días</div>
+          <div class="funnel">
+            <div class="funnel-row">
+              <span class="funnel-label">Visitas</span>
+              <div class="funnel-bar-wrap">
+                <div class="funnel-bar" style="width:100%;background:var(--green)">
+                  <span class="funnel-bar-val">740</span>
+                </div>
+              </div>
+              <span class="funnel-pct">100%</span>
+            </div>
+            <div class="funnel-row">
+              <span class="funnel-label">Registro</span>
+              <div class="funnel-bar-wrap">
+                <div class="funnel-bar" style="width:38%;background:#3d5234">
+                  <span class="funnel-bar-val">282</span>
+                </div>
+              </div>
+              <span class="funnel-pct">38%</span>
+            </div>
+            <div class="funnel-row">
+              <span class="funnel-label">Consultas</span>
+              <div class="funnel-bar-wrap">
+                <div class="funnel-bar" style="width:18%;background:#2e3e27">
+                  <span class="funnel-bar-val">133</span>
+                </div>
+              </div>
+              <span class="funnel-pct">18%</span>
+            </div>
+            <div class="funnel-row">
+              <span class="funnel-label">Reservas</span>
+              <div class="funnel-bar-wrap">
+                <div class="funnel-bar" style="width:10%;background:var(--green-txt)">
+                  <span class="funnel-bar-val">74</span>
+                </div>
+              </div>
+              <span class="funnel-pct">10%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sales chart -->
+      <div class="panel chart-panel">
+        <div class="panel-header">
+          <span class="panel-title">Ventas por semana</span>
+          <span style="font-size:9.5px;color:var(--sub)">últimas 8 semanas</span>
+        </div>
+        <div class="panel-body">
+          <div class="chart-wrap">
+            <div class="chart-bar-col">
+              <div class="chart-bar" style="height:28px"></div>
+              <span class="chart-label">S1</span>
+            </div>
+            <div class="chart-bar-col">
+              <div class="chart-bar" style="height:44px"></div>
+              <span class="chart-label">S2</span>
+            </div>
+            <div class="chart-bar-col">
+              <div class="chart-bar" style="height:22px"></div>
+              <span class="chart-label">S3</span>
+            </div>
+            <div class="chart-bar-col">
+              <div class="chart-bar" style="height:56px"></div>
+              <span class="chart-label">S4</span>
+            </div>
+            <div class="chart-bar-col">
+              <div class="chart-bar" style="height:38px"></div>
+              <span class="chart-label">S5</span>
+            </div>
+            <div class="chart-bar-col">
+              <div class="chart-bar" style="height:65px"></div>
+              <span class="chart-label">S6</span>
+            </div>
+            <div class="chart-bar-col">
+              <div class="chart-bar" style="height:48px"></div>
+              <span class="chart-label">S7</span>
+            </div>
+            <div class="chart-bar-col">
+              <div class="chart-bar highlight" style="height:80px"></div>
+              <span class="chart-label" style="color:var(--green-txt)">S8</span>
+            </div>
+          </div>
+          <div class="chart-summary">
+            <div class="cs-item">
+              <div class="cs-label">Total vendido</div>
+              <div class="cs-value green">$8.99M</div>
+            </div>
+            <div class="cs-item">
+              <div class="cs-label">Unidades</div>
+              <div class="cs-value">22</div>
+            </div>
+            <div class="cs-item">
+              <div class="cs-label">Retorno</div>
+              <div class="cs-value green">15.3%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actividad reciente -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Actividad del equipo</span>
+          <a class="panel-action">Ver todo →</a>
+        </div>
+        <div class="activity-list">
+          <div class="act-item">
+            <div class="act-dot-col">
+              <div class="act-dot" style="background:var(--green-txt)"></div>
+              <div class="act-line"></div>
+            </div>
+            <div class="act-info">
+              <div class="act-text"><strong>Pago confirmado</strong> — Robert S. · $5,000 reserva Unidad #38</div>
+              <div class="act-time">Hace 18 min</div>
+            </div>
+          </div>
+          <div class="act-item">
+            <div class="act-dot-col">
+              <div class="act-dot" style="background:var(--orange)"></div>
+              <div class="act-line"></div>
+            </div>
+            <div class="act-info">
+              <div class="act-text"><strong>Aprobación pendiente</strong> — Descuento $20K solicitado por Carlos M.</div>
+              <div class="act-time">Hace 42 min</div>
+            </div>
+          </div>
+          <div class="act-item">
+            <div class="act-dot-col">
+              <div class="act-dot" style="background:var(--blue)"></div>
+              <div class="act-line"></div>
+            </div>
+            <div class="act-info">
+              <div class="act-text"><strong>Nuevo registro</strong> — Julian Glimko · broker pendiente de aprobación</div>
+              <div class="act-time">Hace 1h 20min</div>
+            </div>
+          </div>
+          <div class="act-item">
+            <div class="act-dot-col">
+              <div class="act-dot" style="background:var(--green-txt)"></div>
+              <div class="act-line"></div>
+            </div>
+            <div class="act-info">
+              <div class="act-text"><strong>Unidad liberada</strong> — #318 marcada disponible tras cancelación</div>
+              <div class="act-time">Hace 2h 05min</div>
+            </div>
+          </div>
+          <div class="act-item">
+            <div class="act-dot-col">
+              <div class="act-dot" style="background:var(--red)"></div>
+              <div class="act-line"></div>
+            </div>
+            <div class="act-info">
+              <div class="act-text"><strong>Lead sin contactar</strong> — Henrique Segala · +48h sin respuesta</div>
+              <div class="act-time">Hace 3h</div>
+            </div>
+          </div>
+          <div class="act-item">
+            <div class="act-dot-col">
+              <div class="act-dot" style="background:var(--sub)"></div>
+            </div>
+            <div class="act-info" style="padding-bottom:0">
+              <div class="act-text"><strong>Reporte de obra</strong> — Mayo 2026 publicado · notificación enviada a 22 compradores</div>
+              <div class="act-time">Ayer · 17:40</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /bottom-grid -->
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// Sidebar nav interaction
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.addEventListener('click', () => {
+    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+    item.classList.add('active');
+  });
+});
+// Approve buttons
+document.querySelectorAll('.btn-approve').forEach(btn => {
+  btn.addEventListener('click', e => {
+    e.stopPropagation();
+    const row = btn.closest('.appr-item');
+    row.style.opacity = '.4';
+    row.style.pointerEvents = 'none';
+    btn.textContent = '✓ Aprobado';
+    btn.style.background = '#3d5234';
+  });
+});
+// Reject buttons
+document.querySelectorAll('.btn-reject').forEach(btn => {
+  btn.addEventListener('click', e => {
+    e.stopPropagation();
+    const row = btn.closest('.appr-item');
+    row.style.opacity = '.3';
+    row.style.pointerEvents = 'none';
+  });
+});
+// Task checkboxes
+document.querySelectorAll('.task-chk:not(.done)').forEach(chk => {
+  chk.addEventListener('click', () => {
+    chk.classList.toggle('done');
+    const label = chk.nextElementSibling.querySelector('.task-label');
+    label.classList.toggle('done-text');
+  });
+});
+// Chart bars tooltip
+document.querySelectorAll('.chart-bar').forEach((bar, i) => {
+  bar.title = `Semana ${i+1}`;
+});
+</script>
+</body>
+</html>

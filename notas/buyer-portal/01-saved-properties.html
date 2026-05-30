@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Makai · Propiedades Guardadas</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0c0c0b;
+  --surface: #161614;
+  --surface-2: #1e1e1b;
+  --border: rgba(255,255,255,.08);
+  --green: #82b870;
+  --green-dim: #4A5E3F;
+  --amber: #c97c40;
+  --text: #F1EDE3;
+  --muted: #7a7670;
+  --red: #c0433a;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: 220px;
+  min-height: 100vh;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  position: fixed;
+  left: 0; top: 0; bottom: 0;
+}
+.sidebar-logo {
+  padding: 24px 20px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+}
+.sidebar-logo-mark {
+  width: 28px; height: 28px; background: var(--green-dim);
+  border-radius: 6px; display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: var(--green);
+}
+.sidebar-logo-name { font-size: 13px; font-weight: 700; letter-spacing: .1em; color: var(--text); }
+.sidebar-logo-sub { font-size: 9px; color: var(--muted); letter-spacing: .06em; }
+.nav { padding: 16px 10px; flex: 1; }
+.nav-label { font-size: 8.5px; font-weight: 600; color: var(--muted); letter-spacing: .12em; text-transform: uppercase; padding: 0 10px; margin-bottom: 6px; margin-top: 16px; }
+.nav-label:first-child { margin-top: 0; }
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 10px; border-radius: 6px;
+  font-size: 13px; color: var(--muted);
+  cursor: pointer; text-decoration: none;
+  transition: background .15s, color .15s;
+  margin-bottom: 1px;
+}
+.nav-item:hover { background: rgba(255,255,255,.05); color: var(--text); }
+.nav-item.active { background: rgba(130,184,112,.1); color: var(--green); }
+.nav-item svg { width: 15px; height: 15px; flex-shrink: 0; }
+.nav-item .badge {
+  margin-left: auto; background: var(--amber); color: #fff;
+  font-size: 9px; font-weight: 700; border-radius: 10px; padding: 1px 6px;
+}
+.sidebar-user {
+  padding: 14px 16px; border-top: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+}
+.sidebar-avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--green-dim); display: flex; align-items: center;
+  justify-content: center; font-size: 11px; font-weight: 700; color: var(--green); flex-shrink: 0;
+}
+.sidebar-user-name { font-size: 12px; font-weight: 500; color: var(--text); }
+.sidebar-user-role { font-size: 10px; color: var(--muted); }
+
+/* ── MAIN ── */
+.main { margin-left: 220px; flex: 1; min-height: 100vh; display: flex; flex-direction: column; }
+.topbar {
+  height: 56px; background: var(--surface); border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 32px; position: sticky; top: 0; z-index: 10;
+}
+.topbar-title { font-size: 14px; font-weight: 600; color: var(--text); }
+.topbar-right { display: flex; align-items: center; gap: 16px; }
+.topbar-notif {
+  width: 32px; height: 32px; border-radius: 6px;
+  border: 1px solid var(--border); display: flex; align-items: center;
+  justify-content: center; cursor: pointer; position: relative; color: var(--muted);
+  transition: border-color .15s, color .15s;
+}
+.topbar-notif:hover { border-color: rgba(255,255,255,.18); color: var(--text); }
+.topbar-notif .dot {
+  position: absolute; top: 6px; right: 6px; width: 6px; height: 6px;
+  background: var(--amber); border-radius: 50%; border: 1.5px solid var(--surface);
+}
+.content { padding: 32px; flex: 1; }
+
+/* ── PAGE HEADER ── */
+.page-header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 28px; }
+.page-title { font-size: 22px; font-weight: 600; color: var(--text); letter-spacing: -.02em; }
+.page-sub { font-size: 12px; color: var(--muted); margin-top: 3px; }
+.header-actions { display: flex; align-items: center; gap: 10px; }
+
+/* ── CONTROLS ── */
+.controls { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; }
+.ctrl-group { display: flex; align-items: center; gap: 6px; }
+.ctrl-label { font-size: 11px; color: var(--muted); }
+.select-sm {
+  background: var(--surface); border: 1px solid var(--border); color: var(--text);
+  font-family: 'Inter', sans-serif; font-size: 12px; padding: 6px 10px;
+  border-radius: 6px; cursor: pointer; outline: none; appearance: none;
+  padding-right: 24px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%237a7670' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 8px center;
+}
+.view-toggle { display: flex; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+.view-btn {
+  padding: 6px 10px; background: transparent; border: none; cursor: pointer;
+  color: var(--muted); transition: background .15s, color .15s;
+  display: flex; align-items: center;
+}
+.view-btn.active { background: rgba(255,255,255,.07); color: var(--text); }
+.view-btn svg { width: 14px; height: 14px; }
+.ctrl-sep { width: 1px; height: 20px; background: var(--border); }
+
+/* ── PROPERTY GRID ── */
+.properties-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+.properties-list { display: flex; flex-direction: column; gap: 10px; }
+
+/* ── PROPERTY CARD ── */
+.prop-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; overflow: hidden;
+  transition: border-color .2s, transform .15s;
+  cursor: pointer;
+}
+.prop-card:hover { border-color: rgba(255,255,255,.14); transform: translateY(-1px); }
+.prop-card-img {
+  height: 160px; background: linear-gradient(140deg, #1a1f19, #0f1a0e);
+  position: relative; display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.prop-card-img-label {
+  font-size: 28px; font-weight: 700; color: rgba(255,255,255,.08); letter-spacing: .04em;
+}
+.prop-card-badge {
+  position: absolute; top: 10px; left: 10px;
+  background: rgba(130,184,112,.15); border: 1px solid rgba(130,184,112,.25);
+  color: var(--green); font-size: 9px; font-weight: 700; letter-spacing: .08em;
+  padding: 3px 8px; border-radius: 4px; text-transform: uppercase;
+}
+.prop-card-fav {
+  position: absolute; top: 10px; right: 10px;
+  width: 28px; height: 28px; border-radius: 6px;
+  background: rgba(0,0,0,.4); backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,.12);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: #e85454; transition: background .15s;
+}
+.prop-card-fav:hover { background: rgba(232,84,84,.15); }
+.prop-card-fav svg { width: 13px; height: 13px; }
+.prop-card-body { padding: 14px 16px 16px; }
+.prop-card-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2px; }
+.prop-card-name { font-size: 14px; font-weight: 600; color: var(--text); }
+.prop-card-roi { font-size: 11px; font-weight: 600; color: var(--green); }
+.prop-card-sub { font-size: 11px; color: var(--muted); margin-bottom: 10px; }
+.prop-card-price { font-size: 20px; font-weight: 700; color: var(--text); letter-spacing: -.02em; }
+.prop-card-price-sub { font-size: 10px; color: var(--muted); }
+.prop-card-specs {
+  display: flex; gap: 14px; margin-top: 12px; padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+.prop-spec { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.prop-spec-val { font-size: 12px; font-weight: 600; color: var(--text); }
+.prop-spec-lbl { font-size: 9px; color: var(--muted); }
+.prop-card-actions { display: flex; gap: 8px; margin-top: 12px; }
+.btn-sm {
+  flex: 1; padding: 8px; border-radius: 6px; font-family: 'Inter', sans-serif;
+  font-size: 11px; font-weight: 600; cursor: pointer; border: none;
+  transition: background .15s, opacity .15s; text-align: center;
+}
+.btn-primary { background: var(--green-dim); color: var(--green); }
+.btn-primary:hover { background: #3d5034; }
+.btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--muted); }
+.btn-ghost:hover { border-color: rgba(255,255,255,.18); color: var(--text); }
+.prop-card-saved { font-size: 9.5px; color: var(--muted); text-align: center; margin-top: 8px; }
+
+/* ── LIST VIEW ── */
+.prop-row {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; display: flex; align-items: center; gap: 16px;
+  padding: 14px 16px; cursor: pointer;
+  transition: border-color .15s;
+}
+.prop-row:hover { border-color: rgba(255,255,255,.14); }
+.prop-row-img {
+  width: 64px; height: 48px; border-radius: 6px; flex-shrink: 0;
+  background: linear-gradient(140deg, #1a1f19, #0f1a0e);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: rgba(255,255,255,.1);
+}
+.prop-row-info { flex: 1; }
+.prop-row-name { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+.prop-row-sub { font-size: 11px; color: var(--muted); }
+.prop-row-price { font-size: 15px; font-weight: 700; color: var(--text); text-align: right; min-width: 100px; }
+.prop-row-roi { font-size: 10px; color: var(--green); text-align: right; margin-top: 1px; }
+.prop-row-actions { display: flex; gap: 6px; align-items: center; }
+.icon-btn {
+  width: 30px; height: 30px; border-radius: 6px; border: 1px solid var(--border);
+  background: transparent; cursor: pointer; color: var(--muted);
+  display: flex; align-items: center; justify-content: center;
+  transition: border-color .15s, color .15s;
+}
+.icon-btn:hover { border-color: rgba(255,255,255,.18); color: var(--text); }
+.icon-btn.danger:hover { border-color: rgba(192,67,58,.4); color: var(--red); }
+.icon-btn svg { width: 13px; height: 13px; }
+
+/* ── EMPTY STATE ── */
+.empty-state {
+  text-align: center; padding: 80px 32px;
+  color: var(--muted);
+}
+.empty-icon { font-size: 40px; margin-bottom: 16px; opacity: .3; }
+.empty-title { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+.empty-sub { font-size: 13px; color: var(--muted); margin-bottom: 24px; max-width: 360px; margin-left: auto; margin-right: auto; }
+.btn-lg {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--green-dim); color: var(--green);
+  border: none; border-radius: 8px; padding: 10px 20px;
+  font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: background .15s;
+}
+.btn-lg:hover { background: #3d5034; }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed; bottom: 24px; right: 24px; z-index: 100;
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 12px 16px;
+  display: flex; align-items: center; gap: 10px;
+  font-size: 13px; color: var(--text); min-width: 260px;
+  transform: translateY(8px); opacity: 0;
+  transition: transform .2s, opacity .2s; pointer-events: none;
+}
+.toast.show { transform: translateY(0); opacity: 1; pointer-events: auto; }
+.toast-icon { width: 18px; height: 18px; color: var(--green); flex-shrink: 0; }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="sidebar-logo-mark">M</div>
+    <div>
+      <div class="sidebar-logo-name">MAKAI</div>
+      <div class="sidebar-logo-sub">Portal del Comprador</div>
+    </div>
+  </div>
+  <nav class="nav">
+    <div class="nav-label">Mi Cuenta</div>
+    <a class="nav-item active" href="01-saved-properties.html">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 3.5A1.5 1.5 0 013.5 2h9A1.5 1.5 0 0114 3.5v11l-6-3-6 3V3.5z"/></svg>
+      Propiedades Guardadas
+    </a>
+    <a class="nav-item" href="05-proposals-contracts.html">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 2H3a1 1 0 00-1 1v11l3-2 3 2 3-2 3 2V3a1 1 0 00-1-1z"/><path d="M5 6h6M5 9h4"/></svg>
+      Propuestas &amp; Contratos
+      <span class="badge">1</span>
+    </a>
+    <a class="nav-item" href="02-documents.html">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 2l4 4-7 7H3v-4l7-7z"/><path d="M8.5 3.5l4 4"/></svg>
+      Firmar Documentos
+    </a>
+    <a class="nav-item" href="03-schedule-video-call.html">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="4" width="10" height="8" rx="1.5"/><path d="M11 7l4-2v6l-4-2"/></svg>
+      Agendar Videollamada
+    </a>
+    <a class="nav-item" href="06-calendar-events.html">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="12" height="11" rx="1.5"/><path d="M5 2v2M11 2v2M2 7h12"/></svg>
+      Calendario &amp; Citas
+    </a>
+    <div class="nav-label">Configuración</div>
+    <a class="nav-item" href="04-user-profile.html">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="5" r="3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>
+      Mi Perfil
+    </a>
+  </nav>
+  <div class="sidebar-user">
+    <div class="sidebar-avatar">GG</div>
+    <div class="sidebar-user-info">
+      <div class="sidebar-user-name">Giuseppe Gangemi</div>
+      <div class="sidebar-user-role">Comprador</div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <header class="topbar">
+    <span class="topbar-title">Propiedades Guardadas</span>
+    <div class="topbar-right">
+      <div class="topbar-notif">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <span class="dot"></span>
+      </div>
+      <a href="04-user-profile.html" style="text-decoration:none">
+        <div class="sidebar-avatar" style="width:32px;height:32px;font-size:11px;">GG</div>
+      </a>
+    </div>
+  </header>
+
+  <div class="content">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Guardadas</div>
+        <div class="page-sub">3 propiedades · Makai Residences, Cap Cana</div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <div class="ctrl-group">
+        <span class="ctrl-label">Ordenar:</span>
+        <select class="select-sm" onchange="">
+          <option>Más reciente</option>
+          <option>Precio: menor a mayor</option>
+          <option>Precio: mayor a menor</option>
+          <option>Mayor ROI</option>
+        </select>
+      </div>
+      <div class="ctrl-sep"></div>
+      <div class="ctrl-group">
+        <span class="ctrl-label">Vista:</span>
+        <div class="view-toggle">
+          <button class="view-btn active" id="btn-grid" onclick="setView('grid')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          </button>
+          <button class="view-btn" id="btn-list" onclick="setView('list')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- GRID VIEW -->
+    <div class="properties-grid" id="grid-view">
+      <!-- Card 1 -->
+      <div class="prop-card">
+        <div class="prop-card-img">
+          <span class="prop-card-img-label">A-101</span>
+          <span class="prop-card-badge">Disponible</span>
+          <button class="prop-card-fav" onclick="removeFav(event, this)" title="Quitar de guardadas">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </button>
+        </div>
+        <div class="prop-card-body">
+          <div class="prop-card-row">
+            <span class="prop-card-name">Unit A-101</span>
+            <span class="prop-card-roi">10.3% ROI</span>
+          </div>
+          <div class="prop-card-sub">1er Piso · SE · Vista al lago</div>
+          <div class="prop-card-price">$450,000 <span style="font-size:13px;font-weight:400;color:var(--muted)">USD</span></div>
+          <div class="prop-card-price-sub">$450 / m² · Entrega Q4 2026</div>
+          <div class="prop-card-specs">
+            <div class="prop-spec"><span class="prop-spec-val">1</span><span class="prop-spec-lbl">Hab</span></div>
+            <div class="prop-spec"><span class="prop-spec-val">2</span><span class="prop-spec-lbl">Baños</span></div>
+            <div class="prop-spec"><span class="prop-spec-val">2</span><span class="prop-spec-lbl">Park</span></div>
+            <div class="prop-spec"><span class="prop-spec-val">124m²</span><span class="prop-spec-lbl">Interior</span></div>
+            <div class="prop-spec"><span class="prop-spec-val">32m²</span><span class="prop-spec-lbl">Terraza</span></div>
+          </div>
+          <div class="prop-card-actions">
+            <button class="btn-sm btn-primary" onclick="openSchedule()">Agendar videollamada</button>
+            <button class="btn-sm btn-ghost" onclick="openPdf()">Ver ficha</button>
+          </div>
+          <div class="prop-card-saved">Guardada el 21 may 2025</div>
+        </div>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="prop-card">
+        <div class="prop-card-img">
+          <span class="prop-card-img-label">B-204</span>
+          <span class="prop-card-badge">Disponible</span>
+          <button class="prop-card-fav" onclick="removeFav(event, this)" title="Quitar de guardadas">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </button>
+        </div>
+        <div class="prop-card-body">
+          <div class="prop-card-row">
+            <span class="prop-card-name">Unit B-204</span>
+            <span class="prop-card-roi">11.1% ROI</span>
+          </div>
+          <div class="prop-card-sub">2do Piso · NE · Vista al golf</div>
+          <div class="prop-card-price">$520,000 <span style="font-size:13px;font-weight:400;color:var(--muted)">USD</span></div>
+          <div class="prop-card-price-sub">$480 / m² · Entrega Q4 2026</div>
+          <div class="prop-card-specs">
+            <div class="prop-spec"><span class="prop-spec-val">2</span><span class="prop-spec-lbl">Hab</span></div>
+            <div class="prop-spec"><span class="prop-spec-val">2</span><span class="prop-spec-lbl">Baños</span></div>
+            <div class="prop-spec"><span class="prop-spec-val">2</span><span class="prop-spec-lbl">Park</span></div>
+            <div class="prop-spec"><span class="prop-spec-val">138m²</span><span class="prop-spec-lbl">Interior</span></div>
+            <div class="prop-spec"><span class="prop-spec-val">48m²</span><span class="prop-spec-lbl">Terraza</span></div>
+          </div>
+          <div class="prop-card-actions">
+            <button class="btn-sm btn-primary" onclick="openSchedule()">Agendar videollamada</button>
+            <button class="btn-sm btn-ghost" onclick="openPdf()">Ver ficha</button>
+          </div>
+          <div class="prop-card-saved">Guardada el 19 may 2025</div>
+        </div>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="prop-card">
+        <div class="prop-card-img">
+          <span class="prop-card-img-label">C-301</span>
+          <span class="prop-card-badge" style="background:rgba(201,124,64,.15);border-color:rgba(201,124,64,.3);color:var(--amber)">2 disponibles</span>
+          <button class="prop-card-fav" onclick="removeFav(event, this)" title="Quitar de guardadas">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </button>
+        </div>
+        <div class="prop-card-body">
+          <div class="prop-card-row">
+            <span class="prop-card-name">Unit C-301</span>
+            <span class="prop-card-roi">9.8% ROI</span>
+          </div>
+          <div class="prop-card-sub">3er Piso · SW · Vista al mar</div>
+          <div class="prop-card-price">$680,000 <span style="font-size:13px;font-weight:400;color:var(--muted)">USD</span></div>
+          <div class="prop-card-price-sub">$520 / m² · Entrega Q4 2026</div>
+          <div class="prop-card-specs">
+            <div class="prop-spec"><span class="prop-spec-val">3</span><span class="prop-spec-lbl">Hab</span></div>
+            <div class="prop-spec"><span class="prop-spec-val">3</span><span class="prop-spec-lbl">Baños</span></div>
+            <div class="prop-spec"><span class="prop-spec-val">2</span><span class="prop-spec-lbl">Park</span></div>
+            <div class="prop-spec"><span class="prop-spec-val">165m²</span><span class="prop-spec-lbl">Interior</span></div>
+            <div class="prop-spec"><span class="prop-spec-val">60m²</span><span class="prop-spec-lbl">Terraza</span></div>
+          </div>
+          <div class="prop-card-actions">
+            <button class="btn-sm btn-primary" onclick="openSchedule()">Agendar videollamada</button>
+            <button class="btn-sm btn-ghost" onclick="openPdf()">Ver ficha</button>
+          </div>
+          <div class="prop-card-saved">Guardada el 15 may 2025</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LIST VIEW (hidden by default) -->
+    <div class="properties-list" id="list-view" style="display:none">
+      <div class="prop-row">
+        <div class="prop-row-img">A-101</div>
+        <div class="prop-row-info">
+          <div class="prop-row-name">Unit A-101</div>
+          <div class="prop-row-sub">1er Piso · SE · Vista al lago · 1 hab · 2 baños · 124 m²</div>
+        </div>
+        <div>
+          <div class="prop-row-price">$450,000</div>
+          <div class="prop-row-roi">10.3% ROI</div>
+        </div>
+        <div class="prop-row-actions">
+          <button class="btn-sm btn-primary" style="white-space:nowrap" onclick="openSchedule()">Videollamada</button>
+          <button class="icon-btn danger" onclick="removeFavRow(event, this)" title="Quitar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="prop-row">
+        <div class="prop-row-img">B-204</div>
+        <div class="prop-row-info">
+          <div class="prop-row-name">Unit B-204</div>
+          <div class="prop-row-sub">2do Piso · NE · Vista al golf · 2 hab · 2 baños · 138 m²</div>
+        </div>
+        <div>
+          <div class="prop-row-price">$520,000</div>
+          <div class="prop-row-roi">11.1% ROI</div>
+        </div>
+        <div class="prop-row-actions">
+          <button class="btn-sm btn-primary" style="white-space:nowrap" onclick="openSchedule()">Videollamada</button>
+          <button class="icon-btn danger" onclick="removeFavRow(event, this)" title="Quitar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="prop-row">
+        <div class="prop-row-img">C-301</div>
+        <div class="prop-row-info">
+          <div class="prop-row-name">Unit C-301</div>
+          <div class="prop-row-sub">3er Piso · SW · Vista al mar · 3 hab · 3 baños · 165 m²</div>
+        </div>
+        <div>
+          <div class="prop-row-price">$680,000</div>
+          <div class="prop-row-roi">9.8% ROI</div>
+        </div>
+        <div class="prop-row-actions">
+          <button class="btn-sm btn-primary" style="white-space:nowrap" onclick="openSchedule()">Videollamada</button>
+          <button class="icon-btn danger" onclick="removeFavRow(event, this)" title="Quitar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- SCHEDULE MODAL (embedded) -->
+<div id="schedule-modal" style="display:none;position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);align-items:center;justify-content:center;">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;width:460px;max-height:90vh;overflow-y:auto;">
+    <div style="padding:24px 24px 0;display:flex;justify-content:space-between;align-items:flex-start;">
+      <div>
+        <div style="font-size:16px;font-weight:600;color:var(--text);margin-bottom:3px;">Agendar Videollamada</div>
+        <div style="font-size:12px;color:var(--muted);">Con tu asesor de Makai Residences</div>
+      </div>
+      <button onclick="closeSchedule()" style="background:none;border:none;cursor:pointer;color:var(--muted);padding:4px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div style="padding:20px 24px 24px;">
+      <div style="margin-bottom:16px;">
+        <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;">Propiedad de interés</div>
+        <select class="select-sm" style="width:100%;padding:10px 12px;">
+          <option>Unit A-101 · $450,000 USD</option>
+          <option>Unit B-204 · $520,000 USD</option>
+          <option>Unit C-301 · $680,000 USD</option>
+        </select>
+      </div>
+      <div style="margin-bottom:16px;">
+        <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;">Fecha preferida</div>
+        <input type="date" style="width:100%;background:var(--surface-2);border:1px solid var(--border);color:var(--text);font-family:Inter,sans-serif;font-size:13px;padding:10px 12px;border-radius:8px;outline:none;" min="2025-05-22">
+      </div>
+      <div style="margin-bottom:16px;">
+        <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;">Horario disponible</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;">
+          <button class="time-slot" onclick="selectSlot(this)">9:00 AM</button>
+          <button class="time-slot" onclick="selectSlot(this)">10:00 AM</button>
+          <button class="time-slot" onclick="selectSlot(this)">11:00 AM</button>
+          <button class="time-slot" onclick="selectSlot(this)">2:00 PM</button>
+          <button class="time-slot" onclick="selectSlot(this)">3:00 PM</button>
+          <button class="time-slot" onclick="selectSlot(this)">4:00 PM</button>
+        </div>
+      </div>
+      <div style="margin-bottom:20px;">
+        <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;">Nota para el asesor (opcional)</div>
+        <textarea placeholder="Ej: Tengo dudas sobre el plan de financiamiento…" style="width:100%;background:var(--surface-2);border:1px solid var(--border);color:var(--text);font-family:Inter,sans-serif;font-size:12px;padding:10px 12px;border-radius:8px;outline:none;resize:none;height:72px;"></textarea>
+      </div>
+      <button onclick="confirmSchedule()" style="width:100%;background:var(--green-dim);color:var(--green);border:none;border-radius:8px;padding:12px;font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Confirmar solicitud</button>
+    </div>
+  </div>
+</div>
+
+<!-- REMOVE CONFIRM MODAL -->
+<div id="remove-confirm-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;align-items:center;justify-content:center;">
+  <div style="background:#161614;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:32px;width:380px;max-width:90vw;">
+    <div style="width:44px;height:44px;border-radius:50%;background:rgba(192,67,58,.12);display:flex;align-items:center;justify-content:center;margin-bottom:16px;">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#c0433a" stroke-width="2"><path d="M15 5L5 15M5 5l10 10"/></svg>
+    </div>
+    <div style="font-size:17px;font-weight:700;color:#F1EDE3;margin-bottom:8px;">¿Eliminar de guardadas?</div>
+    <div style="font-size:13px;color:#7a7670;line-height:1.55;margin-bottom:24px;">Esta propiedad se eliminará de tu lista. Puedes volver a guardarla desde el catálogo en cualquier momento.</div>
+    <div style="display:flex;gap:10px;">
+      <button onclick="closeRemoveConfirm()" style="flex:1;padding:10px;background:transparent;color:#7a7670;border:1px solid rgba(255,255,255,.08);border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;" onmouseover="this.style.color='#F1EDE3'" onmouseout="this.style.color='#7a7670'">Cancelar</button>
+      <button onclick="confirmRemove()" style="flex:1;padding:10px;background:rgba(192,67,58,.12);color:#c0433a;border:1px solid rgba(192,67,58,.25);border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;" onmouseover="this.style.background='rgba(192,67,58,.22)'" onmouseout="this.style.background='rgba(192,67,58,.12)'">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+  <span id="toast-msg">Listo</span>
+</div>
+
+<style>
+.time-slot {
+  padding: 8px; border-radius: 6px; font-size: 12px; font-weight: 500;
+  font-family: 'Inter', sans-serif; cursor: pointer;
+  background: var(--surface-2); border: 1px solid var(--border); color: var(--muted);
+  transition: all .15s;
+}
+.time-slot:hover { border-color: rgba(255,255,255,.18); color: var(--text); }
+.time-slot.selected { background: rgba(130,184,112,.12); border-color: rgba(130,184,112,.3); color: var(--green); }
+</style>
+
+<script>
+let currentView = 'grid';
+let toastTimer;
+
+function setView(v) {
+  currentView = v;
+  document.getElementById('grid-view').style.display = v === 'grid' ? 'grid' : 'none';
+  document.getElementById('list-view').style.display = v === 'list' ? 'flex' : 'none';
+  document.getElementById('btn-grid').classList.toggle('active', v === 'grid');
+  document.getElementById('btn-list').classList.toggle('active', v === 'list');
+}
+
+let pendingRemoveEl = null;
+
+function removeFav(e, btn) {
+  e.stopPropagation();
+  pendingRemoveEl = btn.closest('.prop-card');
+  openRemoveConfirm();
+}
+
+function removeFavRow(e, btn) {
+  e.stopPropagation();
+  pendingRemoveEl = btn.closest('.prop-row');
+  openRemoveConfirm();
+}
+
+function openRemoveConfirm() {
+  document.getElementById('remove-confirm-modal').style.display = 'flex';
+}
+
+function closeRemoveConfirm() {
+  document.getElementById('remove-confirm-modal').style.display = 'none';
+  pendingRemoveEl = null;
+}
+
+function confirmRemove() {
+  if (!pendingRemoveEl) return;
+  const el = pendingRemoveEl;
+  el.style.transition = 'opacity .2s, transform .2s';
+  el.style.opacity = '0';
+  el.style.transform = 'scale(.97)';
+  setTimeout(() => { el.remove(); checkEmpty(); }, 220);
+  closeRemoveConfirm();
+  showToast('Propiedad eliminada de guardadas');
+}
+
+function checkEmpty() {
+  const cards = document.querySelectorAll('.prop-card').length;
+  const rows = document.querySelectorAll('.prop-row').length;
+  if (cards === 0 && rows === 0) {
+    document.querySelector('.page-sub').textContent = '0 propiedades guardadas';
+  }
+}
+
+function openSchedule() {
+  document.getElementById('schedule-modal').style.display = 'flex';
+}
+function closeSchedule() {
+  document.getElementById('schedule-modal').style.display = 'none';
+}
+
+function selectSlot(btn) {
+  document.querySelectorAll('.time-slot').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
+function confirmSchedule() {
+  closeSchedule();
+  showToast('Videollamada agendada. Te confirmaremos por email.');
+}
+
+function openPdf() {
+  showToast('Generando ficha de propiedad…');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+document.getElementById('schedule-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeSchedule();
+});
+</script>
+</body>
+</html>
